@@ -1,0 +1,64 @@
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "127.0.0.1",
+          "-p${MYSQL_ROOT_PASSWORD}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: express_backend
+    restart: always
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_DIALECT: ${DB_DIALECT}
+      PORT: ${PORT}
+      CORS_ORIGIN: http://localhost
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build:
+      context: ./frontend 
+      dockerfile: Dockerfile
+    container_name: angular_frontend
+    restart: always
+    ports:
+      # Ánh xạ cổng 4000 bên trong container ra cổng 4200 trên máy host (hoặc cổng bạn muốn)
+      - "4200:4000"
+    environment:
+      # Bạn có thể thêm các biến môi trường nếu server.mjs của bạn cần chúng
+      NODE_ENV: production
+    depends_on:
+      - backend # Đảm bảo backend chạy trước (nếu frontend cần API ngay)
+
+volumes:
+  db_data:
