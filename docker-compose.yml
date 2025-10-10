@@ -28,7 +28,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: express_backend
+    container_name: taskflow_backend
     restart: always
     environment:
       DB_HOST: ${DB_HOST}
@@ -47,9 +47,9 @@ services:
 
   frontend:
     build:
-      context: ./frontend 
+      context: ./frontend
       dockerfile: Dockerfile
-    container_name: angular_frontend
+    container_name: taskflow_frontend
     restart: always
     ports:
       # Ánh xạ cổng 4000 bên trong container ra cổng 4200 trên máy host (hoặc cổng bạn muốn)
