@@ -7,19 +7,15 @@ const bodyParser = require("body-parser");
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(cors());
+// Import middleware
+const { authenticateToken } = require("../../middleware/auth.middleware");
+
+router.use(authenticateToken);
 
 // Import controller auth
-const {
-  register,
-  login,
-  changePassword,
-  forgotPassword,
-} = require("../../controllers/auth.controller");
+const { getDashboards } = require("../../controllers/dashboard.controller");
 
-// Auth routes
-router.post("/register", register);
-router.post("/login", login);
-router.patch("/change-password", changePassword);
-router.post("/forgot-password", forgotPassword);
+// Dashboard routes
+router.get("/dashboard", authenticateToken, getDashboards);
 
 module.exports = router;

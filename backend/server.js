@@ -21,9 +21,14 @@ const PORT = process.env.PORT || 3000;
 // Import route user
 const userApi = require("./src/routers/api-route/user.api");
 const authApi = require("./src/routers/api-route/auth.api");
+const dashboardApi = require("./src/routers/api-route/dashboard.api");
+const taskApi = require("./src/routers/api-route/task.api");
 
-app.use(API_PREFIX, userApi); // Import route user
 app.use(API_PREFIX, authApi); // Import route auth
+app.use(API_PREFIX, dashboardApi); // Import route dashboard
+app.use(API_PREFIX, taskApi); // Import route task
+app.use(API_PREFIX, userApi); // Import route user
+
 
 // Test route
 app.get(`${API_PREFIX}/get`, (req, res) => {

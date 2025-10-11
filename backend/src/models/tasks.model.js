@@ -7,8 +7,9 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      project_id: { type: DataTypes.INTEGER, allowNull: false },
+      project_id: { type: DataTypes.INTEGER, allowNull: true },
       task_name: { type: DataTypes.STRING(255), allowNull: false },
+      parent_id: { type: DataTypes.INTEGER, allowNull: true },
       description: { type: DataTypes.TEXT, allowNull: true },
       status: {
         type: DataTypes.ENUM("to_do", "in_progress", "done"),
@@ -21,7 +22,6 @@ module.exports = (sequelize, DataTypes) => {
       start_date: { type: DataTypes.DATE, allowNull: false },
       due_date: { type: DataTypes.DATE, allowNull: false },
       created_by: { type: DataTypes.INTEGER, allowNull: false },
-      assignee_id: { type: DataTypes.INTEGER, allowNull: true },
       created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
       updated_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     },
@@ -34,7 +34,12 @@ module.exports = (sequelize, DataTypes) => {
   Task.associate = (models) => {
     Task.belongsTo(models.Project, { foreignKey: "project_id", as: "project" });
     Task.belongsTo(models.User, { foreignKey: "created_by", as: "creator" });
-    Task.belongsTo(models.User, { foreignKey: "assignee_id", as: "assignee" });
+    Task.belongsToMany(models.User, {
+      through: "task_assignees",
+      foreignKey: "task_id",
+      otherKey: "user_id",
+      as: "assignees",
+    });
   };
 
   return Task;

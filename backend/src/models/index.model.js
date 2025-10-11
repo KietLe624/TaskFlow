@@ -14,20 +14,15 @@ if (!dbConfig || !dbConfig.dialect) {
   );
 }
 
+// ✅ Tạo kết nối
 const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
   host: dbConfig.HOST,
   dialect: dbConfig.dialect,
-  pool: {
-    // Thêm cấu hình pool để quản lý kết nối tốt hơn
-    max: dbConfig.pool ? dbConfig.pool.max : 5,
-    min: dbConfig.pool ? dbConfig.pool.min : 0,
-    acquire: dbConfig.pool ? dbConfig.pool.acquire : 30000,
-    idle: dbConfig.pool ? dbConfig.pool.idle : 10000,
-  },
+  pool: dbConfig.pool || { max: 5, min: 0, acquire: 30000, idle: 10000 },
   timezone: "+07:00",
 });
 
-// Đọc tất cả các file model trong thư mục hiện tại
+// ✅ Đọc tất cả model
 fs.readdirSync(__dirname)
   .filter((file) => {
     return (
@@ -45,11 +40,14 @@ fs.readdirSync(__dirname)
     db[model.name] = model;
   });
 
+// ✅ Kích hoạt liên kết giữa các model
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
   }
 });
+
+console.log("📦 Models loaded:", Object.keys(db));
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
