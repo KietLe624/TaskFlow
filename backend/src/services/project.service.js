@@ -47,14 +47,17 @@ const updateProject = async (projectId, projectData) => {
 };
 
 // delete projects
-const deleteProject = async (projectId) => {
+const deleteProject = async (projectId,userId) => {
   try {
-    const project = await Project.findByPk(projectId);
-    if (!project) {
+    const deletedProject = await Project.findByPk(projectId);
+    if (!deletedProject) {
       return null; // Project not found
     }
-    await project.destroy();
-    return project;
+    if (deletedProject.owner_id !== userId) {
+      throw new Error("Bạn không có quyền xoá dự án này");
+    }
+    await deletedProject.destroy();
+    return { message: "Dự án đã được xóa thành công" , projectId: [projectId, deletedProject.project_name] };
   } catch (error) {
     console.error("Lỗi xóa dự án(Service):", error);
     throw error;

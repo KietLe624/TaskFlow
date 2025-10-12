@@ -73,20 +73,38 @@ const deleteProject = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ error: "Chưa đăng nhập" });
     }
+
     const projectId = req.params.project_id;
     if (!projectId) {
       return res.status(400).json({ error: "Thiếu project_id" });
     }
-    const deletedProject = await projectService.deleteProject(projectId);
+
+    //Truyền userId vào service
+    const deletedProject = await projectService.deleteProject(
+      projectId,
+      userId
+    );
+
     if (!deletedProject) {
       return res.status(404).json({ error: "Dự án không tồn tại" });
     }
-    return res
-      .status(200)
-      .json({ message: "Xóa dự án thành công", deletedProject });
+
+    return res.status(200).json({
+      message: "Xóa dự án thành công",
+      deletedProject,
+    });
   } catch (error) {
-    console.error("Lỗi xóa dự án:", error);
-    return res.status(500).json({ error: "Lỗi server" });
+    console.error("Lỗi xóa dự án:", error.message);
+
+    if (error.message.includes("không có quyền")) {
+      return res.status(403).json({ error: error.message });
+    }
+
+    if (error.message.includes("Không tìm thấy")) {
+      return res.status(404).json({ error: error.message });
+    }
+
+    return res.status(500).json({ error: "Lỗi server", detail: error.message });
   }
 };
 
@@ -102,8 +120,15 @@ const getAllProjects = async (req, res) => {
       .status(200)
       .json({ message: "Lấy danh sách dự án thành công", projects });
   } catch (error) {
-    console.error("Lỗi lấy danh sách dự án:", error);
-    return res.status(500).json({ error: "Lỗi server" });
+    if (error.message.includes("Không tìm thấy")) {
+      return res.status(404).json({ message: error.message });
+    }
+
+    if (error.message.includes("không có quyền")) {
+      return res.status(403).json({ message: error.message });
+    }
+
+    res.status(500).json({ message: "Lỗi máy chủ", error: error.message });
   }
 };
 
