@@ -30,6 +30,16 @@ const registerUser = async ({ username, email, password }) => {
     password: hashedPassword,
   });
 
+  // Gán role mặc định = 'member'
+  const memberRole = await db.Role.findOne({ where: { name: "member" } });
+
+  if (memberRole) {
+    await db.UserRole.create({
+      user_id: newUser.user_id,
+      role_id: memberRole.role_id,
+    });
+  }
+
   return newUser;
 };
 
@@ -41,7 +51,17 @@ const loginUser = async (email, password) => {
   }
 
   // Tìm người dùng
-  const user = await db.User.findOne({ where: { email } });
+  const user = await db.User.findOne({
+    where: { email },
+    include: [
+      {
+        model: db.Role,
+        as: "roles",
+        attributes: ["name"],
+        through: { attributes: [] },
+      },
+    ],
+  });
   if (!user) {
     throw new Error("Email hoặc mật khẩu không đúng");
   }
@@ -51,10 +71,10 @@ const loginUser = async (email, password) => {
   if (!isPasswordValid) {
     throw new Error("Email hoặc mật khẩu không đúng");
   }
-
+  const roles = user.roles.map((r) => r.name);
   // Tạo JWT token
   const token = jwt.sign(
-    { user_id: user.user_id, email: user.email },
+    { user_id: user.user_id, email: user.email, roles: roles },
     process.env.JWT_SECRET,
     { expiresIn: "1h", algorithm: "HS256" }
   );
@@ -68,6 +88,7 @@ const loginUser = async (email, password) => {
       email: user.email,
       full_name: user.full_name,
       avatar_url: user.avatar_url,
+      roles: roles,
     },
   };
 };

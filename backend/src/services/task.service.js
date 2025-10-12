@@ -1,9 +1,8 @@
 const db = require("../models/index.model");
-const { User, Project, Task, Team } = db;
+const { User, Project, Task } = db;
 
-// Create a new task
-const createTask = async (taskData) => {
-  // Kiểm tra tham số đầu vào
+//  CREATE TASK
+const createTask = async (taskData, userId) => {
   const {
     task_name,
     project_id,
@@ -13,65 +12,92 @@ const createTask = async (taskData) => {
     priority,
     start_date,
     due_date,
-    created_by,
   } = taskData;
-  if (
-    !task_name ||
-    !status ||
-    !priority ||
-    !start_date ||
-    !due_date ||
-    !created_by
-  ) {
-    throw new Error("Thiếu thông tin bắt buộc");
+
+  //  Kiểm tra nghiệp vụ (business validation)
+  if (project_id) {
+    const project = await Project.findByPk(project_id);
+    if (!project) throw new Error("Project không tồn tại");
   }
 
-  console.log("🧩 taskData nhận được:", taskData);
-  const task = await Task.create(taskData);
+  const newTaskData = {
+    task_name,
+    project_id: project_id || null,
+    parent_id: parent_id || null,
+    description: description || "",
+    status,
+    priority,
+    start_date,
+    due_date,
+    created_by: userId,
+  };
+
+  const task = await Task.create(newTaskData);
   return task;
 };
-// Get all tasks
+
+//  GET ALL TASKS
 const getAllTasks = async () => {
-  const tasks = await Task.findAll();
-  return tasks;
+  return await Task.findAll();
 };
-// Get a task by ID
+
+//  GET TASK BY ID
 const getTaskById = async (taskId) => {
-  const task = await Task.findByPk(taskId);
-  return task;
+  return await Task.findByPk(taskId, {
+    include: [
+      { model: Project, as: "project" },
+      {
+        model: User,
+        as: "creator",
+        attributes: ["user_id", "username", "email"],
+      },
+      {
+        model: User,
+        as: "assignees",
+        attributes: ["user_id", "username", "email"],
+        through: { attributes: [] },
+      },
+    ],
+  });
 };
-// Update a task
+
+//  UPDATE TASK
 const updateTask = async (taskId, updatedData) => {
   const task = await Task.findByPk(taskId);
-  if (!task) {
-    throw new Error("Task not found");
-  }
+  if (!task) throw new Error("Không tìm thấy task");
+
   await task.update(updatedData);
   return task;
 };
-// Delete a task
+
+//  DELETE TASK
 const deleteTask = async (taskId) => {
   const task = await Task.findByPk(taskId);
-  if (!task) {
-    throw new Error("Task not found");
-  }
+  if (!task) throw new Error("Không tìm thấy task");
+
   await task.destroy();
-  return;
+  return true;
 };
-// Get tasks by project ID
-const getTasksByProjectId = async (projectId) => {
-  const tasks = await Task.findAll({ where: { projectId } });
-  return tasks;
-};
-// Get tasks by user ID
+
+//  GET TASKS BY USER
 const getTasksByUserId = async (userId) => {
-  const tasks = await Task.findAll({ where: { assignedTo: userId } });
-  return tasks;
-};
-// Get tasks by team ID
-const getTasksByTeamId = async (teamId) => {
-  const tasks = await Task.findAll({ where: { teamId } });
-  return tasks;
+  return await Task.findAll({
+    where: { created_by: userId },
+    include: [
+      { model: Project, as: "project" },
+      {
+        model: User,
+        as: "creator",
+        attributes: ["user_id", "username", "email"],
+      },
+      {
+        model: User,
+        as: "assignees",
+        attributes: ["user_id", "username", "email"],
+        through: { attributes: [] },
+      },
+    ],
+  });
 };
 
 module.exports = {
@@ -80,7 +106,5 @@ module.exports = {
   getTaskById,
   updateTask,
   deleteTask,
-  getTasksByProjectId,
   getTasksByUserId,
-  getTasksByTeamId,
 };

@@ -60,6 +60,11 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "user_id",
       as: "teamMemberships",
     });
+    User.belongsToMany(models.Role, {
+      through: models.UserRole,
+      as: "roles",
+      foreignKey: "user_id",
+    });
   };
   return User;
 };
