@@ -51,6 +51,7 @@ const updateProject = async (req, res) => {
     //gọi service
     const updatedProject = await projectService.updateProject(
       projectId,
+      userId,
       projectData
     );
     if (!updatedProject) {
@@ -62,6 +63,9 @@ const updateProject = async (req, res) => {
       .json({ message: "Cập nhật dự án thành công", updatedProject });
   } catch (error) {
     console.error("Lỗi cập nhật dự án:", error);
+    if (error.message.includes("không có quyền")) {
+      return res.status(403).json({ error: error.message });
+    }
     return res.status(500).json({ error: "Lỗi server" });
   }
 };
@@ -132,11 +136,28 @@ const getAllProjects = async (req, res) => {
   }
 };
 
+// Get projects by user ID
+const getProjectsByUserId = async (req, res) => {
+  try {
+    const userId = req.params.user_id;
+    if (!userId) {
+      return res.status(400).json({ error: "Thiếu user_id" });
+    }
+    const projects = await projectService.getProjectsByUserId(userId);
+    return res
+      .status(200)
+      .json({ message: "Lấy danh sách dự án thành công", projects });
+  } catch (error) {
+    console.error("Lỗi lấy dự án theo user ID:", error);
+    return res.status(500).json({ error: "Lỗi server" });
+  }
+};
+
 module.exports = {
   createProject,
   updateProject,
   deleteProject,
   getAllProjects,
-  //   getProjectsByUserId,
+  getProjectsByUserId,
   //   getProjectById,
 };

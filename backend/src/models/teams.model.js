@@ -31,12 +31,19 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "team_id",
       otherKey: "user_id",
       as: "members",
+      onDelete: "CASCADE",
     });
 
     //1-N: 1 team có nhiều bản ghi team_member
     Team.hasMany(models.TeamMember, {
       foreignKey: "team_id",
       as: "teamMemberships",
+      onDelete: "CASCADE",
+    });
+    Team.hasMany(models.Conversation, {
+      foreignKey: "team_id",
+      as: "conversations",
+      onDelete: "CASCADE",
     });
   };
 

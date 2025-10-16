@@ -31,14 +31,18 @@ const createProject = async (projectData) => {
 };
 
 // Update a project
-const updateProject = async (projectId, projectData) => {
+const updateProject = async (projectId, userId, projectData) => {
   try {
-    const project = await Project.findByPk(projectId);
-    if (!project) {
+    const updateProject = await Project.findByPk(projectId);
+    if (!updateProject) {
       return null; // Project not found
     }
+
+    if (updateProject.owner_id !== userId) {
+      throw new Error("Bạn không có quyền cập nhật dự án này");
+    }
     // Update project fields
-    const updatedProject = await project.update(projectData);
+    const updatedProject = await updateProject.update(projectData);
     return updatedProject;
   } catch (error) {
     console.error("Lỗi cập nhật dự án(Service):", error);
@@ -47,7 +51,7 @@ const updateProject = async (projectId, projectData) => {
 };
 
 // delete projects
-const deleteProject = async (projectId,userId) => {
+const deleteProject = async (projectId, userId) => {
   try {
     const deletedProject = await Project.findByPk(projectId);
     if (!deletedProject) {
@@ -57,7 +61,10 @@ const deleteProject = async (projectId,userId) => {
       throw new Error("Bạn không có quyền xoá dự án này");
     }
     await deletedProject.destroy();
-    return { message: "Dự án đã được xóa thành công" , projectId: [projectId, deletedProject.project_name] };
+    return {
+      message: "Dự án đã được xóa thành công",
+      projectId: [projectId, deletedProject.project_name],
+    };
   } catch (error) {
     console.error("Lỗi xóa dự án(Service):", error);
     throw error;
@@ -102,9 +109,47 @@ const getAllProjects = async () => {
   }
 };
 
+// get projects by user id
+const getProjectsByUserId = async (userId) => {
+  try {
+    const projects = await Project.findAll({
+      where: { owner_id: userId },
+      include: [
+        {
+          model: db.User,
+          as: "owner",
+          attributes: ["user_id", "username", "email", "full_name"],
+        },
+        {
+          model: db.Team,
+          as: "team",
+          attributes: ["team_id", "team_name"],
+        },
+        {
+          model: db.Task,
+          as: "tasks",
+          attributes: [
+            "task_id",
+            "task_name",
+            "status",
+            "priority",
+            "start_date",
+            "due_date",
+          ],
+        },
+      ],
+    });
+    return projects;
+  } catch (error) {
+    console.error("Lỗi lấy dự án theo user_id (Service):", error);
+    throw error;
+  }
+};
+
 module.exports = {
   createProject,
   updateProject,
   deleteProject,
   getAllProjects,
+  getProjectsByUserId,
 };

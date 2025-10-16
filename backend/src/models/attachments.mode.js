@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      
+
       task_id: {
         type: DataTypes.INTEGER,
         allowNull: true,

@@ -1,7 +1,6 @@
-// src/controllers/task.controller.js
 const taskService = require("../services/task.service");
 
-// 📌 CREATE TASK
+// create task
 const createTask = async (req, res) => {
   try {
     const userId = req.user?.user_id;
@@ -20,12 +19,12 @@ const createTask = async (req, res) => {
       task,
     });
   } catch (error) {
-    console.error("❌ Lỗi khi tạo task:", error);
+    console.error("Lỗi khi tạo task:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// 📌 GET ALL TASKS
+// Get all task
 const getAllTasks = async (req, res) => {
   try {
     const tasks = await taskService.getAllTasks();
@@ -35,8 +34,8 @@ const getAllTasks = async (req, res) => {
   }
 };
 
-// 📌 GET TASKS BY USER
-const getTasksByUserId = async (req, res) => {
+  // get task by user id
+  const getTasksByUserId = async (req, res) => {
   try {
     const userId = req.user?.user_id;
     if (!userId) return res.status(401).json({ message: "Chưa đăng nhập" });
@@ -49,7 +48,7 @@ const getTasksByUserId = async (req, res) => {
   }
 };
 
-// 📌 GET TASK BY ID
+// get task by id
 const getTaskById = async (req, res) => {
   try {
     const userId = req.user?.user_id;
@@ -65,7 +64,7 @@ const getTaskById = async (req, res) => {
   }
 };
 
-// 📌 PATCH / UPDATE TASK
+// update task 
 const updateTask = async (req, res) => {
   try {
     const userId = req.user?.user_id;
@@ -85,12 +84,12 @@ const updateTask = async (req, res) => {
       task: updatedTask,
     });
   } catch (error) {
-    console.error("❌ Lỗi khi cập nhật task:", error);
+    console.error("Lỗi khi cập nhật task:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// 📌 DELETE TASK
+// delete task
 const deleteTask = async (req, res) => {
   try {
     const userId = req.user?.user_id;
@@ -104,7 +103,7 @@ const deleteTask = async (req, res) => {
       result,
     });
   } catch (error) {
-    console.error("❌ Lỗi khi xóa task:", error);
+    console.error("Lỗi khi xóa task:", error);
     res.status(500).json({ message: error.message });
   }
 };
