@@ -1,33 +1,95 @@
-const { Attachment } = require("../models");
+const attachmentService = require("../services/attachment.service");
 
 const uploadAttachment = async (req, res) => {
   try {
-    const { task_id, message_id } = req.body;
-    const user_id = req.user?.user_id || 1; // tạm hardcode user_id = 1 nếu chưa có auth
+    if (!req.file) return res.status(400).json({ message: "Chưa có file!" });
 
-    if (!req.file) {
-      return res.status(400).json({ message: "Chưa chọn file!" });
-    }
+    const created_by = req.user?.user_id;
+    const result = await attachmentService.createAttachment(
+      req.file,
+      req.body,
+      created_by,
+      req.s3Key,
+      req.fileUrl
+    );
 
-    // Lưu metadata vào DB
-    const attachment = await Attachment.create({
-      task_id: task_id || null,
-      message_id: message_id || null,
-      file_name: req.file.originalname,
-      file_url: req.file.key, // ✅ lưu key S3, không lưu URL
-      file_size: req.file.size,
-      created_by: user_id,
-      created_at: new Date(),
-    });
-
-    res.status(200).json({
-      message: "Upload thành công!",
-      data: attachment,
-    });
+    res.status(200).json(result);
   } catch (error) {
-    console.error("❌ Lỗi upload attachment:", error.message);
+    console.error("Lỗi uploadAttachment (Controller):", error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
-module.exports = { uploadAttachment };
+const getAttachmentsByTask = async (req, res) => {
+  try {
+    const { task_id } = req.params;
+    const attachments = await attachmentService.getAttachmentsByTask(task_id);
+    res.status(200).json({
+      message: "Lấy danh sách file đính kèm thành công!",
+      data: attachments,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getAttachmentsByMessage = async (req, res) => {
+  try {
+    const { message_id } = req.params;
+    const attachments = await attachmentService.getAttachmentsByMessage(
+      message_id
+    );
+    res.status(200).json({
+      message: "Lấy danh sách file đính kèm thành công!",
+      data: attachments,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* 
+xử lý chức năng xoá file đính kèm
+1. Xoá tạm thời
+2. Xoá vĩnh viễn trong bucket 
+*/
+
+// chức năng xoá file ở database
+const deleteAttachment = async (req, res) => {
+  try {
+    const { attach_id } = req.params;
+    const user_id = req.user?.user_id;
+    const result = await attachmentService.deleteAttachment(attach_id, user_id);
+    res.status(200).json({
+      message: "Xoá file đính kèm thành công!",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Lỗi khi xoá file (Controller):", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deleteAttachmentS3 = async (req, res) => {
+  try {
+    const { attach_id } = req.params;
+    const user_id = req.user?.user_id;
+    const result = await attachmentService.deleteAttachmentS3(
+      attach_id,
+      user_id
+    );
+    res
+      .status(200)
+      .json({ message: "Xoá file đính kèm khỏi S3 thành công!", data: result });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  uploadAttachment,
+  getAttachmentsByTask,
+  getAttachmentsByMessage,
+  deleteAttachment,
+  deleteAttachmentS3,
+};

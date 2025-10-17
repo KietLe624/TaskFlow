@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const uploadS3 = require("../../middleware/upload.middleware");
-const { uploadToS3 } = require("../../controllers/upload.controller");
+const { upload, uploadToS3 } = require("../../middleware/upload.middleware");
+const { uploadFile } = require("../../controllers/upload.controller");
 
 // POST /api/test/upload
-router.post("/test/upload", uploadS3.single("file"), uploadToS3);
+router.post("/test/upload", upload.single("file"), uploadToS3, uploadFile);
 
 module.exports = router;

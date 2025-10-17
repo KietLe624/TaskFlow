@@ -60,15 +60,14 @@ const teamApi = require("./src/routers/api-route/team.api");
 const testApi = require("./src/routers/api-route/test.api");
 const attachmentRoutes = require("./src/routers/api-route/attachment.api");
 
-app.use("/api", attachmentRoutes);
-
-app.use(API_PREFIX, authApi); // Import route auth
-app.use(API_PREFIX, dashboardApi); // Import route dashboard
-app.use(API_PREFIX, taskApi); // Import route task
-app.use(API_PREFIX, userApi); // Import route user
-app.use(API_PREFIX, projectApi); // Import route project
-app.use(API_PREFIX, teamApi); // Import route team
-app.use(API_PREFIX, testApi)
+app.use(`${API_PREFIX}/auth`, authApi);
+app.use(`${API_PREFIX}/dashboard`, dashboardApi);
+app.use(`${API_PREFIX}/task`, taskApi);
+app.use(`${API_PREFIX}/user`, userApi);
+app.use(`${API_PREFIX}/project`, projectApi);
+app.use(`${API_PREFIX}/team`, teamApi);
+app.use(`${API_PREFIX}/test`, testApi);
+app.use(`${API_PREFIX}/attachment`, attachmentRoutes);
 // Test route
 app.get(`${API_PREFIX}/get`, (req, res) => {
   res.json({ message: "Hello from server!" });

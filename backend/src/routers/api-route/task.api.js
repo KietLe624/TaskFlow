@@ -17,13 +17,14 @@ const {
   updateTask,
   deleteTask,
 } = require("../../controllers/task.controller");
+const { authenticateToken } = require("../../middleware/auth.middleware");
 
 // Define routes
-router.get("/getAllTasks", getAllTasks);
-router.post("/createTask", createTask);
-router.get("/getTasksByUserId/:user_id", getTasksByUserId);
-router.get("/getTaskById/:task_id", getTaskById);
-router.patch("/updateTask/:task_id", updateTask);
-router.delete("/deleteTask/:task_id", deleteTask);
+router.get("/getAllTasks", authenticateToken, getAllTasks);
+router.post("/createTask", authenticateToken, createTask);
+router.get("/getTasksByUserId/:user_id", authenticateToken, getTasksByUserId);
+router.get("/getTaskById/:task_id", authenticateToken, getTaskById);
+router.patch("/updateTask/:task_id", authenticateToken, updateTask);
+router.delete("/deleteTask/:task_id", authenticateToken, deleteTask);
 
 module.exports = router;

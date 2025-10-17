@@ -1,17 +1,14 @@
-const uploadToS3 = async (req, res) => {
+const uploadFile = async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ message: "Chưa chọn file!" });
-
-    return res.status(200).json({
-      message: "Upload thành công",
-      file_key: req.file.key,      // ✅ key trong bucket
-      file_url: req.file.location, // URL public (nếu bucket cho phép)
-      bucket: req.file.bucket,
+    res.status(200).json({
+      message: "Upload thành công (AWS SDK v3)",
+      file_key: req.s3Key,
+      file_url: req.fileUrl,
     });
   } catch (error) {
-    console.error("❌ Lỗi:", error);
+    console.error("❌ Lỗi controller:", error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
-module.exports = { uploadToS3 };
+module.exports = { uploadFile };

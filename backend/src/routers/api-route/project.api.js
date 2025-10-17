@@ -20,10 +20,10 @@ const {
 
 // Define routes
 
-router.get("/getAllProjects", getAllProjects);
-router.post("/createProject", createProject);
-router.patch("/updateProject/:project_id", updateProject);
+router.get("/getAllProjects", authenticateToken, getAllProjects);
+router.post("/createProject", authenticateToken, createProject);
+router.patch("/updateProject/:project_id", authenticateToken, updateProject);
 router.delete("/deleteProject/:project_id", authenticateToken, deleteProject);
-router.get("/getProjectsByUserId/:user_id", getProjectsByUserId);
+router.get("/getProjectsByUserId/:user_id", authenticateToken, getProjectsByUserId);
 
 module.exports = router;
