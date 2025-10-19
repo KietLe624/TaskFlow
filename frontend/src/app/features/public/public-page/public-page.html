@@ -1,0 +1,91 @@
+<app-header></app-header>
+<!-- Hero -->
+<section class="flex flex-col md:flex-row items-center justify-between px-6 md:px-20 py-16">
+  <div class="md:w-1/2 space-y-6">
+    <h1 class="text-5xl font-extrabold leading-tight text-gray-900 dark:text-gray-100 tracking-tight">
+      Quản lý công việc thông minh cùng
+      <span class="text-primary-500">TaskFlow</span>
+    </h1>
+    <p class="text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
+      Tổ chức, cộng tác và theo dõi tiến độ dự án dễ dàng chỉ trong một nền tảng duy nhất.
+    </p>
+  </div>
+  <div class="flex flex-wrap gap-4">
+    <a routerLink="/register"
+      class="px-6 py-3 rounded-xl font-medium text-white bg-primary-600 hover:bg-primary-700 shadow-md hover:shadow-lg transition-all duration-200">
+      Bắt đầu miễn phí
+    </a>
+    <a routerLink="/login" class="px-6 py-3 rounded-xl font-medium border border-gray-300 dark:border-gray-700
+                text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800
+                hover:border-primary-500 hover:text-primary-500 transition-all duration-200">
+      Đăng nhập
+    </a>
+  </div>
+</section>
+
+<!-- Features -->
+<section id="features" class="py-20 bg-gray-50 dark:bg-gray-900">
+  <div class="text-center mb-16">
+    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100">Tính năng nổi bật</h2>
+    <p class="text-gray-500 dark:text-gray-400 mt-3">
+      Tất cả công cụ bạn cần để làm việc hiệu quả trong cùng một nền tảng.
+    </p>
+  </div>
+
+  <div class="grid gap-10 md:grid-cols-4 px-6 md:px-16">
+    <!-- Feature card -->
+    <div
+      class="group p-8 bg-white dark:bg-gray-800 rounded-2xl shadow hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+      <div class="flex justify-center mb-4">
+        <i class="fas fa-tasks text-primary-500 text-4xl group-hover:scale-110 transition-transform duration-200"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Quản lý công việc</h3>
+      <p class="text-gray-500 dark:text-gray-400 text-sm">
+        Tạo, gán và theo dõi tiến độ dễ dàng trong thời gian thực.
+      </p>
+    </div>
+
+    <div
+      class="group p-8 bg-white dark:bg-gray-800 rounded-2xl shadow hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+      <div class="flex justify-center mb-4">
+        <i class="fas fa-comments text-primary-500 text-4xl group-hover:scale-110 transition-transform duration-200"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Giao tiếp nhóm</h3>
+      <p class="text-gray-500 dark:text-gray-400 text-sm">
+        Thảo luận trực tiếp, chia sẻ file và cập nhật nhanh chóng.
+      </p>
+    </div>
+
+    <div
+      class="group p-8 bg-white dark:bg-gray-800 rounded-2xl shadow hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+      <div class="flex justify-center mb-4">
+        <i class="fas fa-chart-line text-primary-500 text-4xl group-hover:scale-110 transition-transform duration-200"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Theo dõi tiến độ</h3>
+      <p class="text-gray-500 dark:text-gray-400 text-sm">
+        Biểu đồ, deadline và thống kê giúp kiểm soát dự án hiệu quả.
+      </p>
+    </div>
+
+    <div
+      class="group p-8 bg-white dark:bg-gray-800 rounded-2xl shadow hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+      <div class="flex justify-center mb-4">
+        <i class="fas fa-bell text-primary-500 text-4xl group-hover:scale-110 transition-transform duration-200"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Thông báo thông minh</h3>
+      <p class="text-gray-500 dark:text-gray-400 text-sm">
+        Tự động nhắc nhở, tránh bỏ lỡ các công việc quan trọng.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- About -->
+<section id="about" class="py-20 px-6 md:px-16 text-center">
+  <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-6">Về chúng tôi</h2>
+  <p class="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+    TaskFlow được phát triển với mục tiêu tạo ra một nền tảng quản lý công việc
+    tối giản, hiệu quả và thân thiện với người dùng.
+  </p>
+</section>
+<app-footer></app-footer>

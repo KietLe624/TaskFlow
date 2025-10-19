@@ -44,15 +44,17 @@ const registerUser = async ({ username, email, password }) => {
 };
 
 // Func Login
-const loginUser = async (email, password) => {
-  // Kiểm tra đầu vào
-  if (!email || !password) {
+// Func Login (Email hoặc Username)
+const loginUser = async (loginInput, password) => {
+  if (!loginInput || !password) {
     throw new Error("Thiếu thông tin đăng nhập");
   }
 
-  // Tìm người dùng
+  // Tìm người dùng theo email hoặc username
   const user = await db.User.findOne({
-    where: { email },
+    where: {
+      [db.Sequelize.Op.or]: [{ email: loginInput }, { username: loginInput }],
+    },
     include: [
       {
         model: db.Role,
@@ -62,16 +64,20 @@ const loginUser = async (email, password) => {
       },
     ],
   });
+
   if (!user) {
-    throw new Error("Email hoặc mật khẩu không đúng");
+    throw new Error("Email hoặc tên đăng nhập không đúng");
   }
 
   // Kiểm tra mật khẩu
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
-    throw new Error("Email hoặc mật khẩu không đúng");
+    throw new Error("Mật khẩu không đúng");
   }
+
+  // Lấy roles
   const roles = user.roles.map((r) => r.name);
+
   // Tạo JWT token
   const token = jwt.sign(
     { user_id: user.user_id, email: user.email, roles: roles },
@@ -79,7 +85,6 @@ const loginUser = async (email, password) => {
     { expiresIn: "1h", algorithm: "HS256" }
   );
 
-  // Trả về token và thông tin user
   return {
     token,
     user: {
@@ -95,16 +100,13 @@ const loginUser = async (email, password) => {
 
 // Func Change Password
 const changePassword = async (email, oldPassword, newPassword) => {
-  // Kiểm tra tham số đầu vào
   if (!email || !oldPassword || !newPassword) {
     throw new Error("Thiếu thông tin cần thiết.");
   }
-  // Tìm user theo email
   const user = await db.User.findOne({ where: { email } });
   if (!user) {
     throw new Error("Người dùng không tồn tại.");
   }
-  // So sánh mật khẩu cũ
   const isPasswordValid = await bcrypt.compare(
     String(oldPassword),
     String(user.password)
@@ -113,37 +115,32 @@ const changePassword = async (email, oldPassword, newPassword) => {
   if (!isPasswordValid) {
     throw new Error("Mật khẩu hiện tại không đúng.");
   }
-  // Kiểm tra mật khẩu mới hợp lệ
   if (String(newPassword).length < 6) {
     throw new Error("Mật khẩu mới phải có ít nhất 6 ký tự.");
   }
-  // Mã hoá mật khẩu mới
   const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-  // Cập nhật mật khẩu mới
   user.password = hashedNewPassword;
   await user.save();
 };
 
-// Func Forgot Password
-
 const forgotPassword = async (email) => {
-  // Kiểm tra email
   if (!email) {
     throw new Error("Thiếu thông tin email.");
   }
 
-  // Tìm user theo email
   const user = await db.User.findOne({ where: { email } });
   if (!user) {
-    throw new Error("Người dùng không tồn tại.");
+    console.warn(
+      `[Forgot Password] Yêu cầu reset cho email không tồn tại: ${email}`
+    );
+    return null;
   }
-
-  // Tạo token đặt lại mật khẩu
   const resetToken = jwt.sign(
     { user_id: user.user_id, email: user.email },
-    process.env.JWT_SECRET,
-    { expiresIn: "1h", algorithm: "HS256" }
+    process.env.JWT_SECRET, // Sử dụng key riêng cho reset mật khẩu
+    { expiresIn: "1h", algorithm: "HS256" } // Token chỉ nên sống 1 giờ
   );
+  return resetToken;
 };
 
 module.exports = {

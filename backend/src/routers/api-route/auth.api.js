@@ -1,12 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const cors = require("cors");
-const bodyParser = require("body-parser");
-
-// Middleware
-router.use(bodyParser.json());
-router.use(bodyParser.urlencoded({ extended: true }));
-router.use(cors());
+const { authenticateToken } = require("../../middleware/auth.middleware");
 
 // Import controller auth
 const {
@@ -19,7 +13,7 @@ const {
 // Auth routes
 router.post("/register", register);
 router.post("/login", login);
-router.patch("/change-password", changePassword);
-router.post("/forgot-password", forgotPassword);
+router.patch("/change-password", authenticateToken, changePassword);
+router.post("/forgot-password", authenticateToken, forgotPassword);
 
 module.exports = router;

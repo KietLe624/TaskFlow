@@ -18,9 +18,9 @@ const register = async (req, res) => {
 // Controller Login
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    // Gọi service đăng nhập
-    const { token, user } = await authService.loginUser(email, password);
+    const { loginInput, password } = req.body;
+
+    const { token, user } = await authService.loginUser(loginInput, password);
 
     res.status(200).json({
       message: "Đăng nhập thành công",
@@ -32,6 +32,7 @@ const login = async (req, res) => {
     res.status(400).json({ message: error.message || "Lỗi máy chủ" });
   }
 };
+
 // Controller Change Password
 const changePassword = async (req, res) => {
   try {

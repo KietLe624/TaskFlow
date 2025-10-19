@@ -1,12 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const cors = require("cors");
-const bodyParser = require("body-parser");
 
-// Middleware
-router.use(bodyParser.json());
-router.use(bodyParser.urlencoded({ extended: true }));
-router.use(cors());
 // Import middleware
 const { authenticateToken } = require("../../middleware/auth.middleware");
 

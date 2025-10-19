@@ -1,13 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const cors = require("cors");
-const bodyParser = require("body-parser");
 const { authenticateToken } = require("../../middleware/auth.middleware");
 
-// Middleware
-router.use(bodyParser.json());
-router.use(bodyParser.urlencoded({ extended: true }));
-router.use(cors());
 
 // Import controller project
 const {

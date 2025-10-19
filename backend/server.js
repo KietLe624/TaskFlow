@@ -4,17 +4,15 @@ const cors = require("cors"); // Import cors để xử lý CORS
 const bodyParser = require("body-parser"); // Import body-parser để phân tích dữ liệu từ
 const http = require("http"); // Import http để tạo server
 const { Server } = require("socket.io"); // Import socket.io để xử lý WebSocket
-// ===== App setup =====
 app.use(express.json());
 app.use(cors({ origin: process.env.CORS_ORIGIN || "*" })); // localhost:4200 --> Angular
 
 const API_PREFIX = process.env.API_PREFIX || "/api";
-const path = require("path");
+const ADMIN_PREFIX = process.env.ADMIN_PREFIX || "/admin";
+
+// const path = require("path");
 // Load .env file
 require("dotenv").config({ path: "../.env" });
-
-// cấu hình db
-const connection = require("./src/config/db.config"); // Import cấu hình database
 
 // Tạo HTTP server từ Express
 const server = http.createServer(app);
@@ -47,7 +45,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// ===== Server listen =====
 const PORT = process.env.PORT || 3000;
 
 // Import route user
@@ -68,6 +65,15 @@ app.use(`${API_PREFIX}/project`, projectApi);
 app.use(`${API_PREFIX}/team`, teamApi);
 app.use(`${API_PREFIX}/test`, testApi);
 app.use(`${API_PREFIX}/attachment`, attachmentRoutes);
+
+// route admin
+const roleApi = require("./src/routers/ad-route/role.api");
+
+app.use(`${ADMIN_PREFIX}/role`, roleApi);
+
+
+
+
 // Test route
 app.get(`${API_PREFIX}/get`, (req, res) => {
   res.json({ message: "Hello from server!" });

@@ -8,7 +8,7 @@ const getAllUsers = async (req, res) => {
     console.error("Lỗi khi lấy danh sách người dùng:", error);
     res.status(500).json({ message: "Lỗi máy chủ" });
   }
-}; 
+};
 
 // func get user by id
 const getUserById = async (req, res) => {
@@ -50,10 +50,28 @@ const deleteUser = async (req, res) => {
   }
 };
 
+// change role
+const changeUserRole = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const { name } = req.body;
+    const roleName = name;
+
+    const updatedUser = await userService.changeUserRole(user_id, roleName);
+    res.status(200).json({
+      message: `Thay đổi vai trò người dùng thành công: ${updatedUser.username} bây giờ là ${roleName}`,
+    });
+  } catch (error) {
+    console.error("Lỗi khi thay đổi vai trò người dùng:", error);
+    res.status(500).json({ message: "Lỗi máy chủ" });
+  }
+};
+
 // export module
 module.exports = {
   getAllUsers,
   getUserById,
   deleteUser,
   updateUser,
+  changeUserRole,
 };

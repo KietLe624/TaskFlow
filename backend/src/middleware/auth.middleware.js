@@ -1,9 +1,7 @@
 const jwt = require("jsonwebtoken");
 const db = require("../models/index.model");
 const User = db.User;
-
-// Thay 'YOUR_SECRET_KEY' bằng một chuỗi bí mật của riêng bạn
-const SECRET_KEY = process.env.JWT_SECRET;  
+const SECRET_KEY = process.env.JWT_SECRET;
 
 const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -21,8 +19,6 @@ const authenticateToken = async (req, res, next) => {
       });
     });
 
-    console.log("User payload:", userPayload); // Debug payload
-
     if (!userPayload || !userPayload.user_id) {
       return res
         .status(403)
@@ -34,7 +30,7 @@ const authenticateToken = async (req, res, next) => {
       return res.status(404).json({ message: "Người dùng không tồn tại." });
     }
 
-    req.user = user; // Gán instance User
+    req.user = user;
     next();
   } catch (error) {
     return res
@@ -43,35 +39,53 @@ const authenticateToken = async (req, res, next) => {
   }
 };
 
-const isAdmin = async (req, res, next) => {
-  try {
-    console.log("req.user_id:", req.user_id); // Debug req.user
-    console.log("req.user:", req.user); // Debug req.user
-    if (!req.user || !req.user.user_id) {
-      return res
-        .status(400)
-        .send({ message: "Thông tin người dùng không hợp lệ." });
-    }
-
-    const roles = await req.user.getRoles();
-    for (let i = 0; i < roles.length; i++) {
-      if (roles[i].name === "admin") {
-        next();
-        return;
+const authorize = (allowedRoles) => {
+  // chuyển thành mảng
+  const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+  return async (req, res, next) => {
+    try {
+      if (!req.user) {
+        return res.status(401).send({
+          message:
+            "Chưa xác thực người dùng (cần chạy authenticateToken trước).",
+        });
       }
+
+      const userRoles = await req.user.getRoles();
+      const userRoleNames = userRoles.map((role) => role.name);
+
+      // Kiểm tra phân quyền
+      const hasPermission = userRoleNames.some((name) => roles.includes(name));
+
+      if (hasPermission) {
+        next();
+      } else {
+        // không có quyền truy cập
+        console.warn(
+          `Từ chối truy cập cho user: ${
+            req.user.email
+          }. Yêu cầu quyền: [${roles.join(
+            ", "
+          )}]. Người dùng có quyền: [${userRoleNames.join(", ")}]`
+        );
+        return res.status(403).send({
+          message: `Yêu cầu quyền: ${roles.join(" hoặc ")}!`,
+        });
+      }
+    } catch (error) {
+      console.error("Lỗi xác thực quyền:", error);
+      return res.status(500).send({
+        message: "Không thể xác thực quyền.",
+        error: error.message,
+      });
     }
-    console.log(
-      "User roles:",
-      roles.map((role) => role.name)
-    );
-    return res.status(403).send({ message: "Yêu cầu quyền Admin!" });
-  } catch (error) {
-    console.error("Lỗi xác thực quyền Admin:", error);
-    return res.status(500).send({
-      message: "Không thể xác thực quyền Admin.",
-      error: error.message,
-    });
-  }
+  };
 };
 
-module.exports = { authenticateToken, isAdmin };
+const isAdmin = authorize("admin");
+
+module.exports = {
+  authenticateToken,
+  authorize,
+  isAdmin,
+};

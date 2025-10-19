@@ -1,5 +1,5 @@
 const db = require("../models/index.model");
-const User = db.User; // Lấy model User từ đối tượng db
+const { User, Role, UserRole } = db; // Lấy model User từ đối tượng db
 
 // func get all users
 const getAllUsers = async () => {
@@ -70,10 +70,35 @@ const deleteUser = async (user_id) => {
   }
 };
 
+// change user role
+const changeUserRole = async (user_id, roleName) => {
+  try {
+    const user = await User.findByPk(user_id);
+    if (!user) {
+      throw new Error("Người dùng không tồn tại");
+    }
+    const role = await Role.findOne({ where: { name: roleName } });
+    if (!role) {
+      throw new Error("Vai trò không tồn tại");
+    }
+    console.log("role:", role);
+    if (user && role) {
+      await user.addRole(role);
+    } else {
+      throw new Error("User hoặc Role không tìm thấy.");
+    }
+    return user;
+    
+  } catch (error) {
+    console.error("Lỗi khi thay đổi vai trò người dùng:", error);
+    throw error;
+  }
+};
 // export module
 module.exports = {
   getAllUsers,
   getUserById,
   deleteUser,
   updateUser,
+  changeUserRole,
 };

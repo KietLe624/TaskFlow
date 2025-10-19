@@ -7,10 +7,10 @@ const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 //  Cấu hình multer để lưu tạm file local trước khi đẩy lên S3
 const upload = multer({
   dest: path.join(__dirname, "../../uploads/temp"),
-  limits: { fileSize: 20 * 1024 * 1024 }, // giới hạn 20MB
+  limits: { fileSize: 20 * 1024 * 1024 },
 });
 
-//  Khởi tạo S3Client (SDK v3)
+// Tạo S3Client
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
@@ -19,7 +19,7 @@ const s3 = new S3Client({
   },
 });
 
-// Middleware upload file từ local lên S3
+// Upload  file lên S3 
 const uploadToS3 = async (req, res, next) => {
   try {
     if (!req.file) {
@@ -43,8 +43,6 @@ const uploadToS3 = async (req, res, next) => {
 
     // Xóa file local sau khi upload xong
     fs.unlinkSync(filePath);
-
-    // Gắn thông tin để controller xử lý DB
     req.s3Key = key;
     req.fileUrl = `s3://${process.env.AWS_BUCKET_NAME}/${key}`;
     next();
