@@ -1,5 +1,7 @@
 import { Component, inject, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { ThemeModeService } from '../../core/services/theme/theme-mode';
+
 
 @Component({
   selector: 'app-theme-toggle',
@@ -9,29 +11,19 @@ import { isPlatformBrowser } from '@angular/common';
 })
 export class ThemeToggle {
   private platformId = inject(PLATFORM_ID);
-  isDark = signal(false); // Angular signal, reactive state
+  themeService = inject(ThemeModeService);
+
+  isDark = signal(this.themeService.getIsDarkMode());
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
       const savedTheme = localStorage.getItem('theme');
       this.isDark.set(savedTheme === 'dark');
-      this.applyTheme();
     }
   }
 
   toggleTheme() {
-    this.isDark.update(v => !v);
-    this.applyTheme();
-
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem('theme', this.isDark() ? 'dark' : 'light');
-    }
-  }
-
-  private applyTheme() {
-    if (isPlatformBrowser(this.platformId)) {
-      const root = document.documentElement;
-      root.classList.toggle('dark', this.isDark());
-    }
+    this.themeService.toggleTheme();
+    this.isDark.set(this.themeService.getIsDarkMode());
   }
 }

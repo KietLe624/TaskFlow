@@ -3,17 +3,16 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
-import { Footer } from "../../../layout/footer/footer";
-import { Header } from "../../../layout/header/header";
-
+import { Footer } from "../../../../layout/footer/footer";
+import { Header } from "../../../../layout/header/header";
 
 @Component({
   selector: 'app-public-page',
   imports: [CommonModule, RouterModule, Footer, Header],
   templateUrl: './public-page.html',
-  styleUrl: './public-page.css'
+  styleUrls: ['./public-page.css']
 })
-export class PublicPage {
+export class PublicPageComponent {
   private platformId = inject(PLATFORM_ID);
   theme = 'light';
 

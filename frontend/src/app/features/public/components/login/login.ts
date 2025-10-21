@@ -1,19 +1,18 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { AuthService } from '../../../core/services/auth'
-import { AuthResponse, LoginRequest, RegisterRequest, ChangePasswordRequest, ForgotPasswordRequest } from '../../../models/users';
-import { Footer } from "../../../layout/footer/footer";
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../../../core/services/auth/auth'
+import { Footer } from "../../../../layout/footer/footer";
 
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, FormsModule, Footer],
+  imports: [CommonModule, FormsModule, Footer, RouterModule],
   templateUrl: './login.html',
   styleUrls: ['./login.css']
 })
-export class Login {
+export class LoginComponent {
 
   constructor(private authService: AuthService, private router: Router) { }
 
@@ -21,6 +20,7 @@ export class Login {
   password: string = '';
 
   errorMessage: string = '';
+
   onLogin() {
     this.errorMessage = '';
     this.authService.login({
@@ -33,7 +33,6 @@ export class Login {
         this.router.navigate(['/dashboard']).then(() => {
           console.log('Chuyển hướng đến trang dashboard');
         });
-
       },
       error: (err) => {
         this.errorMessage = err.error.message || 'Đăng nhập thất bại. Vui lòng thử lại.';

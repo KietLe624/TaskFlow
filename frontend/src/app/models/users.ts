@@ -37,7 +37,11 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
-// Quên mật khẩu
 export interface ForgotPasswordRequest {
   email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
 }

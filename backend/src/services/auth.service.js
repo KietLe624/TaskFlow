@@ -43,7 +43,6 @@ const registerUser = async ({ username, email, password }) => {
   return newUser;
 };
 
-// Func Login
 // Func Login (Email hoặc Username)
 const loginUser = async (loginInput, password) => {
   if (!loginInput || !password) {
@@ -123,6 +122,9 @@ const changePassword = async (email, oldPassword, newPassword) => {
   await user.save();
 };
 
+const RESET_SECRET = process.env.JWT_RESET_SECRET; // sử dụng key riêng cho reset password
+
+// Func Forgot Password
 const forgotPassword = async (email) => {
   if (!email) {
     throw new Error("Thiếu thông tin email.");
@@ -135,12 +137,36 @@ const forgotPassword = async (email) => {
     );
     return null;
   }
+  // Tạo token reset với thời hạn ngắn hơn so với key chính
   const resetToken = jwt.sign(
     { user_id: user.user_id, email: user.email },
-    process.env.JWT_SECRET, // Sử dụng key riêng cho reset mật khẩu
-    { expiresIn: "1h", algorithm: "HS256" } // Token chỉ nên sống 1 giờ
+    RESET_SECRET, 
+    { expiresIn: "15m" } // time 15p
   );
   return resetToken;
+};
+
+const resetPassword = async (token, newPassword) => {
+  let userPayload;
+
+  try {
+    userPayload = jwt.verify(token, RESET_SECRET);
+  } catch (error) {
+    throw new Error("Token không hợp lệ hoặc đã hết hạn.");
+  }
+
+  const { user_id } = userPayload;
+  const user = await db.User.findByPk(user_id);
+  if (!user) {
+    throw new Error("Người dùng không còn tồn tại.");
+  }
+  if (newPassword.length < 6) {
+    throw new Error("Mật khẩu mới phải có ít nhất 6 ký tự.");
+  }
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  user.password = hashedPassword;
+  await user.save();
 };
 
 module.exports = {
@@ -148,4 +174,5 @@ module.exports = {
   loginUser,
   changePassword,
   forgotPassword,
+  resetPassword,
 };

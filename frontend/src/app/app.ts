@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { ThemeModeService } from './core/services/theme/theme-mode';
 
 
 @Component({
@@ -9,5 +10,5 @@ import { RouterOutlet } from '@angular/router';
   styleUrls: ['./app.css']
 })
 export class AppComponent {
-  protected title = 'frontend';
+  constructor(private themeService: ThemeModeService) {}
 }

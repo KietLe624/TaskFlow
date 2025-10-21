@@ -1,0 +1,138 @@
+<div class="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
+  <main class="flex-1 flex items-center justify-center p-4">
+    <div class="w-full max-w-md space-y-8">
+      <div class="text-center">
+        <h1
+          class="text-3xl font-bold text-gray-900 sm:text-4xl dark:text-white"
+        >
+          Tạo tài khoản
+        </h1>
+        <p class="mt-4 text-gray-500 dark:text-gray-400">
+          Chào mừng bạn đến <b class="text-primary-500">TaskFlow</b>! Vui lòng điền thông tin để đăng ký.
+        </p>
+      </div>
+
+      <form (ngSubmit)="onRegister()" class="space-y-6">
+        <div>
+          <label for="username" class="sr-only">Tên đăng nhập</label>
+          <div class="relative">
+            <input
+              [(ngModel)]="username"
+              name="username"
+              type="text"
+              required
+              class="w-full rounded-lg border-gray-200 bg-white p-4 text-sm shadow-sm
+                     focus:outline-none focus:ring-2 focus:ring-primary-500
+                     px-10 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500"
+              placeholder="Nhập tên đăng nhập"
+            />
+            <span
+              class="absolute inset-y-0 start-0 grid place-content-center px-4"
+            >
+              <i class="fas fa-user text-gray-400 dark:text-gray-500"></i>
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <label for="email" class="sr-only">Email</label>
+          <div class="relative">
+            <input
+              [(ngModel)]="email"
+              name="email"
+              type="email"
+              required
+              class="w-full rounded-lg border-gray-200 bg-white p-4 text-sm shadow-sm
+                     focus:outline-none focus:ring-2 focus:ring-primary-500
+                     px-10 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500"
+              placeholder="Nhập email của bạn"
+            />
+            <span
+              class="absolute inset-y-0 start-0 grid place-content-center px-4"
+            >
+              <i class="fas fa-envelope text-gray-400 dark:text-gray-500"></i>
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <label for="password" class="sr-only">Mật khẩu</label>
+          <div class="relative">
+            <input
+              [(ngModel)]="password"
+              name="password"
+              type="password"
+              required
+              class="w-full rounded-lg border-gray-200 bg-white p-4 text-sm shadow-sm
+                     focus:outline-none focus:ring-2 focus:ring-primary-500
+                     px-10 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500"
+              placeholder="Nhập mật khẩu"
+            />
+            <span
+              class="absolute inset-y-0 end-0 grid place-content-center px-4"
+            >
+              <i class="fas fa-eye text-gray-400 dark:text-gray-500"></i>
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <label for="confirmPassword" class="sr-only"
+            >Xác nhận Mật khẩu</label
+          >
+          <div class="relative">
+            <input
+              [(ngModel)]="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              required
+              class="w-full rounded-lg border-gray-200 bg-white p-4 text-sm shadow-sm
+                     focus:outline-none focus:ring-2 focus:ring-primary-500
+                     px-10 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500"
+              placeholder="Xác nhận mật khẩu"
+            />
+            <span
+              class="absolute inset-y-0 end-0 grid place-content-center px-4"
+            >
+              <i class="fas fa-eye text-gray-400 dark:text-gray-500"></i>
+            </span>
+          </div>
+        </div>
+
+        <div
+          *ngIf="errorMessage"
+          class="text-center text-red-500 dark:text-red-400 text-sm font-bold py-1"
+        >
+          {{ errorMessage }}
+        </div>
+
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Đã có tài khoản?
+            <a
+              routerLink="/login"
+              class="underline text-gray-700 font-medium hover:text-primary-600 cursor-pointer
+                     dark:text-gray-300 dark:hover:text-primary-500"
+              >Đăng nhập</a
+            >
+          </p>
+          <p>
+
+          </p>
+        </div>
+        <div class="">
+          <button
+            type="submit"
+            class="w-full rounded-lg bg-primary-600 px-6 py-3 text-sm font-medium text-white shadow-md
+                   hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+                   transition-colors
+                   dark:focus:ring-offset-gray-900"
+          >
+            Đăng ký
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+  <app-footer></app-footer>
+</div>

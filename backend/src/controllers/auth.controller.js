@@ -1,4 +1,5 @@
 const authService = require("../services/auth.service");
+const emailService = require("../services/mail.service");
 
 // Controller Register
 const register = async (req, res) => {
@@ -47,18 +48,49 @@ const changePassword = async (req, res) => {
 };
 
 const forgotPassword = async (req, res) => {
-  // Implementation for forgot password can be added here
   const { email } = req.body;
   try {
-    const user = await db.User.findOne({ where: { email } });
-    if (!user) {
-      return res.status(400).json({ message: "Người dùng không tồn tại" });
+    const resetToken = await authService.forgotPassword(email);
+    // kiểm tra nếu có token thì gửi email
+    if (resetToken) {
+      // 3. Tạo link và gửi mail (dùng Mailtrap/Nodemailer)
+      const resetLink = `http://localhost:4200/reset-password?token=${resetToken}`;
+      await emailService.sendResetPasswordEmail(email, resetLink);
     }
-    // Logic to send a password reset email or token can be implemented here
-    res.status(200).json({ message: "Yêu cầu đặt lại mật khẩu đã được gửi" });
+
+    return res.status(200).json({
+      message:
+        "Nếu email của bạn tồn tại, một liên kết đặt lại mật khẩu đã được gửi.",
+    });
   } catch (error) {
-    console.error("Lỗi yêu cầu đặt lại mật khẩu:", error); // debug log
-    res.status(500).json({ message: "Lỗi máy chủ" });
+    console.error("Lỗi yêu cầu đặt lại mật khẩu:", error);
+    // Vẫn trả về 200 OK
+    return res.status(200).json({
+      message:
+        "Nếu email của bạn tồn tại, một liên kết đặt lại mật khẩu đã được gửi.",
+    });
+  }
+};
+
+// Func Reset Password
+const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res
+        .status(400)
+        .json({ message: "Thiếu token hoặc mật khẩu mới." });
+    }
+
+    await authService.resetPassword(token, newPassword);
+
+    return res
+      .status(200)
+      .json({ message: "Mật khẩu đã được đặt lại thành công." });
+  } catch (error) {
+    console.error("Lỗi đặt lại mật khẩu:", error);
+    return res.status(400).json({ message: error.message }); // Gửi lỗi (ví dụ: "Token hết hạn")
   }
 };
 
@@ -67,4 +99,5 @@ module.exports = {
   login,
   changePassword,
   forgotPassword,
+  resetPassword,
 };

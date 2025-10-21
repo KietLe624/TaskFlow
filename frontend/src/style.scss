@@ -1,0 +1,31 @@
+/* src/styles.css */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Thêm khối @layer base để sửa lỗi autofill
+*/
+@layer base {
+  /* Mục tiêu: Các ô input KHI được autofill VÀ đang ở .dark mode
+  */
+  .dark input:-webkit-autofill {
+    @apply shadow-[0_0_0_1000px_theme(colors.gray.800)_inset];
+
+    /* SỬA LỖI: Đã thêm dấu ' ' xung quanh 'colors.white'
+    */
+    -webkit-text-fill-color: theme('colors.white');
+  }
+
+  /* Đảm bảo nó vẫn hoạt động khi hover hoặc focus
+  */
+  .dark input:-webkit-autofill:hover,
+  .dark input:-webkit-autofill:focus,
+  .dark input:-webkit-autofill:active {
+    @apply shadow-[0_0_0_1000px_theme(colors.gray.800)_inset];
+
+    /* SỬA LỖI: Đã thêm dấu ' ' xung quanh 'colors.white'
+    */
+    -webkit-text-fill-color: theme('colors.white');
+  }
+}
