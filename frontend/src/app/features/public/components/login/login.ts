@@ -30,7 +30,8 @@ export class LoginComponent {
       next: (res) => {
         localStorage.setItem('token', res.token);
         console.log('Đăng nhập thành công', res.user);
-        this.router.navigate(['/dashboard']).then(() => {
+        console.log('Token đã lưu vào localStorage', res.token);
+        this.router.navigate(['app/dashboard']).then(() => {
           console.log('Chuyển hướng đến trang dashboard');
         });
       },

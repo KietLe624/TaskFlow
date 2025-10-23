@@ -1,0 +1,119 @@
+<div [ngClass]="{
+    'p-6 space-y-8': !isCollapsed,
+    'w-24 p-4 space-y-6': isCollapsed
+  }" class="h-screen overflow-y-auto border-r border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-800
+         hidden md:flex md:flex-col ease-in-out">
+
+  <header [ngClass]="{'justify-between': isCollapsed}" class="flex items-center space-x-3">
+    <a routerLink="/app/dashboard" class="flex items-center space-x-3 overflow-hidden flex-1">
+      <img src="/check.png" alt="TaskFlow Logo" class="h-8 w-8 flex-shrink-0" />
+      <h2 [ngClass]="{'hidden': isCollapsed}"
+        class="text-2xl font-bold text-gray-900 dark:text-gray-300 whitespace-nowrap">
+        Task<span class="text-primary-600">Flow</span>
+      </h2>
+    </a>
+
+    <button (click)="toggleSidebar()" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+           hidden md:block"> <i [ngClass]="{
+        'fa-arrow-left': !isCollapsed,
+        'fa-arrow-right': isCollapsed
+      }" class="fa-solid fa-lg"></i>
+    </button>
+  </header>
+
+  <nav class="flex flex-col space-y-2">
+    <a routerLink="/app/dashboard" routerLinkActive="text-primary-600 border-r-2 border-primary-500 dark:bg-gray-800"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
+      <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-house w-5 text-center flex-shrink-0"></i>
+      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Dashboard</span>
+    </a>
+
+    <a routerLink="/app/projects" routerLinkActive="text-primary-600 border-r-2 border-primary-500 dark:bg-gray-800"
+      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
+      <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-folder-open w-5 text-center flex-shrink-0"></i>
+      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Projects</span>
+    </a>
+
+    <a routerLink="/app/my-tasks"
+      routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800"
+      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
+      <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-list w-5 text-center flex-shrink-0"></i>
+      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">My Tasks</span>
+    </a>
+
+    <a routerLink="/app/kanban"
+      routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800"
+      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
+      <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-grip w-5 text-center flex-shrink-0"></i>
+      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Kanban desk</span>
+    </a>
+
+    <a routerLink="/app/calendar"
+      routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800"
+      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
+      <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-calendar w-5 text-center flex-shrink-0"></i>
+      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Calendar</span>
+    </a>
+
+    <a routerLink="/app/contacts"
+      routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800"
+      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
+      <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-user-group w-5 text-center flex-shrink-0"></i>
+      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Contacts</span>
+    </a>
+
+    <a routerLink="/app/search"
+      routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800"
+      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
+      <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-search w-5 text-center flex-shrink-0"></i>
+      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Search</span>
+    </a>
+  </nav>
+
+  <div [ngClass]="{'hidden': isCollapsed}" class="flex flex-col space-y-3 mt-auto">
+    <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-200">
+      Dự án gần đây
+    </h3>
+    <div class="flex flex-col space-y-3 w-full border-b border-gray-200 dark:border-gray-700 pb-2">
+      <a routerLink="#" class="flex items-center justify-between">
+        <div class="flex items-center">
+          <span class="text-sm text-gray-800 dark:text-gray-200">Figma Design System</span>
+        </div>
+        <span class="rounded bg-yellow-200 px-2 py-0.5 text-xs font-medium text-yellow-800">
+          Progress
+        </span>
+      </a>
+    </div>
+    <a routerLink="#" class="group flex items-center space-x-2 text-xs text-gray-500 hover:text-blue-400">
+      <span>Xem tất cả</span>
+      <i class="fa-solid fa-chevron-down w-3 text-gray-500 group-hover:text-blue-500"></i>
+    </a>
+  </div>
+
+  <div [ngClass]="{'hidden': isCollapsed}" class="flex flex-col space-y-4">
+    <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-200">
+      Tin nhắn gần đây
+    </h3>
+    <div class="flex flex-col space-y-4 border-b border-gray-200 dark:border-gray-700 pb-1">
+      <a routerLink="#" class="flex items-start space-x-3">
+        <img src="https://images.unsplash.com/photo-1570295999919-56cebsecca61?w=40&h=40&fit=crop&crop=faces"
+          alt="Alex Morgan" class="h-10 w-10 flex-shrink-0 rounded-full object-cover" />
+        <div class="flex-1">
+          <div class="flex items-baseline justify-between">
+            <span class="text-sm font-bold text-gray-900 dark:text-gray-200">Alex Morgan</span>
+            <span class="text-xs text-gray-500">2m</span>
+          </div>
+          <p class="truncate text-sm text-gray-600 dark:text-gray-400">
+            Hey, can you review the...
+          </p>
+        </div>
+        <span class="h-2 w-2 flex-shrink-0 rounded-full bg-blue-500 mt-1.5"></span>
+      </a>
+    </div>
+    <a routerLink="#" class="group flex items-center space-x-2 text-xs text-gray-600 hover:text-blue-400">
+      <span>Xem tất cả</span>
+      <i class="fa-solid fa-chevron-down w-3 text-gray-500 group-hover:text-blue-500"></i>
+    </a>
+  </div>
+</div>

@@ -1,0 +1,223 @@
+@if (dashboardData$ | async; as data) {
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-4 p-2">
+
+  <div class="lg:col-span-3 space-y-4 ">
+    <!-- Tổng quan công việc -->
+    <section>
+      <div class="flex items-center justify-between mb-4  dark:bg-gray-900 ">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Tổng quan công việc</h2>
+        <a href="#" class="text-sm font-medium text-gray-400 dark:hover:text-primary-200 hover:underline">See all tasks
+          ></a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 ">
+        <div class="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+          <div class="flex items-start justify-between">
+            <div>
+              <span class="text-5xl font-bold text-gray-900 dark:text-gray-200">{{ data.taskSummary.newTasks }}</span>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Công việc mới</p>
+            </div>
+            <div class="w-24 h-12 text-blue-500 dark:text-blue-400">
+              <i class="fas fa-chart-line fa-2x"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-lg bg-white p-6 shadow dark:text-gray-200 dark:bg-gray-800 ">
+          <div class="flex items-start justify-between">
+            <div>
+              <span class="text-5xl font-bold text-gray-900 dark:text-gray-200">{{ data.taskSummary.tasksDone }}</span>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Công việc đã hoàn thành</p>
+            </div>
+            <div class="w-24 h-12 text-green-500">
+              <i class="fas fa-chart-line fa-2x"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- kết thúc Tổng quan công việc -->
+    <!-- Dự án đang thực hiện -->
+    <section>
+      <div class="flex items-center justify-between mb-4 ">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Dự án đang thực hiện</h2>
+        <a href="#" class="text-sm font-medium text-gray-400 dark:hover:text-primary-500 hover:underline">Xem tất cả dự
+          án ></a>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-gray-200">
+        @for (project of data.pendingProjects; track project.id) {
+        <div class="bg-white rounded-lg shadow-md p-6 dark:bg-gray-800 dark:ring-1 dark:ring-white/10">
+          <div class="flex space-x-4">
+            <div class="w-1 bg-yellow-400 rounded-full"></div>
+            <div class="flex-1 space-y-4">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-gray-200">{{ project.title }}</h2>
+                  </div>
+                </div>
+                <div class="relative">
+
+                  <button (click)="toggleDropdown(project.id, $event)"
+                    class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+                    <i class="fa-solid fa-ellipsis"></i>
+                  </button>
+
+                  @if (openDropdownId === project.id) {
+                  <div (click)="$event.stopPropagation()" class="absolute right-0 top-full mt-2 w-48 z-10
+                  rounded-md bg-white py-1 shadow-lg
+                  dark:bg-gray-700 dark:ring-1 dark:ring-white/10">
+
+                    <button (click)="viewProjectDetails(project.id, $event)" class="w-full text-left flex items-center px-4 py-2 text-sm
+                       text-gray-700 hover:bg-gray-100
+                       dark:text-gray-200 dark:hover:bg-gray-600">
+                      <i class="fa-solid fa-eye w-5 mr-1"></i>
+                      Chi tiết
+                    </button>
+
+                    <button (click)="deleteProject(project.id, $event)" class="w-full text-left flex items-center px-4 py-2 text-sm
+                       text-red-600 hover:bg-gray-100
+                       dark:text-red-400 dark:hover:bg-gray-600">
+                      <i class="fa-solid fa-trash w-5 mr-1"></i>
+                      Xóa dự án
+                    </button>
+
+                  </div>
+                  }
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
+                  <i class="fa-regular fa-calendar-alt"></i>
+                  <span class="text-sm">Hết hạn: {{ project.dueDate }}</span>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between items-baseline mb-1">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">Tiến độ</span>
+                  <span class="text-sm font-semibold text-gray-600 dark:text-gray-300">{{ project.progressPercent
+                    }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                  <div class="bg-gray-800 dark:bg-blue-500 h-2 rounded-full" [style.width.%]="project.progressPercent">
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center pt-2">
+                <div></div>
+                <div class="flex space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                  <div class="flex items-center space-x-1">
+                    <i class="fas fa-tasks"></i> <span>{{ project.taskCount }} tasks</span>
+                  </div>
+                  <div class="flex items-center space-x-1">
+                    <i class="fas fa-paperclip"></i> <span>{{ project.attachmentCount }}</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        }
+        @empty {
+        <p class="text-gray-500 dark:text-gray-400 md:col-span-2">Không có dự án nào đang chờ.</p>
+        }
+      </div>
+    </section>
+    <!-- Kết thúc Dự án đang thực hiện -->
+    <!-- Danh sách công việc -->
+    <section>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Danh sách công việc</h2>
+        <a href="#" class="text-sm font-medium text-gray-400 dark:hover:text-primary-200 hover:underline">
+          Xem tất cả
+        </a>
+      </div>
+
+      <div class="rounded-lg bg-white shadow-md dark:bg-gray-800">
+        @for (event of data.overviewTasks; track event.id) {
+        <div
+          class="flex flex-col sm:flex-row sm:justify-between sm:items-start p-4 rounded-lg border-b border-gray-200 dark:border-gray-700">
+          <div class="flex-grow ">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-200">{{ event.title }}</h3>
+            <div class="flex items-center flex-wrap space-x-4 text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <div class="flex -space-x-2">
+                @for (assignee of event.assignees; track $index) {
+                <!-- <img class="inline-block h-6 w-6 rounded-full ring-2 ring-white dark:ring-gray-800"
+                  [src]="assignee.avatarUrl" alt="Assignee avatar"> -->
+                @if (!assignee.avatarUrl) {
+                <span class="text-gray-400 italic">{{ assignee.username }}</span>
+                }
+                }
+              </div>
+
+              <div class="flex items-center space-x-1.5">
+                <i class="fa-regular fa-calendar-alt"></i>
+                <span>{{ event.date }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex-shrink-0 flex flex-col items-end space-y-1 sm:ml-4 mt-2 sm:mt-0">
+            <span
+              class="inline-block bg-yellow-100 text-yellow-700 text-xs font-semibold px-4 py-1 rounded-full whitespace-nowrap">
+              {{ event.status | projectStatus }}
+            </span>
+            @if(event.description) {
+            <p class="text-sm text-gray-500 dark:text-gray-400 truncate py-1" [title]="event.description">
+              {{ event.description }}
+            </p>
+            }
+          </div>
+        </div>
+        }
+
+        @empty {
+        <p class="p-4 text-gray-500 dark:text-gray-400">Không có công việc nào sắp tới.</p>
+        }
+
+      </div>
+    </section>
+    <!-- Kết thúc Danh sách công việc -->
+  </div>
+  <!-- hoạt động gần đây -->
+  <div class="lg:col-span-1 space-y-2">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="section-title">Hoạt động gần đây</h2>
+      <a routerLink="#" class="text-sm text-gray-400 dark:hover:text-primary-200 hover:underline">Xem tất cả</a>
+    </div>
+    <section class="rounded-lg bg-white p-6 shadow h-full dark:text-gray-200 dark:bg-gray-800">
+
+      <div *ngFor="let group of data.latestActivities" class="mb-6">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">
+          {{ group.date }}
+        </h3>
+
+        <ul class="relative border-l border-gray-300 dark:border-gray-600 pl-6">
+          <li *ngFor="let act of group.items" class="mb-6 ml-2 relative">
+            <span
+              class="absolute -left-3 top-1 w-3 h-3 rounded-full bg-blue-500 border-2 border-white dark:border-gray-800"></span>
+
+            <div class="flex justify-between items-center">
+              <div class="flex items-center space-x-3">
+                <img [src]="act.userAvatar" class="w-8 h-8 rounded-full object-cover" />
+                <div class="flex flex-col text-sm text-gray-700 dark:text-gray-300">
+                  <b class="font-medium text-gray-900 dark:text-gray-200">
+                    {{ act.userName }}
+                  </b>
+                  <span class="text-gray-600 dark:text-gray-400">
+                    {{ act.action }}
+                  </span>
+                </div>
+              </div>
+              <span class="text-xs text-gray-500">{{ act.time }}</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </div>
+</div>
+}

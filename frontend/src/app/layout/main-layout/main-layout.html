@@ -1,0 +1,11 @@
+<div class="flex h-screen bg-white dark:text-gray-200 dark:bg-gray-900 transition-all duration-500 ease-in-out">
+  <app-side-bar></app-side-bar>
+
+  <div class="flex-1 flex flex-col h-screen">
+    <app-main-header></app-main-header>
+    <main class="flex-1 overflow-y-auto bg-gray-50 p-6 dark:text-gray-200 dark:bg-gray-900 ">
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
+</div>

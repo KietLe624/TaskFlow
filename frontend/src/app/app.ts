@@ -10,5 +10,5 @@ import { ThemeModeService } from './core/services/theme/theme-mode';
   styleUrls: ['./app.css']
 })
 export class AppComponent {
-  constructor(private themeService: ThemeModeService) {}
+  constructor(private themeService: ThemeModeService) { }
 }
