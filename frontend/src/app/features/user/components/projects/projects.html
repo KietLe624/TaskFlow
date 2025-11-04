@@ -1,1 +1,451 @@
-<p>projects works!</p>
+<div class="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
+  <div class="flex flex-wrap items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">
+      #chức năng lọc
+    </h1>
+    <div class="flex items-center space-x-3">
+      <button (click)="toggleLayout()"
+        class="flex items-center justify-center px-3 py-2 rounded-md text-lg font-medium text-gray-600 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+        @if (isGrid) {
+        <i class="fas fa-list"></i>
+        } @else {
+        <i class="fas fa-th-large"></i>
+        }
+      </button>
+      <button (click)="openCreateModal()"
+        class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition">
+        <i class="fas fa-plus mr-2"></i> Create Project
+      </button>
+    </div>
+  </div>
+
+  @if (isGrid) { @if (projects.length > 0) {
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    @for (project of projects; track project.project_id) {
+    <div
+      class="group flex flex-col rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-sm transition hover:shadow-lg hover:-translate-y-1">
+      <div class="flex-grow">
+        <div class="flex justify-between items-start">
+          <div class="flex items-start">
+            <div [ngClass]="getStatusColor(project.status)" class="w-1 h-14 rounded-full mr-2"></div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+                {{ project.project_name }}
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-1" [title]="project.description">
+                {{ project.description || "No description" }}
+              </p>
+            </div>
+          </div>
+          <span [ngClass]="{
+            'bg-green-100 text-green-700': project.status === 'completed',
+            'bg-blue-100 text-blue-700': project.status === 'in_progress',
+            'bg-yellow-100 text-yellow-700': project.status === 'on_hold',
+            'bg-gray-100 text-gray-700': project.status === 'to_do',
+            'bg-red-100 text-red-700': project.status === 'over_due'
+          }" class="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap">
+            {{ project.status | projectStatus }}
+          </span>
+        </div>
+
+        <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-3 mt-1 relative">
+          <i class="fa-solid fa-calendar-alt mr-2"></i>
+          <span>Thời hạn: {{ project.due_date | date: 'dd/MM/yyyy'}}</span>
+
+          <div class="relative ml-auto">
+            <button (click)="toggleDropdown(project.project_id, $event)"
+              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer focus:outline-none">
+              <i class="fa-solid fa-ellipsis text-lg"></i>
+            </button>
+            @if (openDropdownId === project.project_id) {
+            <div (click)="$event.stopPropagation()"
+              class="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 shadow-lg rounded-md border border-gray-200 dark:border-gray-700 z-20">
+              <ul class="py-1 text-sm text-gray-700 dark:text-gray-200">
+                <li>
+                  <button (click)="viewProjectDetails(project.project_id, $event)"
+                    class="w-full flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fa-regular fa-eye w-5 mr-2 text-blue-500"></i> Xem chi
+                    tiết
+                  </button>
+                </li>
+                <li>
+                  <button (click)="markAsCompleted(project.project_id, $event)"
+                    class="w-full flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fa-solid fa-check w-5 mr-2 text-green-500"></i> Đánh
+                    dấu hoàn thành
+                  </button>
+                </li>
+                <li>
+                  <button (click)="changeStatus(project.project_id, $event)"
+                    class="w-full flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fa-solid fa-arrows-rotate w-5 mr-2 text-yellow-500"></i>
+                    Thay đổi trạng thái
+                  </button>
+                </li>
+                <li>
+                  <button (click)="openEditProjectModal(project)"
+                    class="w-full flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fa-solid fa-pen w-5 mr-2 text-blue-500"></i> Sửa dự án
+                  </button>
+                </li>
+                <li>
+                  <button (click)="deleteProject(project.project_id, $event)"
+                    class="w-full flex items-center px-4 py-2 text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fa-solid fa-trash w-5 mr-2"></i> Xoá dự án
+                  </button>
+                </li>
+              </ul>
+            </div>
+            }
+          </div>
+        </div>
+
+        @if(project.progressPercent !== null) {
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm text-gray-700 dark:text-gray-300">Tiến độ</span>
+          <span class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ project.progressPercent }}%</span>
+        </div>
+        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4">
+          <div class="h-2 rounded-full transition-all" [style.width]="project.progressPercent + '%'"
+            [ngClass]="getStatusColor(project.status)"></div>
+        </div>
+        } @else {
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm text-gray-700 dark:text-gray-300">Progress</span>
+          <span class="text-sm font-medium text-gray-800 dark:text-gray-200">N/A</span>
+        </div>
+        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4">
+          <div class="bg-gray-400 h-2 rounded-full w-1/4"></div>
+        </div>
+        }
+      </div>
+
+      <div class="flex justify-between items-center my-4">
+        <div class="flex -space-x-2">
+          @for (m of project.members; track m.user_id) {
+          <app-user-avatar [src]="m.avatar_url" [username]="m.username" size="w-8 h-8" [title]="m.username"
+            class="cursor-pointer ring-2 ring-white dark:ring-gray-900">
+          </app-user-avatar>
+          }
+        </div>
+        <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+          <div class="flex items-center space-x-1.5">
+            <i class="fa-solid fa-list-check"></i>
+            <span>{{ project.taskCount || 0 }} tasks</span>
+          </div>
+          <div class="flex items-center space-x-1.5">
+            <i class="fa-solid fa-chart-simple"></i>
+            <span>{{ project.activityCount || 0 }} Hoạt động</span>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="grid grid-cols-2 gap-x-6 gap-y-3 text-xs text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700 pt-4">
+        <div>
+          <p class="text-gray-500 dark:text-gray-400 mb-1">Client</p>
+          <p class="font-bold truncate">{{ project.client || "N/A" }}</p>
+        </div>
+        <div>
+          <p class="text-gray-500 dark:text-gray-400 mb-2">Kinh phí</p>
+          <p class="font-bold">${{ project.budget | number }}</p>
+        </div>
+        <div>
+          <p class="text-gray-500 dark:text-gray-400 mb-2">Ngày bắt đầu</p>
+          <p class="font-bold">{{ project.start_date | date: 'dd/MM/yyyy' }}</p>
+        </div>
+        <div>
+          <p class="text-gray-500 dark:text-gray-400 mb-2">Độ ưu tiên</p>
+          <span class="px-2 py-1 rounded-full text-xs font-semibold" [ngClass]="{
+            'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300':
+              project.priority === 'high',
+            'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300':
+              project.priority === 'medium',
+            'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300':
+              project.priority === 'low'
+          }">
+            {{ project.priority | projectPriority }}
+          </span>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+  } @else {
+  <div class="flex flex-col items-center justify-center py-20 text-center text-gray-600 dark:text-gray-400">
+    <i class="fas fa-folder-open text-5xl mb-4 text-gray-400 dark:text-gray-600"></i>
+    <h3 class="text-lg font-semibold mb-2">Không có dự án nào</h3>
+    <p class="text-sm text-gray-500 dark:text-gray-500">
+      Hãy tạo một dự án mới.
+    </p>
+  </div>
+  } } @else {
+  @if (projects.length > 0) {
+  <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+      <thead class="bg-gray-100 dark:bg-gray-800">
+        <tr>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Project
+          </th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Progress
+          </th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Client
+          </th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Due Date
+          </th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Priority
+          </th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Action
+          </th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-gray-900">
+        @for (p of projects; track p.project_id) {
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <td class="px-4 py-3">
+            <div class="flex flex-col">
+              <span class="font-medium text-gray-900 dark:text-gray-100">
+                {{ p.project_name }}
+              </span>
+              @if (p.description) {
+              <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2" title="{{ p.description }}">
+                {{ p.description || "No description" }}
+              </p>
+              }
+            </div>
+          </td>
+          <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
+            {{ p.progressPercent }}%
+          </td>
+          <td class="px-4 py-3 text-gray-600 dark:text-gray-400">
+            {{ p.client }}
+          </td>
+          <td class="px-4 py-3 text-gray-600 dark:text-gray-400">
+            {{ p.due_date }}
+          </td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-1 rounded-full text-xs font-semibold" [ngClass]="{
+                'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300':
+                  p.priority === 'high',
+                'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300':
+                  p.priority === 'medium',
+                'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300':
+                  p.priority === 'low'
+              }">
+              {{ p.priority | projectPriority }}
+            </span>
+          </td>
+
+          <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
+            <div class="relative">
+              <button (click)="toggleDropdown(p.project_id, $event)"
+                class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer focus:outline-none">
+                <i class="fa-solid fa-ellipsis"></i>
+              </button>
+
+              @if (openDropdownId === p.project_id) {
+              <div (click)="$event.stopPropagation()"
+                class="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 shadow-lg rounded-md border border-gray-200 dark:border-gray-700 z-20">
+                <ul class="py-1 text-sm text-gray-700 dark:text-gray-200">
+                  <li>
+                    <button (click)="viewProjectDetails(p.project_id, $event)"
+                      class="w-full flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <i class="fa-regular fa-eye w-5 mr-2 text-blue-500"></i> Xem chi
+                      tiết
+                    </button>
+                  </li>
+                  <li>
+                    <button (click)="markAsCompleted(p.project_id, $event)"
+                      class="w-full flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <i class="fa-solid fa-check w-5 mr-2 text-green-500"></i> Đánh
+                      dấu hoàn thành
+                    </button>
+                  </li>
+                  <li>
+                    <button (click)="changeStatus(p.project_id, $event)"
+                      class="w-full flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <i class="fa-solid fa-arrows-rotate w-5 mr-2 text-yellow-500"></i>
+                      Thay đổi trạng thái
+                    </button>
+                  </li>
+                  <li>
+                    <button (click)="openEditProjectModal(p)"
+                      class="w-full flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <i class="fa-solid fa-pen w-5 mr-2 text-blue-500"></i> Sửa dự án
+                    </button>
+                  </li>
+                  <li>
+                    <button (click)="deleteProject(p.project_id, $event)"
+                      class="w-full flex items-center px-4 py-2 text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <i class="fa-solid fa-trash w-5 mr-2"></i> Xoá dự án
+                    </button>
+                  </li>
+                </ul>
+              </div>
+              }
+            </div>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  } @else {
+  <div class="flex flex-col items-center justify-center py-20 text-center text-gray-600 dark:text-gray-400">
+    <i class="fas fa-folder-open text-5xl mb-4 text-gray-400 dark:text-gray-600"></i>
+    <h3 class="text-lg font-semibold mb-2">Không có dự án nào</h3>
+    <p class="text-sm text-gray-500 dark:text-gray-500">
+      Hãy tạo một dự án mới.
+    </p>
+  </div>
+  } }
+  <!-- modal create/edit -->
+  @if (isModalOpen) {
+  <div class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+    <div class="w-full max-w-3xl">
+      <app-create-project [isEditMode]="isEditMode" [selectedProject]="selectedProject"
+        (closeModal)="isModalOpen = false" (projectSaved)="onProjectSaved($event)">
+      </app-create-project>
+    </div>
+  </div>
+  }
+  <!-- modal details -->
+  @if (isDetailsModalOpen && selectedProjectForDetails) {
+  <div class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+    <div class="w-full max-w-4xl">
+      <app-project-detail [project]="selectedProjectForDetails" (close)="closeDetailsModal()">
+      </app-project-detail>
+    </div>
+  </div>
+  }
+</div>
+  <!-- modal confirm complete -->
+@if (isCompleteModalOpen && projectToComplete) {
+<div class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50" (click)="cancelComplete()">
+
+  <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-xl" (click)="$event.stopPropagation()">
+    <div class="p-4 border-b dark:border-gray-700">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+        <i class="fa-solid fa-check-circle text-green-500"></i>
+        Xác nhận hoàn thành
+      </h3>
+    </div>
+
+    <div class="p-4">
+      <p class="text-gray-700 dark:text-gray-300">
+        Bạn có chắc chắn muốn đánh dấu dự án:
+        <strong class="font-bold text-gray-900 dark:text-white">{{ projectToComplete.project_name }}</strong>
+        là đã hoàn thành?
+      </p>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+        Hành động này sẽ cập nhật trạng thái và tiến độ của dự án thành 100%.
+      </p>
+    </div>
+
+    <div class="flex justify-end space-x-3 p-4 bg-gray-50 dark:bg-gray-800 border-t dark:border-gray-700 rounded-b-lg">
+      <button type="button" (click)="cancelComplete()" class="px-5 py-2 rounded-lg font-medium text-gray-600 dark:text-gray-300
+                       hover:bg-gray-100 dark:hover:bg-gray-700
+                       transition-colors duration-150 ease-in-out
+                       focus:outline-none focus:ring-2 focus:ring-gray-400">
+        Thoát
+      </button>
+
+      <button type="button" (click)="confirmComplete()" class="px-5 py-2 text-white bg-green-600 rounded-lg
+                       font-semibold text-center transition-all duration-200 ease-in-out
+                       hover:bg-green-700
+                       focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50
+                       active:scale-95">
+        Xác nhận
+      </button>
+    </div>
+
+  </div>
+</div>
+}
+<!-- modal change status -->
+@if (isChangeStatusModalOpen && projectToChangeStatus) {
+  <div class="fixed inset-0 flex justify-center items-center z-50">
+
+    <!-- Modal -->
+    <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700">
+
+      <!-- Header -->
+      <div class="p-5 border-b dark:border-gray-700 flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <i class="fa-solid fa-arrows-rotate text-yellow-500"></i>
+          Thay đổi trạng thái
+        </h3>
+        <button (click)="cancelChangeStatus()"
+                class="text-gray-400 hover:text-red-500 transition-colors duration-150">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Nội dung -->
+      <div class="p-6 space-y-4">
+        <p class="text-sm text-gray-600 dark:text-gray-300">
+          Dự án: <strong class="dark:text-gray-100">{{ projectToChangeStatus.project_name }}</strong>
+        </p>
+
+        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Chọn trạng thái mới:
+        </p>
+
+        <!-- Radio group -->
+        <div class="grid grid-cols-1 sm:grid-cols-1 gap-3">
+          @for (status of availableStatuses; track status) {
+            <label
+              class="flex items-start justify-start gap-2 border rounded-xl py-2 px-3 cursor-pointer select-none text-sm font-medium transition-all duration-200
+                     hover:scale-[1.02]"
+              [ngClass]="{
+                'bg-green-100 border-green-500 text-green-700 dark:bg-green-900/30': newSelectedStatus === 'completed' && newSelectedStatus === status,
+                'bg-blue-100 border-blue-500 text-blue-700 dark:bg-blue-900/30': newSelectedStatus === 'in_progress' && newSelectedStatus === status,
+                'bg-yellow-100 border-yellow-500 text-yellow-700 dark:bg-yellow-900/30': newSelectedStatus === 'on_hold' && newSelectedStatus === status,
+                'bg-gray-100 border-gray-400 text-gray-700 dark:bg-gray-700/40': newSelectedStatus === 'to_do' && newSelectedStatus === status,
+                'bg-red-100 border-red-500 text-red-700 dark:bg-red-900/30': newSelectedStatus === 'over_due' && newSelectedStatus === status,
+                'border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700':
+                  newSelectedStatus !== status
+              }">
+
+              <input
+                type="radio"
+                name="statusSelect"
+                class="hidden"
+                [value]="status"
+                [(ngModel)]="newSelectedStatus">
+
+              <span>{{ status | projectStatus }}</span>
+
+              @if (newSelectedStatus === status) {
+                <i class="fa-solid fa-check text-sm"></i>
+              }
+            </label>
+          }
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-end gap-3 p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-2xl">
+        <button type="button" (click)="cancelChangeStatus()"
+                class="px-5 py-2 rounded-lg text-gray-600 dark:text-gray-300
+                       hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+          Thoát
+        </button>
+
+        <button type="button" (click)="confirmChangeStatus()"
+                class="px-5 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700
+                       active:scale-95 font-semibold transition-all">
+          Cập nhật
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+

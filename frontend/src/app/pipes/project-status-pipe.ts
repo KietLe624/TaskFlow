@@ -9,16 +9,16 @@ export class ProjectStatusPipe implements PipeTransform {
   // Định nghĩa mapping object
   private statusMap: { [key: string]: string } = {
     'in_progress': 'Đang xử lý',
-    'todo': 'Cần làm',
-    'done': 'Hoàn thành',
+    'to_do': 'Cần làm',
     'completed': 'Hoàn thành',
     'testing': 'Đang kiểm thử',
     'paused': 'Tạm dừng',
-    'cancelled': 'Đã hủy'
+    'cancelled': 'Đã hủy',
+    'on_hold': 'Đang chờ',
+    'over_due': 'Quá hạn'
   };
 
   transform(statusKey: string): string {
-    // Trả về giá trị đã map, hoặc trả về chính nó nếu không tìm thấy
     return this.statusMap[statusKey] || statusKey;
   }
 }

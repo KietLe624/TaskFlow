@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { Observable } from 'rxjs';
-import { AuthResponse, LoginRequest, RegisterRequest, ChangePasswordRequest, ForgotPasswordRequest, ResetPasswordRequest } from '../../../models/users';
+import { AuthResponse, LoginRequest, RegisterRequest, ChangePasswordRequest, ForgotPasswordRequest, ResetPasswordRequest, MyJwtPayload } from '../../../models/users';
 import { Router } from '@angular/router';
+import { JwtPayload, jwtDecode } from 'jwt-decode';
 
 @Injectable({
   providedIn: 'root'
@@ -56,4 +57,16 @@ export class AuthService {
       this.router.navigate(['/login']);
     }
   }
+
+  getUserIdFromToken(): number{
+    const token = localStorage.getItem('token');
+    if (!token) return 0;
+    try {
+      const decoded = jwtDecode<MyJwtPayload>(token);
+      return decoded.user_id;
+    } catch {
+      return 0;
+    }
+  }
+
 }

@@ -1,0 +1,6 @@
+@if (src) {
+<img [src]="src" [alt]="username || 'Avatar'" class="rounded-full object-cover" [ngClass]="size"> } @else {
+<div class="rounded-full flex items-center justify-center font-semibold text-white" [ngClass]="[size, textSize]"
+  [style.background-color]="bgColor"> {{ initial }}
+</div>
+}

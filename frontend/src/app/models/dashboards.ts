@@ -14,8 +14,9 @@ export interface OverviewTasks {
 }
 
 export interface PendingProject {
-  id: string;
-  title: string;
+  project_id: number;
+  project_name: string;
+  status: string;
   progressPercent: number;
   taskCount: string;
   attachmentCount: number;
@@ -44,3 +45,5 @@ export interface DashboardData {
   pendingProjects: PendingProject[];
   latestActivities: ActivityGroup[];
 }
+
+

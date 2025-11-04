@@ -45,3 +45,11 @@ export interface ResetPasswordRequest {
   token: string;
   newPassword: string;
 }
+
+export interface MyJwtPayload {
+  user_id: number;
+  email: string;
+  roles: any[];
+  iat: number;
+  exp: number;
+}

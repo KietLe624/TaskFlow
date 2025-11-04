@@ -7,7 +7,7 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 
 bootstrapApplication(AppComponent, {
   providers: [
-    provideRouter(routes),          // 👈 BẮT BUỘC: kích hoạt Angular Router
-    provideHttpClient(withFetch()), // 👈 Để dùng HttpClient
+    provideRouter(routes),
+    provideHttpClient(withFetch()),
   ],
 }).catch(err => console.error(err));

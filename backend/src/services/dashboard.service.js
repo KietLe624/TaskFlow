@@ -26,7 +26,7 @@ const getDashboardData = async (userId) => {
         {
           model: User,
           as: "assignees",
-          attributes: ["avatar_url"],
+          attributes: ["username", "avatar_url"],
           through: { attributes: [] },
         },
       ],
@@ -39,9 +39,13 @@ const getDashboardData = async (userId) => {
         date: formatDate(t.created_at),
         title: t.task_name,
         description: t.description,
-        assignees: t.assignees?.map((a) => ({ avatarUrl: a.avatar_url })) || [],
+        assignees:
+          t.assignees?.map((a) => ({
+            username: a.username,
+            avatarUrl: a.avatar_url,
+          })) || [],
         progressText:
-          t.status === "done"
+          t.status === "completed"
             ? "Hoàn thành"
             : t.status === "in_progress"
             ? "Đang xử lý"
@@ -53,7 +57,7 @@ const getDashboardData = async (userId) => {
     const pendingProjects = await Project.findAll({
       where: {
         owner_id: userId,
-        status: "active",
+        status: "in_progress",
       },
       include: [
         {
@@ -66,8 +70,8 @@ const getDashboardData = async (userId) => {
       limit: 5,
     }).then((projects) =>
       projects.map((p) => ({
-        id: p.project_id,
-        title: p.project_name,
+        project_id: p.project_id,
+        project_name: p.project_name,
         progressPercent: calcProgress(p.tasks),
         taskCount: p.tasks?.length || 0,
         attachmentCount: 0,

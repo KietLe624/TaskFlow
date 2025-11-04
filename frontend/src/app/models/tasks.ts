@@ -1,14 +1,22 @@
+export interface TaskAssignee {
+  user_id: number;
+  username: string;
+  avatar_url: string;
+  full_name?: string;
+}
+
+// 2. Sửa lại interface Tasks của bro
 export interface Tasks {
   task_id: number;
   task_name: string;
   parent_id?: number;
   description?: string;
-  status: 'todo' | 'in_progress' | 'done';
-  priority: 'low' | 'medium' | 'high';
+  status: string;
+  priority: string;
   start_date?: Date;
   due_date?: Date;
   created_at: Date;
   updated_at: Date;
-  assigned_to?: number; // user_id of the assigned user
-  project_id?: number; // project_id of the associated project
+  assignee?: TaskAssignee;
+  project_id?: number;
 }
