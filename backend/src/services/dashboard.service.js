@@ -2,6 +2,82 @@ const db = require("../models/index.model");
 const { User, Project, Task, Activity, Attachment } = db;
 const { Op } = require("sequelize");
 
+const getTaskOverviewCounts = async (
+  userId,
+  { newDays = 7, nearDays = 3 } = {}
+) => {
+  const now = new Date();
+  const newSince = subDays(now, newDays);
+  const nearUntil = addDays(now, nearDays);
+
+  const baseWhere = {
+    [Op.or]: [{ created_by: userId }, { "$assignees.user_id$": userId }],
+  };
+
+  const includeAssignees = [
+    {
+      model: User,
+      as: "assignees",
+      attributes: [],
+      through: { attributes: [] },
+      required: false,
+    },
+  ];
+
+  const [newTasks, tasksDone, nearDueTasks, overdueTasks] = await Promise.all([
+    // Công việc mới
+    Task.count({
+      where: { ...baseWhere, created_at: { [Op.gte]: newSince } },
+      include: includeAssignees,
+      distinct: true,
+      col: "Task.task_id",
+      subQuery: false,
+    }),
+
+    // Đã hoàn thành
+    Task.count({
+      where: { ...baseWhere, status: "done" },
+      include: includeAssignees,
+      distinct: true,
+      col: "Task.task_id",
+      subQuery: false,
+    }),
+
+    // Gần đến hạn
+    Task.count({
+      where: {
+        ...baseWhere,
+        status: { [Op.notIn]: ["done", "cancelled"] },
+        due_date: { [Op.gte]: now, [Op.lt]: nearUntil },
+      },
+      include: includeAssignees,
+      distinct: true,
+      col: "Task.task_id",
+      subQuery: false,
+    }),
+
+    // Quá hạn
+    Task.count({
+      where: {
+        ...baseWhere,
+        status: { [Op.notIn]: ["done", "cancelled"] },
+        due_date: { [Op.lt]: now },
+      },
+      include: includeAssignees,
+      distinct: true,
+      col: "Task.task_id",
+      subQuery: false,
+    }),
+  ]);
+
+  return {
+    newTasks,
+    tasksDone,
+    nearDueTasks,
+    overdueTasks,
+  };
+};
+
 const getDashboardData = async (userId) => {
   if (!userId)
     throw new Error("Người dùng chưa đăng nhập hoặc token không hợp lệ");
@@ -17,7 +93,9 @@ const getDashboardData = async (userId) => {
       }),
     ]);
 
-    const taskSummary = { newTasks, tasksDone };
+    // const taskSummary = { newTasks, tasksDone };
+    const counts = await getTaskOverviewCounts(userId);
+    const taskSummary = counts;
 
     //  Overview Tasks (các task gần đây nhất của user)
     const overviewTasks = await Task.findAll({
@@ -72,10 +150,13 @@ const getDashboardData = async (userId) => {
       projects.map((p) => ({
         project_id: p.project_id,
         project_name: p.project_name,
+        description: p.description,
+        status: p.status,
+        start_date: formatDate(p.start_date),
+        due_date: formatDate(p.due_date),
         progressPercent: calcProgress(p.tasks),
         taskCount: p.tasks?.length || 0,
         attachmentCount: 0,
-        dueDate: formatDate(p.due_date),
       }))
     );
 
@@ -116,6 +197,14 @@ const getDashboardData = async (userId) => {
     throw new Error("Không thể lấy dữ liệu dashboard");
   }
 };
+
+const addDays = (date, n) => {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+};
+
+const subDays = (date, n) => addDays(date, -n);
 
 function formatDate(date) {
   const d = new Date(date);
@@ -187,4 +276,5 @@ module.exports = {
   calcProgress,
   formatDate,
   groupActivitiesByDate,
+  getTaskOverviewCounts,
 };

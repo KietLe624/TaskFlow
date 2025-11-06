@@ -1,3 +1,6 @@
+import { ProjectMember } from "./projects";
+import { Project } from "./projects";
+
 export interface TaskSummary {
   newTasks: number;
   tasksDone: number;
@@ -11,18 +14,6 @@ export interface OverviewTasks {
   description: string;
   assignees: { avatarUrl: string, username: string }[];
   progressText: string;
-}
-
-export interface PendingProject {
-  project_id: number;
-  project_name: string;
-  status: string;
-  progressPercent: number;
-  taskCount: string;
-  attachmentCount: number;
-  dueDate: string;
-  colorClass: string;
-  iconClass: string;
 }
 
 export interface Activity {
@@ -42,7 +33,7 @@ export interface ActivityGroup {
 export interface DashboardData {
   taskSummary: TaskSummary;
   overviewTasks: OverviewTasks[];
-  pendingProjects: PendingProject[];
+  pendingProjects: Project[];
   latestActivities: ActivityGroup[];
 }
 

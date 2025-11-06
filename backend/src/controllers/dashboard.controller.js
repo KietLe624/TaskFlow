@@ -13,4 +13,18 @@ const getDashboards = async (req, res) => {
   }
 };
 
-module.exports = { getDashboards };
+const getOverview = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const data = await getTaskOverviewCounts(userId, {
+      newDays: 7,
+      nearDays: 3,
+    });
+    res.json(data);
+  } catch (err) {
+    console.error(" Dashboard error:", err);
+    res.status(500).json({ message: "Không thể tải dữ liệu dashboard" });
+  }
+};
+
+module.exports = { getDashboards, getOverview };

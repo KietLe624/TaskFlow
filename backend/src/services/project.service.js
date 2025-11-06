@@ -1,10 +1,12 @@
 const e = require("express");
 const db = require("../models/index.model");
-const { Op } = require("sequelize");
+const { Op, Transaction } = require("sequelize");
 const { User, Project, Task, Team } = db;
+const { logActivity } = require("./activity.service");
 
 // Create a new project
 const createProject = async (projectData, user) => {
+  const t = await db.sequelize.transaction();
   try {
     console.log("📥 Dữ liệu nhận từ controller:", projectData);
     console.log("👤 Thông tin user từ controller:", user);
@@ -21,7 +23,7 @@ const createProject = async (projectData, user) => {
       priority,
     } = projectData;
 
-    // ✅ Validate input
+    //  Validate input
     if (!project_name || !start_date || !due_date) {
       throw new Error(
         "Thiếu thông tin bắt buộc: project_name, start_date hoặc due_date"
@@ -33,24 +35,37 @@ const createProject = async (projectData, user) => {
       throw new Error("Không tìm thấy thông tin người tạo (owner_id)");
     }
 
-    // ✅ Tạo dự án mới
-    const newProject = await Project.create({
-      project_name,
-      owner_id,
-      team_id: team_id || null,
-      description: description || "",
-      status: status || "to_do",
-      start_date,
-      due_date,
-      client: client || null,
-      budget: budget || 0,
-      priority: priority || "medium",
+    //  Tạo dự án mới
+    const newProject = await Project.create(
+      {
+        project_name,
+        owner_id,
+        team_id: team_id || null,
+        description: description || "",
+        status: status || "to_do",
+        start_date,
+        due_date,
+        client: client || null,
+        budget: budget || 0,
+        priority: priority || "medium",
+      },
+      { transaction: t }
+    );
+    
+    await logActivity({
+      userId: owner_id,
+      entityType: "project",
+      entityId: newProject.project_id,
+      action: "created",
+      description: `Tạo dự án: ${newProject.project_name}`,
+      tx: t,
     });
 
-    console.log("✅ Dự án được tạo:", newProject.project_name);
+    await t.commit();
     return newProject;
   } catch (error) {
-    console.error("❌ Lỗi tạo dự án (Service):", error.message);
+    await t.rollback();
+    console.error(" Lỗi tạo dự án (Service):", error.message);
     throw error;
   }
 };
@@ -182,7 +197,7 @@ const getProjectsByUserId = async (userId) => {
       // (nếu user vừa là owner vừa là member)
       distinct: true,
     });
-    return projects;
+    return processProjects(projects);
   } catch (error) {
     console.error("Lỗi lấy dự án theo user_id (Service):", error);
     throw error;
@@ -216,7 +231,7 @@ const getProjectById = async (projectId, userId) => {
     const project = await Project.findOne({
       where: {
         project_id: projectId,
-        owner_id: userId, // <-- Chỉ chủ sở hữu mới được lấy
+        owner_id: userId,
       },
       include: [
         {
@@ -269,13 +284,42 @@ const getProjectById = async (projectId, userId) => {
         .split("T")[0];
     }
 
-    return projectData;
+    return processProjects([project])[0];
   } catch (error) {
     console.error("Lỗi lấy dự án theo project_id (Service):", error);
     throw error;
   }
 };
 
+const processProjects = (projects) => {
+  if (!projects) return [];
+
+  return projects.map((p) => {
+    const project = p.toJSON();
+
+    // 1. Đếm Tasks
+    const taskCount = p.tasks ? p.tasks.length : 0;
+
+    // 2. Đếm Attachments
+    const attachmentCount = p.tasks
+      ? p.tasks.reduce((sum, task) => {
+          return sum + (task.attachments ? task.attachments.length : 0);
+        }, 0)
+      : 0;
+    let progressPercent = 0;
+    if (taskCount > 0) {
+      const completedTasks = p.tasks.filter((t) => t.status === "done").length;
+      progressPercent = Math.round((completedTasks / taskCount) * 100);
+    }
+
+    return {
+      ...project,
+      taskCount,
+      attachmentCount,
+      progressPercent,
+    };
+  });
+};
 
 module.exports = {
   createProject,

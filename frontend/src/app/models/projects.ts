@@ -7,13 +7,13 @@ export interface Project {
   status: string;
   progressPercent: number;
   members?: ProjectMember[];
-  due_date?: string;
-  start_date?: string;
+  due_date: string;
+  start_date: string;
   client?: string;
   budget?: number;
   priority: string;
   isStarred?: boolean;
-  taskCount?: number;
+  taskCount: number;
   activityCount?: number;
   tasks?: Tasks[];
 }
@@ -49,5 +49,4 @@ export interface ProjectDetail {
   start_date?: string;
   due_date?: string;
   members?: ProjectMember[];
-
 }
