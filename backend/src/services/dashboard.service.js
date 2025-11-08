@@ -1,6 +1,13 @@
+const { Op, Sequelize } = require("sequelize");
 const db = require("../models/index.model");
-const { User, Project, Task, Activity, Attachment } = db;
-const { Op } = require("sequelize");
+const { Task, User, Project, Activity } = db;
+
+const addDays = (date, days) => {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+};
+const subDays = (date, days) => addDays(date, -days);
 
 const getTaskOverviewCounts = async (
   userId,
@@ -10,233 +17,185 @@ const getTaskOverviewCounts = async (
   const newSince = subDays(now, newDays);
   const nearUntil = addDays(now, nearDays);
 
-  const baseWhere = {
-    [Op.or]: [{ created_by: userId }, { "$assignees.user_id$": userId }],
+  // Kiểm tra alias 'assignees'
+  const hasAssignees = !!(Task.associations && Task.associations.assignees);
+
+  const includeAssignees = hasAssignees
+    ? [
+        {
+          model: User,
+          as: "assignees",
+          attributes: [],
+          through: { attributes: [] },
+          required: false,
+        },
+      ]
+    : [];
+
+  const assignedToUser = hasAssignees
+    ? Sequelize.where(Sequelize.col("assignees.user_id"), userId)
+    : null;
+
+  const baseWhere = hasAssignees
+    ? { [Op.or]: [{ created_by: userId }, assignedToUser] }
+    : { created_by: userId };
+
+  const countArgs = {
+    include: includeAssignees,
+    distinct: true,
+    col: "task_id",
+    subQuery: false,
   };
 
-  const includeAssignees = [
-    {
-      model: User,
-      as: "assignees",
-      attributes: [],
-      through: { attributes: [] },
-      required: false,
-    },
-  ];
-
   const [newTasks, tasksDone, nearDueTasks, overdueTasks] = await Promise.all([
-    // Công việc mới
     Task.count({
+      ...countArgs,
       where: { ...baseWhere, created_at: { [Op.gte]: newSince } },
-      include: includeAssignees,
-      distinct: true,
-      col: "Task.task_id",
-      subQuery: false,
     }),
-
-    // Đã hoàn thành
+    Task.count({ ...countArgs, where: { ...baseWhere, status: "done" } }),
     Task.count({
-      where: { ...baseWhere, status: "done" },
-      include: includeAssignees,
-      distinct: true,
-      col: "Task.task_id",
-      subQuery: false,
-    }),
-
-    // Gần đến hạn
-    Task.count({
+      ...countArgs,
       where: {
         ...baseWhere,
         status: { [Op.notIn]: ["done", "cancelled"] },
         due_date: { [Op.gte]: now, [Op.lt]: nearUntil },
       },
-      include: includeAssignees,
-      distinct: true,
-      col: "Task.task_id",
-      subQuery: false,
     }),
-
-    // Quá hạn
     Task.count({
+      ...countArgs,
       where: {
         ...baseWhere,
         status: { [Op.notIn]: ["done", "cancelled"] },
         due_date: { [Op.lt]: now },
       },
-      include: includeAssignees,
-      distinct: true,
-      col: "Task.task_id",
-      subQuery: false,
     }),
   ]);
 
-  return {
-    newTasks,
-    tasksDone,
-    nearDueTasks,
-    overdueTasks,
-  };
+  return { newTasks, tasksDone, nearDueTasks, overdueTasks };
+};
+
+const getOverviewTasks = async (userId, limit = 5) => {
+  const rows = await Task.findAll({
+    where: { created_by: userId },
+    include: [
+      {
+        model: User,
+        as: "assignees",
+        attributes: ["username", "avatar_url"],
+        through: { attributes: [] },
+      },
+    ],
+    order: [["created_at", "DESC"]],
+    limit,
+  });
+
+  return rows.map((t) => ({
+    id: t.task_id,
+    status: t.status, // 'to_do' | 'in_progress' | 'done' | ...
+    date: formatDate(t.created_at),
+    title: t.task_name,
+    description: t.description,
+    assignees: (t.assignees || []).map((a) => ({
+      username: a.username,
+      avatarUrl: a.avatar_url,
+    })),
+    progressText:
+      t.status === "done"
+        ? "Hoàn thành"
+        : t.status === "in_progress"
+        ? "Đang xử lý"
+        : "Chưa bắt đầu",
+  }));
+};
+
+const getPendingProjects = async (userId, limit = 5) => {
+  const rows = await Project.findAll({
+    where: { owner_id: userId, status: "in_progress" },
+    include: [{ model: Task, as: "tasks", attributes: ["task_id", "status"] }],
+    order: [["due_date", "ASC"]],
+    limit,
+  });
+
+  return rows.map((p) => ({
+    project_id: p.project_id,
+    project_name: p.project_name,
+    description: p.description,
+    status: p.status,
+    start_date: formatDate(p.start_date),
+    due_date: formatDate(p.due_date),
+    progressPercent: calcProgress(p.tasks),
+    taskCount: p.tasks?.length || 0,
+    attachmentCount: 0, // đếm attachment
+  }));
+};
+
+const getLatestActivities = async (userId, limit = 30) => {
+  const acts = await Activity.findAll({
+    where: { user_id: userId },
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: ["username", "full_name", "avatar_url"],
+      },
+    ],
+    order: [["created_at", "DESC"]],
+    limit,
+  });
+
+  const items = acts.map((a) => ({
+    id: a.activity_id,
+    userAvatar: a.user?.avatar_url || null,
+    userName: a.user?.full_name || a.user?.username || "Unknown",
+    action: formatActivityText(a),
+    created_at: a.created_at,
+  }));
+
+  return groupActivitiesByDate(items);
 };
 
 const getDashboardData = async (userId) => {
   if (!userId)
     throw new Error("Người dùng chưa đăng nhập hoặc token không hợp lệ");
-
-  try {
-    //  Tổng quan Task
-    const [newTasks, tasksDone] = await Promise.all([
-      Task.count({
-        where: { status: "to_do", created_by: userId },
-      }),
-      Task.count({
-        where: { status: "done", created_by: userId },
-      }),
+  const [taskSummary, overviewTasks, pendingProjects, latestActivities] =
+    await Promise.all([
+      getTaskOverviewCounts(userId),
+      getOverviewTasks(userId),
+      getPendingProjects(userId),
+      getLatestActivities(userId),
     ]);
-
-    // const taskSummary = { newTasks, tasksDone };
-    const counts = await getTaskOverviewCounts(userId);
-    const taskSummary = counts;
-
-    //  Overview Tasks (các task gần đây nhất của user)
-    const overviewTasks = await Task.findAll({
-      where: { created_by: userId },
-      include: [
-        {
-          model: User,
-          as: "assignees",
-          attributes: ["username", "avatar_url"],
-          through: { attributes: [] },
-        },
-      ],
-      order: [["created_at", "DESC"]],
-      limit: 5,
-    }).then((tasks) =>
-      tasks.map((t) => ({
-        id: t.task_id,
-        status: t.status,
-        date: formatDate(t.created_at),
-        title: t.task_name,
-        description: t.description,
-        assignees:
-          t.assignees?.map((a) => ({
-            username: a.username,
-            avatarUrl: a.avatar_url,
-          })) || [],
-        progressText:
-          t.status === "completed"
-            ? "Hoàn thành"
-            : t.status === "in_progress"
-            ? "Đang xử lý"
-            : "Chưa bắt đầu",
-      }))
-    );
-
-    // Pending Projects (các project đang active)
-    const pendingProjects = await Project.findAll({
-      where: {
-        owner_id: userId,
-        status: "in_progress",
-      },
-      include: [
-        {
-          model: Task,
-          as: "tasks",
-          attributes: ["task_id", "status"],
-        },
-      ],
-      order: [["due_date", "ASC"]],
-      limit: 5,
-    }).then((projects) =>
-      projects.map((p) => ({
-        project_id: p.project_id,
-        project_name: p.project_name,
-        description: p.description,
-        status: p.status,
-        start_date: formatDate(p.start_date),
-        due_date: formatDate(p.due_date),
-        progressPercent: calcProgress(p.tasks),
-        taskCount: p.tasks?.length || 0,
-        attachmentCount: 0,
-      }))
-    );
-
-    // Latest Activities (dữ liệu thực tế từ bảng activities)
-    const actsRaw = await Activity.findAll({
-      where: { user_id: userId }, // chỉ lấy log của user hiện tại
-      include: [
-        {
-          model: User,
-          as: "user",
-          attributes: ["username", "full_name", "avatar_url"],
-        },
-      ],
-      order: [["created_at", "DESC"]],
-      limit: 30, // số log tối đa
-    });
-
-    // Chuẩn hóa dữ liệu trước khi nhóm
-    const activities = actsRaw.map((a) => ({
-      id: a.activity_id,
-      userAvatar: a.user?.avatar_url || null,
-      userName: a.user?.full_name || a.user.username,
-      action: formatActivityText(a),
-      created_at: a.created_at,
-    }));
-
-    // Nhóm theo ngày
-    const latestActivities = groupActivitiesByDate(activities);
-
-    return {
-      taskSummary,
-      overviewTasks,
-      pendingProjects,
-      latestActivities,
-    };
-  } catch (error) {
-    console.error("Lỗi tại dashboardService.getDashboardData:", error);
-    throw new Error("Không thể lấy dữ liệu dashboard");
-  }
+  return { taskSummary, overviewTasks, pendingProjects, latestActivities };
 };
-
-const addDays = (date, n) => {
-  const d = new Date(date);
-  d.setDate(d.getDate() + n);
-  return d;
-};
-
-const subDays = (date, n) => addDays(date, -n);
 
 function formatDate(date) {
+  if (!date) return null;
   const d = new Date(date);
-  const day = String(d.getDate()).padStart(2, "0"); // Ngày với hai chữ số
-  const month = String(d.getMonth() + 1).padStart(2, "0"); // Tháng với hai chữ số
-  const year = d.getFullYear(); // Năm đầy đủ
-  return `${day}/${month}/${year}`; // định dạng DD/MM/YYYY
+  return `${String(d.getDate()).padStart(2, "0")}/${String(
+    d.getMonth() + 1
+  ).padStart(2, "0")}/${d.getFullYear()}`;
 }
-
+function formatTime(date) {
+  const d = new Date(date);
+  return `${String(d.getHours()).padStart(2, "0")}:${String(
+    d.getMinutes()
+  ).padStart(2, "0")}`;
+}
 function calcProgress(tasks) {
-  // kiểm tra nếu tasks rỗng
-  if (!tasks || tasks.length === 0) {
-    return 0;
-  }
-  const totalTasks = tasks.length; // tổng số task
-  const completedTasks = tasks.filter((task) => task.status === "done").length; // số task đã hoàn thành
-  const percentage = (completedTasks / totalTasks) * 100; // tính phần trăm
-  return Math.round(percentage); // làm tròn và trả về
+  if (!tasks || tasks.length === 0) return 0;
+  const done = tasks.filter((t) => t.status === "done").length;
+  return Math.round((done / tasks.length) * 100);
 }
-
-// Hàm để định dạng lại mô tả hành động
-function formatActivityText(activity) {
-  const { action, entity_type, description } = activity;
-
-  // Tự động mô tả hành động đẹp hơn
+function formatActivityText(a) {
+  const { action, entity_type, description } = a;
   switch (action) {
     case "created":
       return `Tạo ${entity_type}`;
     case "updated":
       return `Cập nhật ${entity_type}`;
     case "deleted":
-      return `Xóa ${entity_type}`;
+      return `Xoá ${entity_type}`;
+    case "status_change":
+      return `Đổi trạng thái ${entity_type}`;
     case "commented":
       return `Bình luận vào ${entity_type}`;
     case "uploaded":
@@ -246,35 +205,35 @@ function formatActivityText(activity) {
   }
 }
 
-// Hàm để nhóm hoạt động theo ngày
+// Gom activity theo ngày (DD/MM/YYYY)
 function groupActivitiesByDate(activities) {
   const groups = {};
-  activities.forEach((act) => {
-    const date = formatDate(act.created_at); // định dạng ngày tháng
-    if (!groups[date]) groups[date] = []; // khởi tạo mảng nếu chưa có
-    groups[date].push({
+
+  for (const act of activities) {
+    const dateKey = formatDate(act.created_at); // "dd/MM/yyyy"
+    if (!groups[dateKey]) groups[dateKey] = [];
+
+    groups[dateKey].push({
       id: act.id,
-      userAvatar: act.userAvatar,
-      userName: act.userName,
+      userAvatar: act.userAvatar || null,
+      userName: act.userName || "Unknown",
       action: act.action,
-      time: formatTime(act.created_at), // định dạng thời gian
+      time: formatTime(act.created_at), // "HH:mm"
     });
-  });
+  }
 
-  return Object.entries(groups).map(([date, items]) => ({ date, items }));
-}
-
-function formatTime(date) {
-  const d = new Date(date);
-  return `${String(d.getHours()).padStart(2, "0")}:${String(
-    d.getMinutes()
-  ).padStart(2, "0")}`;
+  // Trả mảng { date, items } sắp xếp mới → cũ
+  return Object.entries(groups)
+    .map(([date, items]) => ({ date, items }))
+    .sort((a, b) => {
+      // đổi "dd/MM/yyyy" → Date để so sánh
+      const [da, ma, ya] = a.date.split("/").map(Number);
+      const [db, mb, yb] = b.date.split("/").map(Number);
+      return new Date(yb, mb - 1, db) - new Date(ya, ma - 1, da);
+    });
 }
 
 module.exports = {
   getDashboardData,
-  calcProgress,
-  formatDate,
-  groupActivitiesByDate,
   getTaskOverviewCounts,
 };

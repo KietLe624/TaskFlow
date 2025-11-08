@@ -71,9 +71,6 @@ const roleApi = require("./src/routers/ad-route/role.api");
 
 app.use(`${ADMIN_PREFIX}/role`, roleApi);
 
-
-
-
 // Test route
 app.get(`${API_PREFIX}/get`, (req, res) => {
   res.json({ message: "Hello from server!" });

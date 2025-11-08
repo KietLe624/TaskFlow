@@ -1,30 +1,22 @@
-const dashboardService = require("../services/dashboard.service");
+const { getDashboardData } = require("../services/dashboard.service");
 
 const getDashboards = async (req, res) => {
   try {
-    const userId = req.user?.user_id;
-    const data = await dashboardService.getDashboardData(userId);
-    res.status(200).json(data);
-  } catch (error) {
-    console.error(" Lỗi khi lấy dữ liệu dashboard:", error);
-    res.status(500).json({
-      message: error.message || "Lỗi máy chủ khi lấy dữ liệu dashboard",
-    });
-  }
-};
+    const userId = req.user?.user_id ?? req.user?.dataValues?.user_id;
+    if (!userId)
+      return res.status(401).json({ message: "Unauthorized: missing user_id" });
 
-const getOverview = async (req, res) => {
-  try {
-    const userId = req.user.user_id;
-    const data = await getTaskOverviewCounts(userId, {
-      newDays: 7,
-      nearDays: 3,
-    });
-    res.json(data);
+    const data = await getDashboardData(userId);
+    return res.json(data);
   } catch (err) {
-    console.error(" Dashboard error:", err);
-    res.status(500).json({ message: "Không thể tải dữ liệu dashboard" });
+    console.error("Lỗi khi lấy dữ liệu dashboard:", err);
+    return res
+      .status(500)
+      .json({
+        message: err?.message || "Không thể lấy dữ liệu dashboard",
+        stack: err?.stack,
+      });
   }
 };
 
-module.exports = { getDashboards, getOverview };
+module.exports = { getDashboards };
