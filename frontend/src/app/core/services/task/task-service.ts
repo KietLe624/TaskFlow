@@ -27,7 +27,7 @@ export class TaskService {
 
   updateTask(taskId: number, data: any): Observable<{ message: string; task: Tasks }> {
     const headers = this.getAuthHeaders();
-    return this.http.put<{ message: string; task: Tasks }>(`${this.apiTasks}/updateTask/${taskId}`, data, { headers });
+    return this.http.patch<{ message: string; task: Tasks }>(`${this.apiTasks}/updateTask/${taskId}`, data, { headers });
   }
 
   getTasksByProjectId(projectId: number): Observable<Tasks[]> {
@@ -55,6 +55,5 @@ export class TaskService {
       )
       .pipe(map(res => res.priorities ?? res.priority ?? []));
   }
-
 
 }

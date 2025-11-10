@@ -15,7 +15,7 @@ export class UserAvatarComponent {
   @Input() size: string = 'w-8 h-8'; // Kích thước mặc định
   public initial: string = '?';
   public bgColor: string = '#000000'; // Màu nền mặc định
-
+  public imageLoadFailed = false;
   private colors = [
     '#F44336', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5',
     '#2196F3', '#03A9F4', '#00BCD4', '#009688', '#4CAF50',
@@ -24,7 +24,11 @@ export class UserAvatarComponent {
   ];
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['username'] && !this.src) {
+    if (changes['src']) {
+      this.imageLoadFailed = false;
+    }
+    // Cập nhật avatar ký tự nếu username đổi hoặc không có src
+    if (changes['username'] || !this.src || this.imageLoadFailed) {
       this.updateAvatar();
     }
   }
@@ -59,6 +63,10 @@ export class UserAvatarComponent {
       initial: this.initial,
       bgColor: this.bgColor
     });
+  }
+  handleImageError(event: any) {
+    this.imageLoadFailed = true;
+    this.updateAvatar(); // Đảm bảo initial và bgColor đã được tính toán
   }
 }
 

@@ -5,3 +5,155 @@
 body {
   font-family: "Be Vietnam Pro", sans-serif;
 }
+
+/* src/styles.css - Phong cách Modern Clean */
+
+.toast-container .ngx-toastr {
+  background-color: #fff !important; /* Nền trắng sạch sẽ */
+  color: #1f2937 !important; /* Chữ màu xám đậm (gần đen) dễ đọc */
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.15),
+    0 4px 6px -4px rgba(0, 0, 0, 0.1); /* Đổ bóng sâu và mềm hơn */
+  border-radius: 8px;
+  padding: 16px 20px 16px 50px; /* Padding thoáng hơn một chút */
+  width: 320px;
+  border: 1px solid #f3f4f6; /* Viền rất nhạt để tách biệt với nền web trắng */
+  border-left-width: 6px; /* Tạo viền màu nhấn bên trái */
+}
+
+/* --- Hiệu ứng hover --- */
+.toast-container .ngx-toastr:hover {
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-3px) scale(1.01); /* Nổi lên rõ hơn khi di chuột */
+}
+
+/* --- Tiêu đề & Nội dung --- */
+.toast-title {
+  color: #111827; /* Tiêu đề đen đậm */
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.toast-message {
+  color: #6b7280; /* Nội dung màu xám nhạt hơn tiêu đề */
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* --- Các trạng thái (Chỉ thay đổi màu viền trái và icon) --- */
+
+/* 1. SUCCESS */
+.toast-success {
+  border-left-color: #10b981 !important; /* Màu viền xanh lá */
+  background-image: none !important;
+}
+.toast-success::before {
+  content: "✓";
+  color: #10b981; /* Icon cùng màu với viền */
+  background-color: #d1fae5; /* Nền nhẹ cho icon (tùy chọn, trông rất hiện đại) */
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 15px;
+  top: 16px; /* Căn vị trí theo padding mới */
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* 2. ERROR */
+.toast-error {
+  border-left-color: #ef4444 !important;
+  background-image: none !important;
+}
+.toast-error::before {
+  content: "✕";
+  color: #ef4444;
+  background-color: #fee2e2;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 15px;
+  top: 16px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* 3. WARNING */
+.toast-warning {
+  border-left-color: #f59e0b !important;
+  background-image: none !important;
+}
+.toast-warning::before {
+  content: "!";
+  color: #f59e0b;
+  background-color: #fef3c7;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 15px;
+  top: 16px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* 4. INFO */
+.toast-info {
+  border-left-color: #3b82f6 !important;
+  background-image: none !important;
+}
+.toast-info::before {
+  content: "i";
+  color: #3b82f6;
+  background-color: #dbeafe;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 15px;
+  top: 16px;
+  font-size: 16px;
+  font-weight: bold;
+  font-family: serif;
+}
+
+/* --- Nút đóng --- */
+.toast-close-button {
+  color: #9ca3af !important; /* Màu nút đóng nhạt để không gây chú ý */
+  font-weight: 300;
+  top: 5px;
+  right: 8px;
+}
+.toast-close-button:hover {
+  color: #111827 !important; /* Đậm lên khi di chuột vào */
+}
+
+/* --- Thanh tiến trình --- */
+.toast-progress {
+  opacity: 0.5;
+  height: 3px;
+  background-color: #e5e7eb !important; /* Màu nền thanh progress xám nhạt */
+}
+/* Tùy chỉnh màu thanh progress cho từng loại nếu thích (tùy chọn nâng cao) */
+.toast-success .toast-progress {
+  background-color: #10b981 !important;
+  opacity: 0.2;
+}
+.toast-error .toast-progress {
+  background-color: #ef4444 !important;
+  opacity: 0.2;
+}

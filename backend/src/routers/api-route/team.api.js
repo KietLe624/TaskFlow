@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const { authenticateToken } = require("../../middleware/auth.middleware");
 
-
 // Import controller project
 const {
   createTeam,

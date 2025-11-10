@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, HostListener, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { Project } from '../../../../models/projects';
 import { CommonModule } from '@angular/common';
 import { UserAvatarComponent } from '../user-avatar/user-avatar';
@@ -9,12 +15,21 @@ import { ProjectPriorityPipe } from '../../../../pipes/project-priority-pipe';
 import { ProjectDetailModalComponent } from '../project-detail/project-detail';
 import { AuthService } from '../../../../core/services/auth/auth';
 import { FormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-projects',
-  imports: [CommonModule, UserAvatarComponent, FormCreateProject, ProjectStatusPipe, ProjectPriorityPipe, ProjectDetailModalComponent, FormsModule],
+  imports: [
+    CommonModule,
+    UserAvatarComponent,
+    FormCreateProject,
+    ProjectStatusPipe,
+    ProjectPriorityPipe,
+    ProjectDetailModalComponent,
+    FormsModule,
+  ],
   templateUrl: './projects.html',
-  styleUrls: ['./projects.css']
+  styleUrls: ['./projects.css'],
 })
 export class ProjectsComponent implements OnInit {
   isGrid = true;
@@ -27,7 +42,12 @@ export class ProjectsComponent implements OnInit {
   isEditMode = false;
   selectedProject: Project | null = null;
 
-  constructor(private projectService: ProjectService, private authService: AuthService, private cdr: ChangeDetectorRef) { }
+  constructor(
+    private projectService: ProjectService,
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef,
+    private toastr: ToastrService
+  ) {}
 
   ngOnInit(): void {
     this.loadProjects();
@@ -75,13 +95,17 @@ export class ProjectsComponent implements OnInit {
 
   onProjectSaved(updatedProject: Project) {
     let succcessMsg = '';
-    const index = this.projects.findIndex(p => p.project_id === updatedProject.project_id);
+    const index = this.projects.findIndex(
+      (p) => p.project_id === updatedProject.project_id
+    );
     if (index !== -1) {
       this.projects[index] = { ...this.projects[index], ...updatedProject };
-      succcessMsg = 'Cập nhật dự án thành công!';
+      this.cdr.detectChanges();
+      this.toastr.success('Cập nhật dự án thành công!');
     } else {
       this.projects.push(updatedProject);
-      succcessMsg = 'Tạo dự án thành công!';
+      this.cdr.detectChanges();
+      this.toastr.success('Tạo dự án thành công!');
     }
 
     this.projects = [...this.projects];
@@ -96,10 +120,12 @@ export class ProjectsComponent implements OnInit {
     try {
       this.projectService.deleteProject(project_id).subscribe({
         next: () => {
-          this.projects = this.projects.filter(p => p.project_id !== project_id);
+          this.projects = this.projects.filter(
+            (p) => p.project_id !== project_id
+          );
           this.cdr.detectChanges();
         },
-        error: (err) => console.error(' Lỗi khi xoá project:', err)
+        error: (err) => console.error(' Lỗi khi xoá project:', err),
       });
     } catch (error) {
       console.error(' Lỗi khi xoá project:', error);
@@ -137,7 +163,7 @@ export class ProjectsComponent implements OnInit {
         this.isDetailsModalOpen = true; // <-- Mở modal
         this.cdr.detectChanges();
       },
-      error: (err) => console.error("Lỗi khi lấy chi tiết project:", err)
+      error: (err) => console.error('Lỗi khi lấy chi tiết project:', err),
     });
   }
 
@@ -159,7 +185,7 @@ export class ProjectsComponent implements OnInit {
     console.log(' Mở modal thay đổi trạng thái cho:', id);
     this.openDropdownId = null; // Đóng dropdown
 
-    const project = this.projects.find(p => p.project_id === id);
+    const project = this.projects.find((p) => p.project_id === id);
 
     if (project) {
       this.projectToChangeStatus = project;
@@ -168,9 +194,10 @@ export class ProjectsComponent implements OnInit {
       this.isChangeStatusModalOpen = true; // Mở modal
       this.cdr.detectChanges();
     } else {
-      console.error("Không tìm thấy project để thay đổi trạng thái!");
+      console.error('Không tìm thấy project để thay đổi trạng thái!');
     }
   }
+
   cancelChangeStatus() {
     this.isChangeStatusModalOpen = false;
     this.projectToChangeStatus = null;
@@ -191,7 +218,9 @@ export class ProjectsComponent implements OnInit {
 
     this.projectService.updateProject(project_id, updatedData).subscribe({
       next: (updatedProject) => {
-        const index = this.projects.findIndex(p => p.project_id === project_id);
+        const index = this.projects.findIndex(
+          (p) => p.project_id === project_id
+        );
         if (index !== -1) {
           this.projects[index] = { ...this.projects[index], ...updatedProject };
           this.projects = [...this.projects];
@@ -202,25 +231,26 @@ export class ProjectsComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error("Lỗi khi thay đổi trạng thái:", err);
+        console.error('Lỗi khi thay đổi trạng thái:', err);
         this.cancelChangeStatus();
-      }
+      },
     });
   }
+
   // ========== Lấy class màu theo status ==========
   getStatusColor(status: string): string {
     switch (status) {
       case 'completed':
-        return 'bg-green-500'; // Xanh lá
+        return 'text-green-700 bg-green-200'; // Xanh lá
 
       case 'in_progress':
-        return 'bg-blue-500'; // Xanh dương
+        return 'text-blue-700 bg-blue-200'; // Xanh dương
 
       case 'on_hold':
-        return 'bg-yellow-500'; // Vàng
+        return 'text-yellow-700 bg-yellow-200'; // Vàng
 
       case 'over_due':
-        return 'bg-red-500'; // Đỏ
+        return 'text-red-700 bg-red-200'; // Đỏ
 
       case 'to_do':
         return 'bg-gray-400'; // Xám
@@ -228,6 +258,44 @@ export class ProjectsComponent implements OnInit {
       default:
         return 'bg-gray-400'; // Mặc định
     }
+  }
+
+  getStatusBarColor(status: string): string {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-500'; // Xanh lá
+      case 'in_progress':
+        return 'bg-blue-500'; // Xanh dương
+      case 'on_hold':
+        return 'bg-yellow-500'; // Vàng
+      case 'over_due':
+        return 'bg-red-500'; // Đỏ
+      case 'to_do':
+        return 'bg-gray-400'; // Xám
+      default:
+        return 'bg-gray-400'; // Mặc định
+    }
+  }
+
+  getPriorityColor(priority: string): string {
+    switch (priority) {
+      case 'low':
+        return 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'high':
+        return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300';
+      default:
+        return 'gray';
+    }
+  }
+  // Màu thanh progress (gradient khi tiến độ cao)
+  progressBarClass(progress?: number) {
+    const p = progress ?? 0;
+    if (p >= 100) return 'bg-green-500';
+    if (p >= 60) return 'bg-gradient-to-r from-blue-500 to-indigo-500';
+    if (p >= 30) return 'bg-blue-500';
+    return 'bg-gray-400 dark:bg-gray-500';
   }
 
   // ========== Đánh dấu hoàn thành project ==========
@@ -239,14 +307,14 @@ export class ProjectsComponent implements OnInit {
     this.openDropdownId = null; // Đóng dropdown
 
     // Tìm project để hiển thị tên trong modal
-    const project = this.projects.find(p => p.project_id === id);
+    const project = this.projects.find((p) => p.project_id === id);
 
     if (project) {
       this.projectToComplete = project;
       this.isCompleteModalOpen = true; // Mở modal
       this.cdr.detectChanges(); // Cập nhật UI
     } else {
-      console.error("Không tìm thấy project để hoàn thành!");
+      console.error('Không tìm thấy project để hoàn thành!');
     }
   }
 
@@ -256,11 +324,11 @@ export class ProjectsComponent implements OnInit {
     const project_id = this.projectToComplete.project_id;
     const updatedData = { status: 'completed' };
 
-    console.log(' Đang đánh dấu hoàn thành (đã xác nhận):', project_id);
-
     this.projectService.updateProject(project_id, updatedData).subscribe({
       next: (updatedProject) => {
-        const index = this.projects.findIndex(p => p.project_id === project_id);
+        const index = this.projects.findIndex(
+          (p) => p.project_id === project_id
+        );
 
         if (index !== -1) {
           // Lấy project CŨ
@@ -269,8 +337,8 @@ export class ProjectsComponent implements OnInit {
           this.projects[index] = {
             ...oldProject,
             ...updatedProject,
-            status: 'completed',      // Đảm bảo status là completed
-            progressPercent: 100    // Đảm bảo tiến độ là 100%
+            status: 'completed', // Đảm bảo status là completed
+            progressPercent: 100, // Đảm bảo tiến độ là 100%
           };
 
           this.projects = [...this.projects];
@@ -280,9 +348,9 @@ export class ProjectsComponent implements OnInit {
         this.cancelComplete(); // Đóng modal sau khi thành công
       },
       error: (err) => {
-        console.error("Lỗi khi đánh dấu hoàn thành:", err);
+        console.error('Lỗi khi đánh dấu hoàn thành:', err);
         this.cancelComplete(); // Đóng modal khi lỗi
-      }
+      },
     });
   }
 
@@ -290,5 +358,4 @@ export class ProjectsComponent implements OnInit {
     this.isCompleteModalOpen = false;
     this.projectToComplete = null;
   }
-
 }

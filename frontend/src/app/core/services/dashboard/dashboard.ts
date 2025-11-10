@@ -15,7 +15,6 @@ export class DashboardService {
   getDashboardData(): Observable<DashboardData> {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-
     return this.http.get<DashboardData>(`${this.apiDashboard}`, { headers });
   }
 

@@ -66,14 +66,28 @@ const deleteTeam = async ({ team_id, owner_team_id }) => {
   }
 };
 // get all teams by owner_team_id
+// ...
 const getAllTeamsByOwner = async (owner_team_id) => {
   try {
-    return await Team.findAll({ where: { owner_team_id } });
+    return await Team.findAll({
+      where: { owner_team_id },
+      include: [
+        {
+          model: User,
+          as: "members", // Phải khớp với alias trong Team.associate
+          attributes: ["user_id", "username", "full_name", "avatar_url"], // Chỉ lấy các trường cần thiết
+          through: {
+            attributes: ["user_id","role"],
+          },
+        },
+      ],
+    });
   } catch (error) {
     console.error("Lỗi khi lấy danh sách nhóm (Service):", error.message);
     throw error;
   }
 };
+// ...
 
 // get team members
 const getTeamMembers = async (team_id) => {

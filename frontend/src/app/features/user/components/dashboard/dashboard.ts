@@ -11,6 +11,7 @@ import { Project } from '../../../../models/projects';
 import { FormCreateProject } from '../form-create-project/form-create-project';
 import { ProjectDetailModalComponent } from '../project-detail/project-detail';
 import { FormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-dashboard',
@@ -27,6 +28,7 @@ export class DashboardComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private dashboardService: DashboardService,
     private projectService: ProjectService,
+    private toastr: ToastrService
   ) { }
 
   public openDropdownId: number | null = null;
@@ -112,9 +114,10 @@ export class DashboardComponent implements OnInit {
           this.dataSubject.next({ ...currentData, pendingProjects: updatedProjects });
         }
         this.cancelDelete(); // Đóng modal
+        this.toastr.success('Dự án đã được xoá thành công!', this.projectToDelete.project_name || 'Thành công');
       },
       error: (err) => {
-        console.error("Lỗi khi xoá dự án:", err);
+        this.toastr.error('Có lỗi xảy ra khi xoá dự án.', 'Lỗi');
         this.cancelDelete(); // Đóng modal
       }
     });
@@ -137,7 +140,36 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  getStatusBarColor(status: string): string {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-500'; // Xanh lá
+      case 'in_progress':
+        return 'bg-blue-500'; // Xanh dương
+      case 'on_hold':
+        return 'bg-yellow-500'; // Vàng
+      case 'over_due':
+        return 'bg-red-500'; // Đỏ
+      case 'to_do':
+        return 'bg-gray-400'; // Xám
+      default:
+        return 'bg-gray-400'; // Mặc định
+    }
+  }
 
+  getPriorityColor(priority: string): string {
+    switch (priority) {
+      case 'low':
+        return 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'high':
+        return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300';
+      default:
+        return 'gray';
+    }
+  }
+  
   isChangeStatusModalOpen = false;
   projectToChangeStatus: any | null = null;
   newSelectedStatus: string = '';
@@ -145,7 +177,6 @@ export class DashboardComponent implements OnInit {
 
   changeStatus(project_id: number, event: MouseEvent) {
     event.stopPropagation();
-    console.log(' Mở modal thay đổi trạng thái cho:', project_id);
     this.openDropdownId = null;
 
     const currentData = this.dataSubject.getValue();
@@ -157,7 +188,7 @@ export class DashboardComponent implements OnInit {
       this.isChangeStatusModalOpen = true;
       this.cdr.detectChanges();
     } else {
-      console.error("Không tìm thấy project để thay đổi trạng thái!");
+      this.toastr.error('Không tìm thấy project để thay đổi trạng thái!', 'Lỗi');
     }
   }
 
@@ -188,9 +219,10 @@ export class DashboardComponent implements OnInit {
           this.dataSubject.next({ ...currentData });
         }
         this.cancelChangeStatus();
+        this.toastr.success('Thay đổi trạng thái dự án thành công!', this.projectToChangeStatus.project_name || 'Thành công');
       },
       error: (err) => {
-        console.error("Lỗi khi thay đổi trạng thái:", err);
+        this.toastr.error('Có lỗi xảy ra khi thay đổi trạng thái dự án.', 'Lỗi');
         this.cancelChangeStatus();
       }
     });
@@ -233,6 +265,7 @@ export class DashboardComponent implements OnInit {
               status: 'completed',
               progressPercent: 100
             };
+            this.toastr.success('Dự án đã được hoàn thành!', oldProject.project_name || 'Thành công');
           }
           // Đẩy data mới vào subject
           this.dataSubject.next({ ...currentData });
@@ -240,7 +273,7 @@ export class DashboardComponent implements OnInit {
         this.cancelComplete();
       },
       error: (err) => {
-        console.error("Lỗi khi đánh dấu hoàn thành:", err);
+        this.toastr.error('Có lỗi xảy ra khi hoàn thành dự án.', 'Lỗi');
         this.cancelComplete();
       }
     });
@@ -284,6 +317,7 @@ export class DashboardComponent implements OnInit {
     this.selectedProject = null;
     this.cdr.detectChanges();
   }
+
   onProjectSaved(updatedProject: Project) {
     this.loadDashboardData();
     this.closeModal();

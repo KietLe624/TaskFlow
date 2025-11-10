@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ProjectDetailModalComponent } from './project-detail';
+import { FormTeamComponent } from './form-team';
 
-describe('ProjectDetailModal', () => {
-  let component: ProjectDetailModalComponent;
-  let fixture: ComponentFixture<ProjectDetailModalComponent>;
+describe('FormTeam', () => {
+  let component: FormTeamComponent;
+  let fixture: ComponentFixture<FormTeamComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ProjectDetailModalComponent]
+      imports: [FormTeamComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ProjectDetailModalComponent);
+    fixture = TestBed.createComponent(FormTeamComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -74,7 +74,7 @@ const deleteTeam = async (req, res) => {
 const getAllTeamsByOwner = async (req, res) => {
   try {
     const owner_team_id = req.user?.user_id;
-    const teams = await teamService.getAllTeams(owner_team_id);
+    const teams = await teamService.getAllTeamsByOwner(owner_team_id);
     res.status(200).json({ teams });
   } catch (error) {
     console.error("Lỗi khi lấy danh sách nhóm (Controller):", error.message);

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, ChangeDetectorRef, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TaskService } from '../../../../core/services/task/task-service';
@@ -14,7 +14,7 @@ import { ToastrService } from 'ngx-toastr';
   styleUrls: ['./form-task.css']
 })
 
-export class FormTask implements OnInit {
+export class FormTask implements OnInit, OnChanges {
   private fb = inject(FormBuilder);
   constructor(private taskService: TaskService, private cdr: ChangeDetectorRef, private toastr: ToastrService) { }
 
@@ -56,8 +56,8 @@ export class FormTask implements OnInit {
     if (!this.isEditMode && this.defaultProjectId) {
       this.taskForm.patchValue({ project_id: this.defaultProjectId });
     }
-    if (this.isEditMode && this.initialTask) {
-      const t = this.initialTask;
+    if (this.isEditMode && this.selectedTask) {
+      const t = this.selectedTask;
       this.taskForm.patchValue({
         project_id: t.project_id,
         parent_id: t.parent_id ?? null,
@@ -71,6 +71,30 @@ export class FormTask implements OnInit {
     }
     this.loadStatus();
     this.loadPriorities();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['selectedTask'] && this.selectedTask && this.isEditMode) {
+      this.fillFormData();
+    }
+    if (changes['defaultProjectId'] && this.defaultProjectId && !this.isEditMode) {
+      this.taskForm.patchValue({ project_id: this.defaultProjectId });
+    }
+  }
+
+  private fillFormData() {
+    if (!this.selectedTask) return;
+    const t = this.selectedTask;
+    this.taskForm.patchValue({
+      project_id: t.project_id,
+      parent_id: t.parent_id ?? null,
+      task_name: t.task_name,
+      description: t.description ?? '',
+      status: t.status,
+      priority: t.priority,
+      start_date: this.toDateInput(t.start_date),
+      due_date: this.toDateInput(t.due_date),
+    });
   }
 
   private toDateInput(v: string | Date | null | undefined) {
@@ -109,11 +133,10 @@ export class FormTask implements OnInit {
           this.isSubmitting = false;
           this.cdr.detectChanges();
           this.closeModal.emit();
-          this.toastr.success('Cập nhật task thành công!', 'Thành công');
-
+          this.toastr.success('Cập nhật task thành công!', this.taskForm.get('task_name')?.value || 'Thành công');
         },
         error: (err) => {
-          console.error('Update task error:', err);
+          this.toastr.error('Cập nhật task thất bại. Vui lòng thử lại.', 'Lỗi');
           this.isSubmitting = false;
         },
       });
@@ -125,10 +148,10 @@ export class FormTask implements OnInit {
           this.closeModal.emit();
           this.isSubmitting = false;
           this.cdr.detectChanges();
-          console.log('Task created successfully:', newTask);
+          this.toastr.success('Tạo task thành công!', this.taskForm.get('task_name')?.value || 'Thành công');
         },
         error: (err) => {
-          console.error('Create task error:', err);
+          this.toastr.error('Tạo task thất bại. Vui lòng thử lại.', 'Lỗi');
           this.isSubmitting = false;
         },
       });

@@ -92,6 +92,13 @@ const updateTask = async (taskId, updatedData) => {
       throw new Error("Không tìm thấy task");
     }
     await task.update(updatedData, { fields: Object.keys(updatedData) });
+    const newProjectProgress = await calculateProgress({
+      project_id: task.project_id,
+    });
+    await Project.update(
+      { progressPercent: newProjectProgress },
+      { where: { id: task.project_id } }
+    );
     return task;
   } catch (error) {
     console.error("Lỗi khi cập nhật task:", error);
@@ -169,6 +176,28 @@ const getPriorities = async () => {
   }
 };
 
+const processTasks = async (whereClause) => {
+  try {
+    const totalTasks = await Task.count({ where: whereClause });
+
+    if (totalTasks === 0) return 0;
+
+    const completedTasks = await Task.count({
+      where: {
+        ...whereClause,
+        status: {
+          [Op.or]: ["completed"],
+        },
+      },
+    });
+    const progress = (completedTasks / totalTasks) * 100;
+    return Math.round(progress);
+  } catch (error) {
+    console.error("Lỗi khi tính progress:", error);
+    return 0;
+  }
+};
+
 module.exports = {
   createTask,
   getAllTasks,
@@ -179,4 +208,5 @@ module.exports = {
   getTasksByProjectId,
   getStatus,
   getPriorities,
+  processTasks,
 };

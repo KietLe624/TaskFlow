@@ -148,6 +148,7 @@ const getLatestActivities = async (userId, limit = 30) => {
     userAvatar: a.user?.avatar_url || null,
     userName: a.user?.full_name || a.user?.username || "Unknown",
     action: formatActivityText(a),
+    entity_type: a.action + "_" + a.entity_type,
     created_at: a.created_at,
   }));
 
@@ -218,6 +219,7 @@ function groupActivitiesByDate(activities) {
       userAvatar: act.userAvatar || null,
       userName: act.userName || "Unknown",
       action: act.action,
+      entity_type: act.entity_type,
       time: formatTime(act.created_at), // "HH:mm"
     });
   }

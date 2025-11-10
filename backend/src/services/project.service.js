@@ -1,7 +1,7 @@
 const e = require("express");
 const db = require("../models/index.model");
-const { Op, Transaction } = require("sequelize");
-const { User, Project, Task, Team } = db;
+const { Op } = require("sequelize");
+const { User, Project, Task, Team , sequelize } = db;
 const { logActivity } = require("./activity.service");
 
 // Create a new project
@@ -72,20 +72,45 @@ const createProject = async (projectData, user) => {
 
 // Update a project
 const updateProject = async (projectId, userId, projectData) => {
+  const t = await sequelize.transaction();
+
   try {
-    const updateProject = await Project.findByPk(projectId);
-    if (!updateProject) {
-      return null; // Project not found
+    const projectToUpdate = await Project.findByPk(projectId, {
+      transaction: t,
+    });
+
+    if (!projectToUpdate) {
+      await t.rollback();
+      return null;
     }
 
-    if (updateProject.owner_id !== userId) {
+    if (projectToUpdate.owner_id !== userId) {
+      await t.rollback();
       throw new Error("Bạn không có quyền cập nhật dự án này");
     }
-    // Update project fields
-    const updatedProject = await updateProject.update(projectData);
+    // Nếu người dùng muốn đổi status thành 'completed'
+    if (projectData.status === "completed") {
+      projectData.progressPercent = 100; // Đảm bảo tên trường progressPercent đúng với model của bạn
+
+      // Tự động cập nhật tất cả tasks con thành 'completed'
+      await Task.update(
+        { status: "completed", progress: 100 },
+        {
+          where: { project_id: projectId },
+          transaction: t,
+        }
+      );
+    }
+
+    // Cập nhật project với dữ liệu mới (đã bao gồm logic completed ở trên nếu có)
+    const updatedProject = await projectToUpdate.update(projectData, {
+      transaction: t,
+    });
+    await t.commit();
     return updatedProject;
   } catch (error) {
-    console.error("Lỗi cập nhật dự án(Service):", error);
+    await t.rollback();
+    console.error("Lỗi cập nhật dự án (Service):", error);
     throw error;
   }
 };
@@ -225,6 +250,7 @@ const getPriorities = async () => {
   }
 };
 
+// get project by id
 const getProjectById = async (projectId, userId) => {
   try {
     const project = await Project.findOne({

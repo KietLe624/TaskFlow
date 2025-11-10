@@ -23,6 +23,7 @@ export interface Activity {
   userAvatar: string;
   userName: string;
   action: string;
+  entity_type: string;
   timeAgo: string;
   time: string;
 }
