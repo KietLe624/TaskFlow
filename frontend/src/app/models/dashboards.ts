@@ -4,6 +4,8 @@ import { Project } from "./projects";
 export interface TaskSummary {
   newTasks: number;
   tasksDone: number;
+  nearDueTasks: number;
+  overdueTasks: number;
 }
 
 export interface OverviewTasks {

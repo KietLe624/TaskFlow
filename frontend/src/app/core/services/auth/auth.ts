@@ -46,19 +46,13 @@ export class AuthService {
   }
   logout(): void {
     if (this.isBrowser) {
-      // Xóa token khỏi localStorage
       localStorage.removeItem('token');
       console.log('Đã đăng xuất, xóa token.');
-
-      // (Tùy chọn) Xóa thông tin user đang lưu trong service (nếu có)
-      // this.currentUser = null;
-
-      // Điều hướng về trang login
       this.router.navigate(['/login']);
     }
   }
 
-  getUserIdFromToken(): number{
+  getUserIdFromToken(): number {
     const token = localStorage.getItem('token');
     if (!token) return 0;
     try {

@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PageProjectDetailComponent } from './page-project-detail';
+import { FormTask } from './form-task';
 
-describe('PageProjectDetail', () => {
-  let component: PageProjectDetailComponent;
-  let fixture: ComponentFixture<PageProjectDetailComponent>;
+describe('FormTask', () => {
+  let component: FormTask;
+  let fixture: ComponentFixture<FormTask>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PageProjectDetailComponent]
+      imports: [FormTask]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(PageProjectDetailComponent);
+    fixture = TestBed.createComponent(FormTask);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

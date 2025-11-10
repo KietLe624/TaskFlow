@@ -41,7 +41,6 @@ export class FormCreateProject {
     }
   }
 
-
   constructor(private fb: FormBuilder, private projectService: ProjectService, private cdr: ChangeDetectorRef) {
     this.projectForm = this.fb.group({
       project_name: ['', [Validators.required, Validators.maxLength(255)]],
@@ -66,11 +65,10 @@ export class FormCreateProject {
     const formValue = this.projectForm.value;
 
     if (this.isEditMode && this.selectedProject) {
-      // ✏️ Cập nhật dự án
       this.projectService.updateProject(this.selectedProject.project_id, formValue).subscribe({
         next: (res) => {
-          const updatedProject = res.project || res; // 🔥 fallback an toàn
-          this.projectSaved.emit(updatedProject); // 🔥 emit dữ liệu thực tế
+          const updatedProject = res.project || res;
+          this.projectSaved.emit(updatedProject);
           this.closeModal.emit();
           this.isSubmitting = false;
           this.cdr.detectChanges();
@@ -80,7 +78,6 @@ export class FormCreateProject {
         },
       });
     } else {
-      // 🆕 Tạo mới dự án
       this.projectService.createProject(formValue).subscribe({
         next: (res) => {
           const newProject = res.project || res;
@@ -98,7 +95,6 @@ export class FormCreateProject {
 
 
   closeCreateModal() {
-
     this.selectedProject = null;
     this.closeModal.emit();
     this.cdr.detectChanges();
@@ -108,7 +104,6 @@ export class FormCreateProject {
     this.projectService.getPriorities().subscribe({
       next: (data) => {
         this.priorities = data;
-        console.log(' Priorities from DB:', data);
       },
       error: (err) => {
         console.error(' Lỗi lấy priority:', err);
@@ -119,7 +114,6 @@ export class FormCreateProject {
   loadStatuses() {
     this.projectService.getStatuses().subscribe({
       next: (data) => {
-        console.log(' Statuses from backend:', data);
         this.statuses = data;
         this.cdr.detectChanges();
       },

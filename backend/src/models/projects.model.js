@@ -47,6 +47,13 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "project_id",
       as: "members",
     });
+    Project.hasMany(models.Activity, {
+      as: "activities",
+      foreignKey: "entity_id",
+      constraints: false,
+      // Chỉ lấy activity gắn với project
+      scope: { entity_type: "project" },
+    });
   };
 
   return Project;

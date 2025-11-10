@@ -14,8 +14,6 @@ const {
   getProjectById,
 } = require("../../controllers/project.controller");
 
-// Define routes
-
 router.get("/getAllProjects", authenticateToken, getAllProjects);
 router.get("/getProjectById/:project_id", authenticateToken, getProjectById);
 router.post("/createProject", authenticateToken, createProject);

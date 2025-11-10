@@ -5,18 +5,19 @@ import { UserAvatarComponent } from '../../components/user-avatar/user-avatar';
 import { ProjectStatusPipe } from '../../../../pipes/project-status-pipe';
 import { ProjectPriorityPipe } from '../../../../pipes/project-priority-pipe';
 import { ChangeDetectorRef } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 
 @Component({
   selector: 'app-project-detail',
-  imports: [CommonModule, UserAvatarComponent, ProjectStatusPipe, ProjectPriorityPipe],
+  imports: [CommonModule, UserAvatarComponent, ProjectStatusPipe, ProjectPriorityPipe, RouterLink],
   templateUrl: './project-detail.html',
   styleUrls: ['./project-detail.css']
 })
 export class ProjectDetailModalComponent {
   constructor(private cdr: ChangeDetectorRef) { }
   @Input() project!: Project;
-  @Output() close = new EventEmitter<void>();
+  @Output() closed = new EventEmitter<void>();
 
   public activeTab: string = 'overview';
 
@@ -26,7 +27,7 @@ export class ProjectDetailModalComponent {
   }
 
   closeModal(): void {
-    this.close.emit();
+    this.closed.emit();
     this.cdr.detectChanges();
   }
 }

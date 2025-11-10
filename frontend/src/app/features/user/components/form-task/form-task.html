@@ -1,0 +1,130 @@
+<div
+  class="max-w-xl mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden">
+
+  <!-- Header -->
+  <div
+    class="flex items-center justify-between px-5 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">
+      {{ isEditMode ? 'Sửa công việc' : 'Tạo công việc mới' }}
+    </h2>
+  </div>
+
+  <!-- Form -->
+  <form [formGroup]="taskForm" (ngSubmit)="submitTaskForm()" class="p-5 space-y-6">
+
+    <!-- Basic Info -->
+    <section>
+      <h3 class="text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+        <i class="fas fa-info-circle text-blue-400"></i> Thông tin cơ bản
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Dự án *</label>
+          <select formControlName="project_id"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 transition">
+            <option value="">-- Chọn dự án --</option>
+            @for (p of projects; track p.project_id) {
+            <option [value]="p.project_id">{{ p.project_name }}</option>
+            }
+          </select>
+          @if (taskForm.get('project_id')?.invalid && taskForm.get('project_id')?.touched) {
+          <p class="text-xs text-red-500 mt-1">Bắt buộc chọn dự án</p>
+          }
+        </div>
+
+        <div>
+          <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Công việc cha</label>
+          <select formControlName="parent_id"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 transition">
+            <option value="">(Không có)</option>
+            @for (t of parentCandidates; track t.task_id) {
+            <option [value]="t.task_id">{{ t.task_name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+        <div class="md:col-span-2">
+          <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Tên công việc *</label>
+          <input type="text" formControlName="task_name" placeholder="e.g. Thiết kế trang Dashboard"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 transition" />
+          @if (taskForm.get('task_name')?.invalid && taskForm.get('task_name')?.touched) {
+          <p class="text-xs text-red-500 mt-1">Tên công việc bắt buộc</p>
+          }
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Mô tả</label>
+          <textarea rows="2" formControlName="description" placeholder="Mô tả ngắn…"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 transition resize-none"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section>
+      <h3 class="text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+        <i class="fas fa-sliders-h text-blue-400"></i> Cài đặt
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Trạng thái</label>
+          <select formControlName="status"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 transition">
+            @for (s of statuses; track s) {
+            <option [value]="s">{{ s | projectStatus }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Độ ưu tiên</label>
+          <select formControlName="priority"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 transition">
+            @for (p of priorities; track p) {
+            <option [value]="p">{{ p | projectPriority }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Timeline -->
+    <section>
+      <h3 class="text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+        <i class="fas fa-calendar-alt text-blue-400"></i> Timeline
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Ngày bắt đầu</label>
+          <input type="date" formControlName="start_date"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 transition" />
+        </div>
+        <div>
+          <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Ngày kết thúc</label>
+          <input type="date" formControlName="due_date"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 transition" />
+          @if (dateError) {
+          <p class="text-xs text-red-500 mt-1">Ngày kết thúc phải >= Ngày bắt đầu</p>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <button type="button" (click)="cancel()"
+        class="px-4 py-1.5 rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-red-600 hover:text-white transition">
+        Thoát
+      </button>
+      <button type="submit"
+        class="w-24 text-white bg-blue-600 rounded-lg font-semibold transition-all duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        {{ isEditMode ? 'Cập nhật' : 'Tạo mới' }}
+      </button>
+    </div>
+  </form>
+</div>

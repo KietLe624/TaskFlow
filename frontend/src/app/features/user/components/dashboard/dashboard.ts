@@ -48,7 +48,6 @@ export class DashboardComponent implements OnInit {
   }
 
   toggleDropdown(itemId: number, $event: MouseEvent) {
-    $event.preventDefault();
     $event.stopPropagation();
     this.openDropdownId = this.openDropdownId === itemId ? null : itemId;
   }
@@ -75,6 +74,7 @@ export class DashboardComponent implements OnInit {
       }
     });
   }
+
   closeDetailsModal() {
     this.isDetailsModalOpen = false;
     this.selectedProjectForDetails = null;

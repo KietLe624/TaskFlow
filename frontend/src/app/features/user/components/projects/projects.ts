@@ -144,6 +144,8 @@ export class ProjectsComponent implements OnInit {
   closeDetailsModal() {
     this.isDetailsModalOpen = false;
     this.selectedProjectForDetails = null;
+    console.log(' Đóng modal chi tiết project');
+    this.cdr.detectChanges();
   }
   // ========= Thay đổi trạng thái project ==========
 
@@ -183,6 +185,7 @@ export class ProjectsComponent implements OnInit {
       this.cancelChangeStatus();
       return;
     }
+
     const updatedData = { status: this.newSelectedStatus };
     console.log(`Đang cập nhật project ${project_id} thành:`, updatedData);
 
@@ -195,12 +198,12 @@ export class ProjectsComponent implements OnInit {
           this.cdr.detectChanges();
         }
 
-        this.cancelChangeStatus(); // Đóng modal
+        this.cancelChangeStatus();
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error("Lỗi khi thay đổi trạng thái:", err);
-        this.cancelChangeStatus(); // Đóng modal
+        this.cancelChangeStatus();
       }
     });
   }

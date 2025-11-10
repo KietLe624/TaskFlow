@@ -3,8 +3,8 @@ const taskService = require("../services/task.service");
 // create task
 const createTask = async (req, res) => {
   try {
-    const userId = req.user?.user_id;
-    if (!userId) return res.status(401).json({ message: "Chưa đăng nhập" });
+    const user_id = req.user?.user_id;
+    if (!user_id) return res.status(401).json({ message: "Chưa đăng nhập" });
 
     const { task_name, status, priority, start_date, due_date } = req.body;
 
@@ -13,7 +13,7 @@ const createTask = async (req, res) => {
       return res.status(400).json({ message: "Thiếu thông tin bắt buộc" });
     }
 
-    const task = await taskService.createTask(req.body, userId);
+    const task = await taskService.createTask(req.body, user_id);
     res.status(201).json({
       message: "Tạo task thành công",
       task,
@@ -43,7 +43,7 @@ const getAllTasks = async (req, res) => {
     const tasks = await taskService.getTasksByUserId(userId);
     res.status(200).json(tasks);
   } catch (error) {
-    console.error("❌ Lỗi khi lấy task:", error);
+    console.error(" Lỗi khi lấy task:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -108,11 +108,48 @@ const deleteTask = async (req, res) => {
   }
 };
 
+// get tasks by project id
+const getTasksByProjectId = async (req, res) => {
+  try {
+    const userId = req.user?.user_id;
+    if (!userId) return res.status(401).json({ message: "Chưa đăng nhập" });
+    const projectId = req.params.project_id;
+    const tasks = await taskService.getTasksByProjectId(projectId);
+    res.status(200).json(tasks);
+  } catch (error) {
+    console.error(" Lỗi khi lấy task:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getStatus = async (req, res) => {
+  try {
+    const statuses = await taskService.getStatus();
+    res.status(200).json({message: "Lấy trạng thái thành công", statuses});
+  } catch (error) {
+    console.error("Lỗi khi lấy trạng thái:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getPriorities = async (req, res) => {
+  try {
+    const priorities = await taskService.getPriorities();
+    res.status(200).json({message: "Lấy mức độ ưu tiên thành công", priorities});
+  } catch (error) {
+    console.error("Lỗi khi lấy mức độ ưu tiên:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createTask,
-  getTasksByUserId,
   getAllTasks,
   getTaskById,
   updateTask,
   deleteTask,
+  getTasksByUserId,
+  getTasksByProjectId,
+  getStatus,
+  getPriorities,
 };

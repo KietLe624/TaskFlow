@@ -222,11 +222,9 @@ function groupActivitiesByDate(activities) {
     });
   }
 
-  // Trả mảng { date, items } sắp xếp mới → cũ
   return Object.entries(groups)
     .map(([date, items]) => ({ date, items }))
     .sort((a, b) => {
-      // đổi "dd/MM/yyyy" → Date để so sánh
       const [da, ma, ya] = a.date.split("/").map(Number);
       const [db, mb, yb] = b.date.split("/").map(Number);
       return new Date(yb, mb - 1, db) - new Date(ya, ma - 1, da);

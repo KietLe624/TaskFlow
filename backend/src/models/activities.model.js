@@ -43,6 +43,18 @@ module.exports = (sequelize, DataTypes) => {
 
   Activity.associate = (models) => {
     Activity.belongsTo(models.User, { foreignKey: "user_id", as: "user" });
+    Activity.belongsTo(models.Project, {
+      as: "project",
+      foreignKey: "entity_id",
+      constraints: false,
+    });
+
+    // “belongsTo” ảo tới Task theo entity_id khi entity_type='task'
+    Activity.belongsTo(models.Task, {
+      as: "task",
+      foreignKey: "entity_id",
+      constraints: false,
+    });
   };
 
   return Activity;

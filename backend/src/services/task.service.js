@@ -1,39 +1,62 @@
 const db = require("../models/index.model");
-const { User, Project, Task } = db;
+const { get } = require("../routers/api-route/project.api");
+const { sequelize, User, Project, Task, Activity } = db;
+const { logActivity } = require("./activity.service");
+const { Op } = require("sequelize");
 
 //  CREATE TASK
-const createTask = async (taskData, userId) => {
-  const {
-    task_name,
-    project_id,
-    parent_id,
-    description,
-    status,
-    priority,
-    start_date,
-    due_date,
-  } = taskData;
+const createTask = async (taskData, user_id) => {
+  const t = await sequelize.transaction();
+  try {
+    const {
+      task_name,
+      project_id,
+      parent_id,
+      description,
+      status,
+      priority,
+      start_date,
+      due_date,
+    } = taskData;
 
-  //  Kiểm tra nghiệp vụ (business validation)
-  if (project_id) {
-    const project = await Project.findByPk(project_id);
-    if (!project) throw new Error("Project không tồn tại");
+    // Validate project (nếu được truyền)
+    if (project_id) {
+      const project = await Project.findByPk(project_id, { transaction: t });
+      if (!project) throw new Error("Project không tồn tại");
+    }
+
+    // Tạo task
+    const task = await Task.create(
+      {
+        task_name,
+        project_id: project_id || null,
+        parent_id: parent_id || null,
+        description: description || "",
+        status,
+        priority,
+        start_date,
+        due_date,
+        created_by: user_id,
+      },
+      { transaction: t }
+    );
+    await logActivity(
+      {
+        user_id: user_id,
+        entity_type: "task",
+        entity_id: task.task_id,
+        action: "created",
+        description: `Tạo công việc: ${task.task_name}`,
+      },
+      t
+    );
+
+    await t.commit();
+    return task; // hoặc: task.get({ plain: true })
+  } catch (err) {
+    await t.rollback();
+    throw err;
   }
-
-  const newTaskData = {
-    task_name,
-    project_id: project_id || null,
-    parent_id: parent_id || null,
-    description: description || "",
-    status,
-    priority,
-    start_date,
-    due_date,
-    created_by: userId,
-  };
-
-  const task = await Task.create(newTaskData);
-  return task;
 };
 
 //  GET ALL TASKS
@@ -63,11 +86,17 @@ const getTaskById = async (taskId) => {
 
 //  UPDATE TASK
 const updateTask = async (taskId, updatedData) => {
-  const task = await Task.findByPk(taskId);
-  if (!task) throw new Error("Không tìm thấy task");
-
-  await task.update(updatedData);
-  return task;
+  try {
+    const task = await Task.findByPk(taskId);
+    if (!task) {
+      throw new Error("Không tìm thấy task");
+    }
+    await task.update(updatedData, { fields: Object.keys(updatedData) });
+    return task;
+  } catch (error) {
+    console.error("Lỗi khi cập nhật task:", error);
+    throw new Error("Cập nhật task thất bại: " + error.message);
+  }
 };
 
 //  DELETE TASK
@@ -100,6 +129,46 @@ const getTasksByUserId = async (userId) => {
   });
 };
 
+// get task by project id
+const getTasksByProjectId = async (projectId) => {
+  return await Task.findAll({
+    where: { project_id: projectId },
+    include: [
+      {
+        model: User,
+        as: "creator",
+        attributes: ["user_id", "username", "email"],
+      },
+      {
+        model: User,
+        as: "assignees",
+        attributes: ["user_id", "username", "email"],
+        through: { attributes: [] },
+      },
+    ],
+  });
+};
+
+const getStatus = async () => {
+  try {
+    const statuses = await Task.rawAttributes.status.values;
+    return statuses;
+  } catch (error) {
+    console.error("Lỗi lấy trạng công việc (Service):", error);
+    throw error;
+  }
+};
+
+const getPriorities = async () => {
+  try {
+    const priorities = await Task.rawAttributes.priority.values;
+    return priorities;
+  } catch (error) {
+    console.error("Lỗi lấy mức độ ưu tiên (Service): ", error);
+    throw error;
+  }
+};
+
 module.exports = {
   createTask,
   getAllTasks,
@@ -107,4 +176,7 @@ module.exports = {
   updateTask,
   deleteTask,
   getTasksByUserId,
+  getTasksByProjectId,
+  getStatus,
+  getPriorities,
 };

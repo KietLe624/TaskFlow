@@ -10,6 +10,14 @@ export class ProjectService {
 
   constructor(private http: HttpClient) { }
 
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      Authorization: token ? `Bearer ${token}` : '',
+      'Content-Type': 'application/json',
+    });
+  }
+
   getAllProjects(): Observable<Project[]> {
     const headers = this.getAuthHeaders();
     return this.http.get<{ message: string; projects: Project[] }>(`${this.apiProjects}/getAllProjects`, { headers })
@@ -62,13 +70,6 @@ export class ProjectService {
       .pipe(map(res => res.project));
   }
 
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    return new HttpHeaders({
-      Authorization: token ? `Bearer ${token}` : '',
-      'Content-Type': 'application/json',
-    });
-  }
 }
 
 

@@ -51,7 +51,7 @@ const createProject = async (projectData, user) => {
       },
       { transaction: t }
     );
-    
+
     await logActivity({
       userId: owner_id,
       entityType: "project",
@@ -150,7 +150,6 @@ const getAllProjects = async () => {
 };
 
 // get projects by user id
-// get projects by user id (ĐÃ SỬA)
 const getProjectsByUserId = async (userId) => {
   try {
     const projects = await Project.findAll({
@@ -263,6 +262,18 @@ const getProjectById = async (projectId, userId) => {
             "created_at",
             "updated_at",
           ],
+          include: [
+            {
+              model: db.Attachment,
+              as: "attachments", // Lấy các attachment của task
+              attributes: ["attach_id", "file_name", "file_url"],
+            },
+          ],
+        },
+        {
+          model: db.Activity,
+          as: "activities", // Lấy các hoạt động liên quan đến dự án
+          attributes: ["activity_id"],
         },
       ],
     });
@@ -306,9 +317,15 @@ const processProjects = (projects) => {
           return sum + (task.attachments ? task.attachments.length : 0);
         }, 0)
       : 0;
+    // 3. Đếm Activities
+    const activityCount = p.activities ? p.activities.length : 0;
+
+    // 4. Tính tiến độ dựa trên số task đã hoàn thành
     let progressPercent = 0;
     if (taskCount > 0) {
-      const completedTasks = p.tasks.filter((t) => t.status === "done").length;
+      const completedTasks = p.tasks.filter(
+        (t) => t.status === "completed"
+      ).length;
       progressPercent = Math.round((completedTasks / taskCount) * 100);
     }
 
@@ -316,6 +333,7 @@ const processProjects = (projects) => {
       ...project,
       taskCount,
       attachmentCount,
+      activityCount,
       progressPercent,
     };
   });

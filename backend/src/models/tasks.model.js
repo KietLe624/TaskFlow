@@ -12,7 +12,13 @@ module.exports = (sequelize, DataTypes) => {
       parent_id: { type: DataTypes.INTEGER, allowNull: true },
       description: { type: DataTypes.TEXT, allowNull: true },
       status: {
-        type: DataTypes.ENUM("to_do", "in_progress", "done"),
+        type: DataTypes.ENUM(
+          "to_do",
+          "in_progress",
+          "in_review",
+          "blocked",
+          "completed"
+        ),
         defaultValue: "to_do",
       },
       priority: {
@@ -39,6 +45,19 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "task_id",
       otherKey: "user_id",
       as: "assignees",
+    });
+    Task.hasMany(models.Attachment, {
+      as: "attachments",
+      foreignKey: "task_id",
+      sourceKey: "task_id",
+      onDelete: "CASCADE",
+      hooks: true,
+    });
+    Task.hasMany(models.Activity, {
+      as: "activities",
+      foreignKey: "entity_id",
+      constraints: false,
+      scope: { entity_type: "task" },
     });
   };
 

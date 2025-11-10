@@ -58,6 +58,12 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "message_id",
       as: "message",
     });
+    Attachment.belongsTo(models.Task, {
+      as: "task",
+      foreignKey: "task_id",
+      targetKey: "task_id",
+      onDelete: "CASCADE",
+    });
   };
 
   return Attachment;

@@ -10,6 +10,8 @@ export class ProjectStatusPipe implements PipeTransform {
   private statusMap: { [key: string]: string } = {
     'in_progress': 'Đang xử lý',
     'to_do': 'Cần làm',
+    'in_review': 'Đang xem xét',
+    'blocked': 'Bị chặn',
     'completed': 'Hoàn thành',
     'testing': 'Đang kiểm thử',
     'paused': 'Tạm dừng',

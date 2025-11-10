@@ -5,11 +5,10 @@ export interface TaskAssignee {
   full_name?: string;
 }
 
-// 2. Sửa lại interface Tasks của bro
 export interface Tasks {
   task_id: number;
   task_name: string;
-  parent_id?: number;
+  parent_id?: number | null;
   description?: string;
   status: string;
   priority: string;

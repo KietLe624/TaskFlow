@@ -1,0 +1,374 @@
+@if(projectDetail){
+<div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 mb-6">
+  <!-- Top header -->
+  <div class="flex items-start justify-between">
+    <div>
+      <div class="flex items-center gap-2">
+        <h1 class="text-4xl font-bold text-gray-900 dark:text-white">
+          {{ projectDetail?.project_name }}
+        </h1>
+      </div>
+
+      <p class="mt-2 text-gray-600 dark:text-gray-300">
+        {{ projectDetail?.description }}
+      </p>
+
+      <div class="mt-3 flex items-center gap-2">
+        <!-- status badge -->
+        <span class="inline-flex items-center rounded-lg px-3 py-1 text-xs font-medium"
+          [ngClass]="getStatusClasses(projectDetail.status)">
+          {{ projectDetail?.status | projectStatus }}
+        </span>
+
+        <!-- priority badge -->
+        <span class="inline-flex items-center rounded-lg px-3 py-1 text-xs font-medium"
+          [ngClass]="getPriorityClasses(projectDetail.priority)">
+          {{ projectDetail?.priority | projectPriority }}
+        </span>
+      </div>
+    </div>
+
+    <!-- dates block -->
+    <div class="text-sm text-gray-700/90 dark:text-gray-300 space-y-2">
+      <div class="flex items-center gap-2">
+        <i class="fa-regular fa-calendar"></i>
+        <span class="text-gray-500">Đến hạn:</span>
+        <span class="font-medium">{{
+          projectDetail.due_date | date : "dd, MM, yyyy"
+          }}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <i class="fa-regular fa-clock"></i>
+        <span class="text-gray-500">Bắt đầu:</span>
+        <span class="font-medium">{{
+          projectDetail.start_date | date : "dd, MM, yyyy"
+          }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+    <!-- Progress -->
+    <div class="rounded-xl border border-gray-100 dark:border-gray-700 p-4">
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Tiến độ</p>
+      <div class="flex items-end justify-between">
+        <div class="text-2xl font-bold text-gray-900 dark:text-white">
+          {{ projectDetail.progressPercent ?? 0 }}%
+        </div>
+        <div class="text-xs text-gray-500">
+          {{ projectDetail.taskCount || 0 }}
+          @if (projectDetail.completedTasks) {
+          <span class="text-gray-400">
+            ({{ projectDetail.completedTasks }} completed)
+          </span>
+          }
+        </div>
+      </div>
+      <div class="mt-2 h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+        <div class="h-2 rounded-full" [style.width]="(projectDetail.progressPercent ?? 0) + '%'" [ngClass]="{
+            'bg-green-500': (projectDetail.progressPercent ?? 0) === 100,
+            'bg-blue-500': (projectDetail.progressPercent ?? 0) < 100
+          }"></div>
+      </div>
+    </div>
+
+    <!-- Budget -->
+    <div class="rounded-xl border border-gray-100 dark:border-gray-700 p-4">
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Ngân sách</p>
+      <div class="text-2xl font-bold text-gray-900 dark:text-white">
+        ${{ projectDetail.budget || 0 | number }}
+      </div>
+      <p class="text-xs text-gray-500 mt-1">
+        Client: {{ projectDetail.client }}
+      </p>
+    </div>
+
+    <!-- Team -->
+    <div class="rounded-xl border border-gray-100 dark:border-gray-700 p-4">
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Nhóm</p>
+      <div class="flex -space-x-2">
+        @for (member of (projectDetail.members ?? []).slice(0, 3); track
+        member.user_id) {
+        <img [src]="member.avatar_url || 'assets/default-avatar.png'" [alt]="member.username"
+          class="w-8 h-8 rounded-full ring-2 ring-white dark:ring-gray-800" [title]="member.username" />
+        }
+      </div>
+      <p class="text-xs text-gray-500 mt-1">
+        {{ projectDetail.members?.length || 0 }} thành viên
+      </p>
+    </div>
+
+    <!-- Activity -->
+    <div class="rounded-xl border border-gray-100 dark:border-gray-700 p-4">
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Hoạt động</p>
+      <div class="text-2xl font-bold text-gray-900 dark:text-white">
+        {{ projectDetail.activityCount || 0 }}
+      </div>
+      <p class="text-xs text-gray-500 mt-1">Cập nhật lần cuối: Hôm nay</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="mt-6">
+    <div class="inline-flex gap-1 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-1">
+      <button (click)="setActiveTab('overview')" [ngClass]="{
+          'bg-gray-900 text-white dark:bg-white dark:text-gray-900':
+            activeTab === 'overview',
+          'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700':
+            activeTab !== 'overview'
+        }" class="px-3 py-1.5 text-sm rounded-md font-medium transition">
+        Tổng quan
+      </button>
+
+      <button (click)="setActiveTab('tasks')" [ngClass]="{
+          'bg-gray-900 text-white dark:bg-white dark:text-gray-900':
+            activeTab === 'tasks',
+          'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700':
+            activeTab !== 'tasks'
+        }" class="px-3 py-1.5 text-sm rounded-md font-medium transition">
+        Nhiệm vụ
+      </button>
+
+      <button (click)="setActiveTab('team')" [ngClass]="{
+          'bg-gray-900 text-white dark:bg-white dark:text-gray-900':
+            activeTab === 'team',
+          'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700':
+            activeTab !== 'team'
+        }" class="px-3 py-1.5 text-sm rounded-md font-medium transition">
+        Nhóm
+      </button>
+
+      <button (click)="setActiveTab('discussion')" [ngClass]="{
+          'bg-gray-900 text-white dark:bg-white dark:text-gray-900':
+            activeTab === 'discussion',
+          'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700':
+            activeTab !== 'discussion'
+        }" class="px-3 py-1.5 text-sm rounded-md font-medium transition">
+        Thảo luận
+      </button>
+
+      <button (click)="setActiveTab('analytics')" [ngClass]="{
+          'bg-gray-900 text-white dark:bg-white dark:text-gray-900':
+            activeTab === 'analytics',
+          'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700':
+            activeTab !== 'analytics'
+        }" class="px-3 py-1.5 text-sm rounded-md font-medium transition">
+        Phân tích
+      </button>
+    </div>
+  </div>
+  <!-- Tab Content -->
+  <div class="mt-6">
+    @switch (activeTab) { @case ('overview') {
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <section
+        class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+          Mô tả Dự án
+        </h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">
+          Thông tin chi tiết về dự án
+        </p>
+
+        <p class="text-gray-700 dark:text-gray-300 leading-7">
+          {{ projectDetail.description || "This is a comprehensive project…" }}
+        </p>
+
+        <div class="mt-6 grid sm:grid-cols-2 gap-6">
+          <div>
+            <h3 class="font-medium text-gray-900 dark:text-white mb-2">
+              Mục tiêu Dự án
+            </h3>
+            <ul class="list-disc ml-5 space-y-1 text-gray-700 dark:text-gray-300">
+              <li>Đọc từ database</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+      <aside class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          Thông tin Dự án
+        </h3>
+
+        <div class="space-y-4 text-sm">
+          <div>
+            <p class="text-gray-500 dark:text-gray-400">Khách hàng</p>
+            <p class="font-medium text-gray-900 dark:text-white">
+              {{ projectDetail.client || "Internal" }}
+            </p>
+          </div>
+
+          <div>
+            <p class="text-gray-500 dark:text-gray-400">Ngân sách</p>
+            <p class="font-medium text-gray-900 dark:text-white">
+              ${{ projectDetail.budget || 0 | number }}
+            </p>
+          </div>
+
+          <div>
+            <p class="text-gray-500 dark:text-gray-400">Ngày bắt đầu</p>
+            <p class="font-medium text-gray-900 dark:text-white">
+              {{ projectDetail.start_date | date : "dd, MM, yyyy" }}
+            </p>
+          </div>
+
+          <div>
+            <p class="text-gray-500 dark:text-gray-400">Deadline</p>
+            <p class="font-medium text-gray-900 dark:text-white">
+              {{ projectDetail.due_date | date : "dd, MM, yyyy" }}
+            </p>
+          </div>
+
+          <div class="pt-2 border-t dark:border-gray-700">
+            <p class="text-gray-500 dark:text-gray-400">Quản lý Dự án</p>
+            <div class="mt-2 flex items-center gap-3">
+              <img [src]="
+                  projectDetail.owner?.avatar_url || 'assets/default-avatar.png'
+                " class="w-8 h-8 rounded-full" />
+              <span class="font-medium text-gray-900 dark:text-white">
+                {{
+                projectDetail.owner?.full_name ||
+                projectDetail.owner?.username ||
+                "Owner"
+                }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+    } @case ('tasks') {
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      @for (col of taskColumns(); track col.key) {
+      <section
+        class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm backdrop-blur-sm overflow-hidden">
+        <!-- Column header -->
+        <header
+          class="sticky top-0 z-10 px-4 py-3 flex items-center justify-between bg-white/90 dark:bg-gray-800/90 border-b border-gray-100 dark:border-gray-700">
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-2 h-2 rounded-full" [ngClass]="col.key"></span>
+            <h3 class="font-semibold text-gray-900 dark:text-gray-100">
+              {{ col.title }}
+            </h3>
+            <span
+              class="ml-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+              {{ col.items.length }}
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button type="button" (click)="openCreateTask()"
+              class="text-xs px-2.5 py-1 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/70 text-gray-600 dark:text-gray-300">
+              + Task
+            </button>
+            <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+              <i class="fa-solid fa-ellipsis"></i>
+            </button>
+          </div>
+        </header>
+
+        <!-- Column body -->
+        <div class="p-3 space-y-3">
+          @if (col.items.length === 0) {
+          <div
+            class="rounded-xl border border-dashed border-gray-300 dark:border-gray-600 text-xs text-gray-500 dark:text-gray-400 px-4 py-6 text-center">
+            <i class="fa-regular fa-folder-open mr-1"></i> Chưa có công việc
+          </div>
+          } @for (t of col.items; track t.task_id) {
+          <article
+            class="group rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-2.5 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+            (click)="openEditTask(t)">
+            <!-- Title + priority -->
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <p class="text-sm text-gray-400 dark:text-gray-500">
+                  {{ t.category || "Task" }}
+                </p>
+                <h4 class="mt-0.5 text-sm font-medium text-gray-900 dark:text-gray-100 leading-snug line-clamp-2">
+                  {{ t.task_name }}
+                </h4>
+              </div>
+
+              <span class="text-xs px-2 py-1 font-medium rounded-lg" [ngClass]="taskPriorityBadge(t.priority)">
+                {{ t.priority | projectPriority }}
+              </span>
+            </div>
+
+            <!-- Progress -->
+            <div class="mt-2">
+              <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-0.5">
+                <span>Tiến độ</span>
+                <span>{{ t.progress ?? 0 }}%</span>
+              </div>
+              <div class="h-1 w-full rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                <div class="h-1 rounded-full transition-all duration-300" [ngClass]="progressBarClass(t.progress)"
+                  [style.width]="(t.progress ?? 0) + '%'"></div>
+              </div>
+            </div>
+
+            <!-- Meta -->
+            <div class="mt-2 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+              <!-- Bên trái -->
+              <span class="inline-flex items-center gap-1">
+                <i class="fa-regular fa-calendar text-[9px]"></i>
+                {{ t.due_date | date : "dd/MM" }}
+              </span>
+
+              <!-- Bên phải -->
+              <div class="flex items-center gap-4">
+                <span class="inline-flex items-center gap-1">
+                  <i class="fa-regular fa-message text-[9px]"></i>
+                  {{ t.commentCount ?? 0 }}
+                </span>
+                <span class="inline-flex items-center gap-1">
+                  <i class="fa-regular fa-square-check text-[9px]"></i>
+                  {{ t.subtaskDone ?? 0 }}/{{ t.subtaskTotal ?? 0 }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Assignees -->
+            <div class="mt-2 flex -space-x-2">
+              @for (m of (t.assignees || []).slice(0,3); track m.user_id) {
+              <img [src]="m.avatar_url || 'assets/default-avatar.png'" [alt]="m.username"
+                class="w-5 h-5 rounded-full ring-1 ring-white dark:ring-gray-900" [title]="m.username" />
+              } @if ((t.assignees?.length || 0) > 3) {
+              <span
+                class="w-5 h-5 grid place-items-center rounded-full ring-1 ring-white dark:ring-gray-900 bg-gray-200 dark:bg-gray-700 text-[9px] text-gray-700 dark:text-gray-200">
+                +{{ t.assignees!.length - 3 }}
+              </span>
+              }
+            </div>
+          </article>
+          }
+        </div>
+      </section>
+      }
+    </div>
+
+    } @case ('team') {
+    <p class="text-gray-600 dark:text-gray-300">
+      👥 Thành viên nhóm và vai trò.
+    </p>
+    } @case ('discussion') {
+    <p class="text-gray-600 dark:text-gray-300">💬 Khu vực thảo luận nhóm.</p>
+    } @case ('analytics') {
+    <p class="text-gray-600 dark:text-gray-300">
+      📊 Phân tích và biểu đồ dự án.
+    </p>
+    } }
+  </div>
+</div>
+} <!-- Modal -->
+@if(isTaskModalOpen){
+<div class="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="absolute inset-0" (click)="closeTaskModal()"></div>
+  <div class="relative z-50 w-full max-w-xl p-4">
+    <app-form-task [isEditMode]="isEdit"
+      [projects]="[{ project_id: projectDetail?.project_id, project_name: projectDetail?.project_name }]"
+      [parentCandidates]="tasksInProject" [selectedTask]="selectedTask" [defaultProjectId]="projectDetail?.project_id"
+      (taskSaved)="handleTaskSaved($event)" (closeModal)="closeTaskModal()"></app-form-task>
+  </div>
+</div>
+}
