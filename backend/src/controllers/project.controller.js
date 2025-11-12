@@ -175,26 +175,60 @@ const getPriorities = async (req, res) => {
     return res.status(500).json({ error: "Lỗi server" });
   }
 };
-
 const getProjectById = async (req, res) => {
   try {
-    const userId = req.user?.user_id; // Lấy userId từ token
+    const userId = req.user?.user_id;
     if (!userId) {
       return res.status(401).json({ error: "Chưa đăng nhập" });
     }
-    const projectId = req.params.project_id;
+
+    let projectId = req.params.project_id;
     if (!projectId) {
       return res.status(400).json({ error: "Thiếu project_id" });
     }
+
     const project = await projectService.getProjectById(projectId, userId);
-    return res
-      .status(200)
-      .json({ message: "Lấy thông tin dự án thành công", project });
+
+    // Nếu service trả null thay vì ném lỗi khi không tìm thấy
+    if (!project) {
+      return res.status(404).json({ error: "Không tìm thấy dự án." });
+    }
+
+    return res.status(200).json({
+      message: "Lấy thông tin dự án thành công",
+      project,
+    });
   } catch (error) {
-    console.error("Lỗi lấy thông tin dự án:", error);
-    if (error.message.includes("không có quyền")) {
+    // Logging có thêm context
+    console.error(
+      `Lỗi lấy thông tin dự án - userId=${req.user?.user_id} projectId=${req.params.project_id}:`,
+      error
+    );
+
+    // Nếu service ném custom error với status (nên làm ở service)
+    if (error && error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+
+    // Fallback: dò chuỗi thông báo lỗi (case-insensitive)
+    const msg = error && error.message ? error.message.toLowerCase() : "";
+
+    if (
+      msg.includes("không có quyền") ||
+      msg.includes("không có quyền truy cập") ||
+      msg.includes("permission")
+    ) {
       return res.status(403).json({ error: error.message });
     }
+
+    if (
+      msg.includes("không tìm thấy") ||
+      msg.includes("not found") ||
+      msg.includes("not exist")
+    ) {
+      return res.status(404).json({ error: error.message });
+    }
+
     return res.status(500).json({ error: "Lỗi server" });
   }
 };

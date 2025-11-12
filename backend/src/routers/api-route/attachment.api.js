@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const { upload, uploadToS3 } = require("../../middleware/upload.middleware");
 const { authenticateToken } = require("../../middleware/auth.middleware");
-// const { uploadFile } = require("../../controllers/upload.controller");
 
 // controllers
 const {

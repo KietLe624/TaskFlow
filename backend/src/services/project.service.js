@@ -1,7 +1,7 @@
 const e = require("express");
 const db = require("../models/index.model");
 const { Op } = require("sequelize");
-const { User, Project, Task, Team , sequelize } = db;
+const { User, Project, Task, Team, sequelize } = db;
 const { logActivity } = require("./activity.service");
 
 // Create a new project
@@ -181,45 +181,50 @@ const getProjectsByUserId = async (userId) => {
       where: {
         [Op.or]: [
           { owner_id: userId }, // 1. User là chủ sở hữu
-          { "$members.user_id$": userId }, // 2. User là thành viên (tham gia)
+          { "$members.user_id$": userId }, // 2. User là thành viên trực tiếp
+          { "$team.members.user_id$": userId }, // 3. User là thành viên của team
         ],
       },
       include: [
         {
           model: db.User,
-          as: "owner",
+          as: "owner", // Include owner
           attributes: ["user_id", "username", "email", "full_name"],
+          required: false, // BẮT BUỘC dùng LEFT JOIN
+        },
+        {
+          model: db.User,
+          as: "members", // Include thành viên TRỰC TIẾP
+          attributes: ["user_id", "username", "avatar_url"],
+          through: { attributes: [] },
+          required: false, // BẮT BUỘC dùng LEFT JOIN
         },
         {
           model: db.Team,
-          as: "team",
+          as: "team", // Include team
           attributes: ["team_id", "team_name"],
+          required: false, // BẮT BUỘC dùng LEFT JOIN
+          include: [
+            {
+              model: db.User,
+              as: "members", // Include thành viên GIÁN TIẾP (qua team)
+              attributes: ["user_id", "username", "avatar_url"],
+              through: { attributes: [] },
+              required: false, // BẮT BUỘC dùng LEFT JOIN
+            },
+          ],
         },
         {
           model: db.Task,
           as: "tasks",
           attributes: [
-            "task_id",
-            "task_name",
-            "status",
-            "priority",
-            "start_date",
-            "due_date",
+            /* ... */
           ],
-        },
-        {
-          // Include này BẮT BUỘC phải có
-          // để điều kiện '$members.user_id$' hoạt động
-          model: db.User,
-          as: "members", // (Giả định bro đặt tên association là 'members')
-          attributes: ["user_id", "username", "avatar_url"], // Trả về members luôn
-          through: { attributes: [] }, // Không cần thông tin từ bảng trung gian
+          required: false, // BẮT BUỘC dùng LEFT JOIN
         },
       ],
       order: [["created_at", "DESC"]],
-      // Thêm 'distinct: true' để tránh bị trùng lặp dự án
-      // (nếu user vừa là owner vừa là member)
-      distinct: true,
+      distinct: true, // Tránh trùng lặp dự án
     });
     return processProjects(projects);
   } catch (error) {
@@ -255,8 +260,7 @@ const getProjectById = async (projectId, userId) => {
   try {
     const project = await Project.findOne({
       where: {
-        project_id: projectId,
-        owner_id: userId,
+        project_id: projectId, // chỉ filter theo id dự án, không giới hạn owner
       },
       include: [
         {
@@ -268,10 +272,20 @@ const getProjectById = async (projectId, userId) => {
           model: db.Team,
           as: "team", // Team được gán
           attributes: ["team_id", "team_name"],
+          // Nếu Team có association đến User (thành viên team) với alias 'members',
+          // include để kiểm tra xem userId có phải thành viên team hay không.
+          include: [
+            {
+              model: db.User,
+              as: "members", // <-- nếu alias khác, đổi cho phù hợp với model của bạn
+              attributes: ["user_id"],
+              through: { attributes: [] },
+            },
+          ],
         },
         {
           model: db.User,
-          as: "members",
+          as: "members", // thành viên của project (project_member)
           attributes: ["user_id", "username", "avatar_url", "full_name"],
           through: { attributes: [] }, // Bỏ qua dữ liệu của bảng trung gian
         },
@@ -281,6 +295,7 @@ const getProjectById = async (projectId, userId) => {
           attributes: [
             "task_id",
             "task_name",
+            "description",
             "status",
             "priority",
             "start_date",
@@ -305,22 +320,45 @@ const getProjectById = async (projectId, userId) => {
     });
 
     if (!project) {
-      throw new Error("Không tìm thấy dự án hoặc bạn không có quyền truy cập.");
+      throw new Error("Không tìm thấy dự án.");
     }
 
-    const projectData = project.toJSON();
+    // Quyền truy cập: owner OR thành viên project OR thành viên team
+    const projectJSON = project.toJSON();
 
-    if (projectData.start_date) {
-      projectData.start_date = new Date(projectData.start_date)
+    const isOwner =
+      projectJSON.owner && String(projectJSON.owner.user_id) === String(userId);
+
+    const isProjectMember =
+      Array.isArray(projectJSON.members) &&
+      projectJSON.members.some((m) => String(m.user_id) === String(userId));
+
+    // Kiểm tra team members nếu team được include và có mảng members
+    const isTeamMember =
+      projectJSON.team &&
+      Array.isArray(projectJSON.team.members) &&
+      projectJSON.team.members.some(
+        (m) => String(m.user_id) === String(userId)
+      );
+
+    if (!(isOwner || isProjectMember || isTeamMember)) {
+      throw new Error("Bạn không có quyền truy cập dự án này.");
+    }
+
+    // Format ngày (nếu bạn vẫn muốn)
+    if (projectJSON.start_date) {
+      projectJSON.start_date = new Date(projectJSON.start_date)
         .toISOString()
         .split("T")[0];
     }
-    if (projectData.due_date) {
-      projectData.due_date = new Date(projectData.due_date)
+    if (projectJSON.due_date) {
+      projectJSON.due_date = new Date(projectJSON.due_date)
         .toISOString()
         .split("T")[0];
     }
 
+    // Nếu processProjects mong nhận instance thay vì plain object, gọi với project (hoặc chỉnh lại)
+    // Mình giữ như ban đầu: bạn đang trả về processProjects([project])[0]
     return processProjects([project])[0];
   } catch (error) {
     console.error("Lỗi lấy dự án theo project_id (Service):", error);
@@ -332,21 +370,17 @@ const processProjects = (projects) => {
   if (!projects) return [];
 
   return projects.map((p) => {
-    const project = p.toJSON();
+    const project = p.toJSON(); // 1. Đếm Tasks
 
-    // 1. Đếm Tasks
-    const taskCount = p.tasks ? p.tasks.length : 0;
+    const taskCount = p.tasks ? p.tasks.length : 0; // 2. Đếm Attachments
 
-    // 2. Đếm Attachments
     const attachmentCount = p.tasks
       ? p.tasks.reduce((sum, task) => {
           return sum + (task.attachments ? task.attachments.length : 0);
         }, 0)
-      : 0;
-    // 3. Đếm Activities
-    const activityCount = p.activities ? p.activities.length : 0;
+      : 0; // 3. Đếm Activities
+    const activityCount = p.activities ? p.activities.length : 0; // 4. Tính tiến độ dựa trên số task đã hoàn thành
 
-    // 4. Tính tiến độ dựa trên số task đã hoàn thành
     let progressPercent = 0;
     if (taskCount > 0) {
       const completedTasks = p.tasks.filter(

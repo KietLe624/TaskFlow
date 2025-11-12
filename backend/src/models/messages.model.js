@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      sned_id: {
+      sender_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
@@ -19,17 +19,18 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT("medium"),
         allowNull: false,
       },
-      rely_to: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
+      reply_to: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: null,
       },
       edited_at: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
+        allowNull: true,
       },
       deleted_at: {
         type: DataTypes.DATE,
-        defaultValue: null,
+        allowNull: true,
       },
       created_at: {
         type: DataTypes.DATE,
@@ -41,6 +42,20 @@ module.exports = (sequelize, DataTypes) => {
       timestamps: false,
     }
   );
+  Messages.associate = (models) => {
+    Messages.belongsTo(models.User, {
+      foreignKey: "sender_id",
+      as: "sender",
+    });
+    Messages.belongsTo(models.Conversation, {
+      foreignKey: "conve_id",
+      as: "conversation",
+    });
+    Messages.hasMany(models.Attachment, {
+      foreignKey: "message_id",
+      as: "attachments",
+    });
+  };
 
   return Messages;
 };

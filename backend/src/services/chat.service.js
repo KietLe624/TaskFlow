@@ -1,10 +1,11 @@
 const db = require("../models/index.model");
-const { Conversation, Message, User, ConversationParticipant, Attachment } = db;
+const { Conversation, Messages, User, ConversationParticipant, Attachment } =
+  db;
 
 const chatService = {
   async createConversation(team_id, team_name, owner_team_id) {
     const conversation = await Conversation.create({
-      type: "team", 
+      type: "team",
       title: `${team_name} - Chat`,
       team_id,
       created_by: owner_team_id,
@@ -21,22 +22,46 @@ const chatService = {
   },
 
   async sendMessage({ conve_id, sender_id, content }) {
-    const message = await Message.create({
+    // 1. Tạo tin nhắn (Giả sử model Message đã sửa lỗi typo sned_id -> sender_id)
+    const newMessage = await Messages.create({
       conve_id,
       sender_id,
       content,
     });
-    return message;
+
+    // 2. Lấy lại tin nhắn đó NGAY LẬP TỨC kèm thông tin người gửi
+    // (Đây là bước "enrichment" cực kỳ quan trọng)
+    const fullMessages = await Messages.findByPk(newMessage.mess_id, {
+      include: [
+        {
+          model: User,
+          as: "sender", // Phải khớp với alias trong model Message
+          attributes: ["user_id", "full_name", "username", "avatar_url"],
+        },
+      ],
+    });
+
+    if (!fullMessages) {
+      throw new Error("Không thể tìm thấy tin nhắn vừa tạo.");
+    }
+
+    return fullMessages; // Trả về object đầy đủ cho socket
   },
 
   async getMessages(conve_id) {
-    return await Message.findAll({
+    return await Messages.findAll({
       where: { conve_id },
-      include: [{ model: User, attributes: ["full_name", "avatar_url"] }],
+      include: [
+        {
+          model: User,
+          as: "sender", // Khớp với model Message
+          attributes: ["user_id", "full_name", "username", "avatar_url"],
+        },
+        { model: Attachment, as: "attachments" },
+      ],
       order: [["created_at", "ASC"]],
     });
   },
-
 };
 
 module.exports = chatService;

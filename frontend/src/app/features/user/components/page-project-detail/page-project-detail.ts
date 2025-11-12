@@ -12,6 +12,7 @@ import { FormTeamComponent } from '../form-team/form-team';
 import { TeamService } from '../../../../core/services/team/team-service';
 import { ToastrService } from 'ngx-toastr';
 import { UserAvatarComponent } from '../user-avatar/user-avatar';
+import { ChatboxComponent } from '../chatbox/chatbox';
 
 @Component({
   selector: 'app-page-project-detail',
@@ -21,7 +22,8 @@ import { UserAvatarComponent } from '../user-avatar/user-avatar';
     ProjectPriorityPipe,
     FormTask,
     FormTeamComponent,
-    UserAvatarComponent
+    UserAvatarComponent,
+    ChatboxComponent,
   ],
   templateUrl: './page-project-detail.html',
   styleUrls: ['./page-project-detail.css'],
@@ -32,11 +34,11 @@ export class PageProjectDetailComponent implements OnInit {
   errMsg: string = '';
   isTaskModalOpen = false;
   isSavingTask = false;
-  tasksInProject: any[] = [];
   isEdit = false;
   selectedTask?: Tasks;
   projectTasks: Tasks[] = [];
   currentProgress: number = 0;
+  ConversationId: number | null = null;
 
   constructor(
     private projectService: ProjectService,
@@ -61,19 +63,23 @@ export class PageProjectDetailComponent implements OnInit {
 
   loadProjectDetails(project_id: number): void {
     this.isLoadingDetail = true;
+    this.cdr.markForCheck();
 
     this.projectService.getProjectById(project_id).subscribe({
       next: (data: Project) => {
         this.projectDetail = data;
         if (this.projectDetail && this.projectDetail.team_id) {
           this.loadTeams(this.projectDetail.team_id);
+
         }
         this.isLoadingDetail = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
+        console.log('Loaded project details:', this.projectDetail);
       },
       error: (err) => {
         this.errMsg = 'Lỗi tải chi tiết dự án: ' + err.message;
         this.isLoadingDetail = false;
+        this.cdr.markForCheck();
       },
     });
   }
@@ -163,6 +169,7 @@ export class PageProjectDetailComponent implements OnInit {
         title: this.statusTitle['completed'],
         items: groups['completed'],
       },
+
     ];
   }
 
@@ -175,16 +182,6 @@ export class PageProjectDetailComponent implements OnInit {
     return 'bg-gray-400 dark:bg-gray-500';
   }
 
-  // create task
-  loadTasks() {
-    const projectId = this.projectDetail?.project_id;
-    this.taskService.getTasksByProjectId(projectId).subscribe({
-      next: (res) => (this.tasksInProject = res || []),
-      error: (err) => console.error('Load tasks error:', err),
-    });
-    this.cdr.detectChanges();
-  }
-
   openCreateTask() {
     this.isEdit = false;
     this.selectedTask = undefined;
@@ -194,7 +191,6 @@ export class PageProjectDetailComponent implements OnInit {
 
   openEditTask(t: Tasks) {
     this.isEdit = true;
-    this.loadTasks();
     console.log('Edit task:', t);
     this.selectedTask = t;
     this.isTaskModalOpen = true;
@@ -208,16 +204,8 @@ export class PageProjectDetailComponent implements OnInit {
   }
 
   handleTaskSaved(task: Tasks) {
-    if (this.isEdit) {
-      const idx = this.tasksInProject.findIndex(
-        (x) => x.task_id === task.task_id
-      );
-      if (idx > -1) this.tasksInProject[idx] = task;
-    } else {
-      this.tasksInProject.unshift(task);
-    }
+    this.loadProjectDetails(this.projectDetail.project_id);
     this.closeTaskModal();
-    this.cdr.detectChanges();
   }
 
   updateProgress() {
@@ -257,25 +245,34 @@ export class PageProjectDetailComponent implements OnInit {
   teams: any[] = []; // Biến chứa danh sách team
   isLoadingTeams = false;
 
-loadTeams(team_id: number) {
-  this.isLoadingTeams = true;
-  this.teamService.getTeamMembers(team_id).subscribe({
-    next: (res: any) => {
-      if (res && res.team) {
-          // Quan trọng: Bọc res.team vào mảng [] vì HTML đang dùng vòng lặp @for
-          this.teams = [res.team];
-      } else {
+  loadTeams(team_id: number) {
+    this.isLoadingTeams = true;
+    this.teamService.getTeamMembers(team_id).subscribe({
+      next: (res: any) => {
+        // Dựa vào JSON lồng nhau bạn đã cung cấp
+        if (res && res.team && res.team.team) {
+
+          // SỬA LẠI ĐÂY: Lấy đúng object team bên trong
+          this.teams = [res.team.team];
+
+          // Lấy ID phòng chat
+          this.ConversationId = res.team.conversation_id;
+
+        } else {
           this.teams = [];
-      }
-      this.isLoadingTeams = false;
-      this.cdr.detectChanges();
-    },
-    error: (err) => {
-      console.error('Lỗi load team:', err);
-      this.teams = [];
-      this.isLoadingTeams = false;
-    }
-  });
-}
+          this.ConversationId = null;
+        }
+
+        this.isLoadingTeams = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Lỗi load team:', err);
+        this.teams = [];
+        this.ConversationId = null;
+        this.isLoadingTeams = false;
+      },
+    });
+  }
 
 }

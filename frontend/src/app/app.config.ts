@@ -1,10 +1,17 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideToastr } from 'ngx-toastr';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
+
+// 2. Cấu hình kết nối đến backend
+const config: SocketIoConfig = {
+  url: 'http://localhost:3000',
+  options: {}
+};
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -27,5 +34,6 @@ export const appConfig: ApplicationConfig = {
       tapToDismiss: false,            // Click vào không tự tắt (để người dùng đọc kỹ nếu muốn), hoặc để true tùy thích
       toastClass: 'ngx-toastr custom-toast', // Thêm lớp CSS tùy chỉnh
     }),
+    importProvidersFrom(SocketIoModule.forRoot(config))
   ]
 };

@@ -77,7 +77,7 @@ const getAllTeamsByOwner = async (owner_team_id) => {
           as: "members", // Phải khớp với alias trong Team.associate
           attributes: ["user_id", "username", "full_name", "avatar_url"], // Chỉ lấy các trường cần thiết
           through: {
-            attributes: ["user_id","role"],
+            attributes: ["user_id", "role"],
           },
         },
       ],
@@ -103,7 +103,15 @@ const getTeamMembers = async (team_id) => {
       ],
     });
     if (!team) throw new Error("Nhóm không tồn tại");
-    return team;
+
+    const conversation = await Conversation.findOne({
+      where: { team_id: team_id, type: "team" },
+      attributes: ["conve_id"], // Chỉ lấy ID
+    });
+    return {
+      team: team,
+      conversation_id: conversation ? conversation.conve_id : null,
+    };
   } catch (error) {
     console.error("Lỗi khi lấy thành viên nhóm (Service):", error.message);
     throw error;

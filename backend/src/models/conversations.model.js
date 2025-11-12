@@ -49,6 +49,26 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "created_by",
       as: "creator",
     });
+    // MỘT conversation có NHIỀU tin nhắn
+    Conversation.hasMany(models.Messages, {
+      foreignKey: "conve_id",
+      as: "messages",
+    });
+
+    // MỘT conversation có NHIỀU người tham gia
+    Conversation.hasMany(models.ConversationParticipant, {
+      foreignKey: "conve_id",
+      as: "participants",
+    });
+
+    // MỘT conversation có NHIỀU người dùng (User) thông qua bảng Participant
+    Conversation.belongsToMany(models.User, {
+      through: models.ConversationParticipant,
+      foreignKey: "conve_id",
+      otherKey: "user_id",
+      as: "members",
+    });
   };
+
   return Conversation;
 };

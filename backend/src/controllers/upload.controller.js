@@ -6,7 +6,7 @@ const uploadFile = async (req, res) => {
       file_url: req.fileUrl,
     });
   } catch (error) {
-    console.error("❌ Lỗi controller:", error.message);
+    console.error(" Lỗi controller:", error.message);
     res.status(500).json({ message: error.message });
   }
 };

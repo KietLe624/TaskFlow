@@ -92,7 +92,7 @@ const updateTask = async (taskId, updatedData) => {
       throw new Error("Không tìm thấy task");
     }
     await task.update(updatedData, { fields: Object.keys(updatedData) });
-    const newProjectProgress = await calculateProgress({
+    const newProjectProgress = await processTasks({
       project_id: task.project_id,
     });
     await Project.update(
