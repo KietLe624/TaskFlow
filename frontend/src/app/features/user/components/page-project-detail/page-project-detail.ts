@@ -1,14 +1,12 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { Project } from '../../../../models/projects';
+import { Project, ProjectMember } from '../../../../models/projects';
 import { ProjectService } from '../../../../core/services/project/project-service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ProjectStatusPipe } from '../../../../pipes/project-status-pipe';
 import { ProjectPriorityPipe } from '../../../../pipes/project-priority-pipe';
-import { TaskService } from '../../../../core/services/task/task-service';
 import { FormTask } from '../../components/form-task/form-task';
 import { Tasks } from '../../../../models/tasks';
-import { FormTeamComponent } from '../form-team/form-team';
 import { TeamService } from '../../../../core/services/team/team-service';
 import { ToastrService } from 'ngx-toastr';
 import { UserAvatarComponent } from '../user-avatar/user-avatar';
@@ -21,7 +19,6 @@ import { ChatboxComponent } from '../chatbox/chatbox';
     ProjectStatusPipe,
     ProjectPriorityPipe,
     FormTask,
-    FormTeamComponent,
     UserAvatarComponent,
     ChatboxComponent,
   ],
@@ -45,7 +42,6 @@ export class PageProjectDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private taskService: TaskService,
     private teamService: TeamService,
     private toastr: ToastrService
   ) { }
@@ -68,13 +64,10 @@ export class PageProjectDetailComponent implements OnInit {
     this.projectService.getProjectById(project_id).subscribe({
       next: (data: Project) => {
         this.projectDetail = data;
-        if (this.projectDetail && this.projectDetail.team_id) {
-          this.loadTeams(this.projectDetail.team_id);
-
-        }
+        this.loadProjectMembers(project_id);
         this.isLoadingDetail = false;
         this.cdr.markForCheck();
-        console.log('Loaded project details:', this.projectDetail);
+        console.log('Chi tiết dự án:', this.projectDetail);
       },
       error: (err) => {
         this.errMsg = 'Lỗi tải chi tiết dự án: ' + err.message;
@@ -169,7 +162,6 @@ export class PageProjectDetailComponent implements OnInit {
         title: this.statusTitle['completed'],
         items: groups['completed'],
       },
-
     ];
   }
 
@@ -221,58 +213,25 @@ export class PageProjectDetailComponent implements OnInit {
     const progress = (completedCount / tasks.length) * 100;
     return Math.round(progress);
   }
+
   // ===============================
-  isTeamModalOpen = false;
 
-  openCreateTeam() {
-    this.isTeamModalOpen = true;
-    this.cdr.detectChanges();
-  }
-
-  // Hàm đóng modal
-  closeTeamModal() {
-    this.isTeamModalOpen = false;
-  }
-
-  handleTeamCreated(team: any) {
-    this.loadProjectDetails(this.projectDetail.project_id);
-    this.loadTeams(team.team_id);
-    this.cdr.detectChanges();
-    this.closeTeamModal();
-    this.toastr.success('Tạo team thành công!');
-  }
-
-  teams: any[] = []; // Biến chứa danh sách team
-  isLoadingTeams = false;
-
-  loadTeams(team_id: number) {
-    this.isLoadingTeams = true;
-    this.teamService.getTeamMembers(team_id).subscribe({
-      next: (res: any) => {
-        // Dựa vào JSON lồng nhau bạn đã cung cấp
-        if (res && res.team && res.team.team) {
-
-          // SỬA LẠI ĐÂY: Lấy đúng object team bên trong
-          this.teams = [res.team.team];
-
-          // Lấy ID phòng chat
-          this.ConversationId = res.team.conversation_id;
-
-        } else {
-          this.teams = [];
-          this.ConversationId = null;
-        }
-
-        this.isLoadingTeams = false;
+  members: ProjectMember[] = [];
+  isLoadingMembers = false;
+  loadProjectMembers(project_id: number) {
+    this.isLoadingMembers = true;
+    this.projectService.getProjectMembers(project_id).subscribe({
+      next: (res: any[]) => {
+        this.members = res;
+        this.isLoadingMembers = false;
         this.cdr.detectChanges();
+        console.log('Members (Data đã nhận):', this.members);
       },
       error: (err) => {
-        console.error('Lỗi load team:', err);
-        this.teams = [];
-        this.ConversationId = null;
-        this.isLoadingTeams = false;
+        console.error('Lỗi load members:', err);
+        this.members = [];
+        this.isLoadingMembers = false;
       },
     });
   }
-
 }

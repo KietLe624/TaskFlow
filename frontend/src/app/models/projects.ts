@@ -1,4 +1,5 @@
 import { Tasks } from './tasks';
+import { Team } from './team';
 
 export interface Project {
   project_id: number;
@@ -6,6 +7,7 @@ export interface Project {
   description?: string;
   status: string;
   progressPercent: number;
+  team?: Team;
   members?: ProjectMember[];
   due_date: string;
   start_date: string;
@@ -50,3 +52,4 @@ export interface ProjectDetail {
   due_date?: string;
   members?: ProjectMember[];
 }
+

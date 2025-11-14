@@ -10,7 +10,7 @@
         <div class="w-1 h-14 rounded-full" [ngClass]="getStatusBarColor(project.status)"></div>
         <div>
           <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ project.project_name }}</h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400">{{ project.description || 'Project details' }}</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">{{ project.description || "No description"}}</p>
         </div>
       </div>
       <div class="flex items-center space-x-2 mt-2 ml-5">
@@ -24,29 +24,29 @@
 
       <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
         <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-          <p class="text-gray-500 dark:text-gray-400 mb-1">Progress</p>
-          <span class="text-2xl font-bold text-gray-900 dark:text-gray-200">{{ project.progressPercent }}%</span>
-          <p class="text-xs text-gray-500">{{ project.taskCount }} tasks</p>
+          <p class="text-gray-500 dark:text-gray-400 mb-1">Tiến độ</p>
+          <span class="text-2xl font-bold text-gray-900 dark:text-gray-200">{{ project.progressPercent }} %</span>
+          <p class="text-xs text-gray-500">{{ project.taskCount }} công việc</p>
         </div>
         <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-          <p class="text-gray-500 dark:text-gray-400 mb-1">Budget</p>
+          <p class="text-gray-500 dark:text-gray-400 mb-1">Ngân sách</p>
           <span class="text-2xl font-bold text-gray-900 dark:text-gray-200">${{ project.budget | number }}</span>
           <p class="text-xs text-gray-500">{{ project.client || 'Internal' }}</p>
         </div>
         <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-          <p class="text-gray-500 dark:text-gray-400 mb-1">Team</p>
+          <p class="text-gray-500 dark:text-gray-400 mb-1">Thành viên</p>
           <div class="flex -space-x-2 items-center">
             @for(member of project.members?.slice(0, 3); track member.user_id) {
             <app-user-avatar [src]="member.avatar_url" [username]="member.username" size="w-8 h-8"
               [title]="member.username"></app-user-avatar>
             }
           </div>
-          <p class="text-xs text-gray-500">{{ project.members?.length }} team members</p>
+          <p class="text-xs text-gray-500">{{ project.members?.length }} thành viên</p>
         </div>
         <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
           <p class="text-gray-500 dark:text-gray-400 mb-1">Dates</p>
           <p class="font-semibold text-gray-900 dark:text-gray-200">{{ project.start_date }}</p>
-          <p class="text-xs text-gray-500">Deadline: {{ project.due_date }}</p>
+          <p class="text-xs text-gray-500">Hết hạn: {{ project.due_date }}</p>
         </div>
       </div>
     </div>
@@ -58,23 +58,23 @@
           <!-- tabs -->
           <button (click)="setActiveTab('overview')"
             [ngClass]="{'border-blue-500 text-blue-500 dark:text-blue-400': activeTab === 'overview', 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-200': activeTab !== 'overview'}"
-            class="py-3 px-1 border-b-2 font-medium text-sm transition">Overview</button>
+            class="py-3 px-1 border-b-2 font-medium text-sm transition">Tổng quan</button>
           <button (click)="setActiveTab('tasks')"
             [ngClass]="{'border-blue-500 text-blue-500 dark:text-blue-400': activeTab === 'tasks', 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-200': activeTab !== 'tasks'}"
-            class="py-3 px-1 border-b-2 font-medium text-sm transition">Tasks</button>
-          <button (click)="setActiveTab('team')"
+            class="py-3 px-1 border-b-2 font-medium text-sm transition">Công việc</button>
+          <button (click)="setActiveTab('members')"
             [ngClass]="{'border-blue-500 text-blue-500 dark:text-blue-400': activeTab === 'team', 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-200': activeTab !== 'team'}"
-            class="py-3 px-1 border-b-2 font-medium text-sm transition">Team</button>
+            class="py-3 px-1 border-b-2 font-medium text-sm transition">Thành viên</button>
           <button (click)="setActiveTab('discussions')"
             [ngClass]="{'border-blue-500 text-blue-500 dark:text-blue-400': activeTab === 'discussions', 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-200': activeTab !== 'discussions'}"
-            class="py-3 px-1 border-b-2 font-medium text-sm transition">Discussions</button>
+            class="py-3 px-1 border-b-2 font-medium text-sm transition">Thảo luận</button>
         </div>
       </div>
 
       <div class="p-6">
         @if (activeTab === 'overview') {
         <div class="p-4 border rounded-lg dark:border-gray-700">
-          <h3 class="text-lg font-semibold dark:text-gray-200 mb-2">Project Description</h3>
+          <h3 class="text-lg font-semibold dark:text-gray-200 mb-2">Mô tả dự án</h3>
           <p class="text-gray-600 dark:text-gray-400">{{ project.description }}</p>
         </div>
         }
@@ -83,12 +83,11 @@
           @for(task of project.tasks; track task.task_id) {
           <div class="p-3 flex justify-between items-center bg-gray-50 dark:bg-gray-900 rounded-lg">
             <div class="flex items-center space-x-3">
-              <div class="w-1.5 h-8 rounded-full"
-                [ngClass]="getTaskStatusColor(task.status)">
+              <div class="w-1.5 h-8 rounded-full" [ngClass]="getTaskStatusColor(task.status)">
               </div>
               <div>
                 <p class="font-medium dark:text-gray-200">{{ task.task_name }}</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">{{ task.status | projectStatus }} • Due: {{
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ task.status | projectStatus }} • Ngày hết hạn: {{
                   task.due_date }}</p>
               </div>
             </div>
@@ -98,7 +97,7 @@
           }
         </div>
         }
-        @else if (activeTab === 'team') {
+        @else if (activeTab === 'members') {
         <div class="space-y-3">
           @for(member of project.members; track member.user_id) {
           <div class="p-3 flex justify-between items-center bg-gray-50 dark:bg-gray-900 rounded-lg">
@@ -118,7 +117,9 @@
         </div>
         }
         @else if (activeTab === 'discussions') {
-        <p class="text-gray-500">Tính năng thảo luận đang được phát triển.</p>
+        <div class="p-4 border rounded-lg dark:border-gray-700">
+          <p class="text-gray-600 dark:text-gray-400">Thảo luận về dự án sẽ hiển thị ở đây.</p>
+        </div>
         }
       </div>
     </div>

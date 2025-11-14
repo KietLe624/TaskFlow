@@ -138,7 +138,7 @@ const getAllProjects = async (req, res) => {
 // Get projects by user ID
 const getProjectsByUserId = async (req, res) => {
   try {
-    const userId = req.params.user_id;
+    const userId = req.params?.user_id;
     if (!userId) {
       return res.status(400).json({ error: "Thiếu user_id" });
     }
@@ -175,6 +175,7 @@ const getPriorities = async (req, res) => {
     return res.status(500).json({ error: "Lỗi server" });
   }
 };
+
 const getProjectById = async (req, res) => {
   try {
     const userId = req.user?.user_id;
@@ -233,6 +234,27 @@ const getProjectById = async (req, res) => {
   }
 };
 
+const getProjectMembers = async (req, res) => {
+  try {
+    const userId = req.user?.user_id;
+    if (!userId) {
+      return res.status(401).json({ error: "Chưa đăng nhập" });
+    }
+    const projectId = req.params.project_id;
+    if (!projectId) {
+      return res.status(400).json({ error: "Thiếu project_id" });
+    }
+    const members = await projectService.getProjectMembers(projectId, userId);
+    return res.status(200).json({
+      message: "Lấy danh sách thành viên dự án thành công",
+      members,
+    });
+  } catch (error) {
+    console.error("Lỗi lấy thành viên dự án:", error);
+    return res.status(500).json({ error: "Lỗi server" });
+  }
+};
+
 module.exports = {
   createProject,
   updateProject,
@@ -242,4 +264,5 @@ module.exports = {
   getAllProjects,
   getProjectsByUserId,
   getProjectById,
+  getProjectMembers,
 };

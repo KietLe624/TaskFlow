@@ -16,6 +16,7 @@ import { ProjectDetailModalComponent } from '../project-detail/project-detail';
 import { AuthService } from '../../../../core/services/auth/auth';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { TeamService } from '../../../../core/services/team/team-service';
 
 @Component({
   selector: 'app-projects',
@@ -38,7 +39,6 @@ export class ProjectsComponent implements OnInit {
   teams: any[] = [];
   isModalOpen = false;
 
-  // Thuộc tính này sẽ được dùng bởi <app-create-project>
   isEditMode = false;
   selectedProject: Project | null = null;
 
@@ -46,8 +46,9 @@ export class ProjectsComponent implements OnInit {
     private projectService: ProjectService,
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
-    private toastr: ToastrService
-  ) {}
+    private toastr: ToastrService,
+    private teamService: TeamService
+  ) { }
 
   ngOnInit(): void {
     this.loadProjects();
@@ -56,7 +57,35 @@ export class ProjectsComponent implements OnInit {
   }
 
   loadTeams(): void {
-    // ...
+    this.teamService.getAllTeamsByOwner().subscribe({
+      next: (data) => {
+        this.teams = data;
+        console.log('Teams đã tải:', this.teams);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Lỗi khi tải danh sách teams:', err);
+        this.toastr.error('Không thể tải danh sách nhóm.');
+      }
+    });
+  }
+
+  getProjectMembers(project: Project): any[] {
+    const allMembers = new Map<number, any>();
+    if (Array.isArray(project.members)) {
+      for (const member of project.members) {
+        allMembers.set(member.user_id, member);
+      }
+    }
+    if (project.team && Array.isArray(project.team.members)) {
+      for (const member of project.team.members) {
+        // Chỉ thêm nếu họ chưa có trong danh sách
+        if (!allMembers.has(member.user_id)) {
+          allMembers.set(member.user_id, member);
+        }
+      }
+    }
+    return Array.from(allMembers.values());
   }
 
   loadProjects(): void {
@@ -74,7 +103,7 @@ export class ProjectsComponent implements OnInit {
         this.isLoading = false;
       },
     });
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
   }
 
   openCreateModal() {
@@ -94,7 +123,6 @@ export class ProjectsComponent implements OnInit {
   }
 
   onProjectSaved(updatedProject: Project) {
-    let succcessMsg = '';
     const index = this.projects.findIndex(
       (p) => p.project_id === updatedProject.project_id
     );
@@ -111,7 +139,6 @@ export class ProjectsComponent implements OnInit {
     this.projects = [...this.projects];
     this.isModalOpen = false; // Tự đóng modal khi save
     this.cdr.detectChanges();
-    alert(succcessMsg);
   }
 
   deleteProject(project_id: number, event: MouseEvent) {
@@ -358,4 +385,5 @@ export class ProjectsComponent implements OnInit {
     this.isCompleteModalOpen = false;
     this.projectToComplete = null;
   }
+
 }

@@ -12,6 +12,7 @@ const {
   getStatus,
   getPriorities,
   getProjectById,
+  getProjectMembers,
 } = require("../../controllers/project.controller");
 
 router.get("/getAllProjects", authenticateToken, getAllProjects);
@@ -26,5 +27,10 @@ router.get(
 );
 router.get("/getStatus", authenticateToken, getStatus);
 router.get("/getPriorities", authenticateToken, getPriorities);
+router.get(
+  "/getProjectMembers/:project_id",
+  authenticateToken,
+  getProjectMembers
+);
 
 module.exports = router;

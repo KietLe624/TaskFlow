@@ -109,12 +109,22 @@
       </div>
 
       <div class="flex justify-between items-center my-4">
-        <div class="flex -space-x-2">
-          @for (m of project.members; track m.user_id) {
-          <app-user-avatar [src]="m.avatar_url" [username]="m.username" size="w-8 h-8" [title]="m.username"
-            class="cursor-pointer ring-2 ring-white dark:ring-gray-900">
-          </app-user-avatar>
-          }
+        <div class="mt-4 flex items-center">
+          <div class="flex -space-x-2 overflow-hidden">
+
+            @for (member of getProjectMembers(project).slice(0, 3); track member.user_id) {
+            <app-user-avatar [src]="member.avatar_url" [username]="member.username" size="w-8 h-8" textSize="text-xs"
+              [title]="member.username">
+            </app-user-avatar>
+            }
+
+            @if (getProjectMembers(project).length > 5) {
+            <div
+              class="w-8 h-8 rounded-full ring-2 ring-white dark:ring-gray-800 bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300">
+              +{{ getProjectMembers(project).length - 5 }}
+            </div>
+            }
+          </div>
         </div>
         <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
           <div class="flex items-center space-x-1.5">
@@ -292,7 +302,8 @@
   <div class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
     <div class="w-full max-w-3xl">
       <app-create-project [isEditMode]="isEditMode" [selectedProject]="selectedProject"
-        (closeModal)="isModalOpen = false" (projectSaved)="onProjectSaved($event)">
+        (closeModal)="isModalOpen = false" (projectSaved)="onProjectSaved($event)" [teams]="teams"
+        (projectSaved)="onProjectSaved($event)">
       </app-create-project>
     </div>
   </div>

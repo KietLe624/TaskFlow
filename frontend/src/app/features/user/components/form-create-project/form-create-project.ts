@@ -35,11 +35,11 @@ import { TeamService } from '../../../../core/services/team/team-service';
 export class FormCreateProject {
   @Input() isEditMode = false; // nhận từ component cha (project.component.ts)
   @Input() selectedProject: Project | null = null; // nhận từ component cha (project.component.ts)
+  @Input() teams: Team[] = [];
   @Output() projectSaved = new EventEmitter<Project>();
   @Output() closeModal = new EventEmitter<void>();
 
   projectForm: FormGroup;
-  teams: Team[] = [];
   isSubmitting = false;
   selectedProjectId: number | null = null;
 

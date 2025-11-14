@@ -70,6 +70,12 @@ export class ProjectService {
       .pipe(map(res => res.project));
   }
 
+  getProjectMembers(project_id: number): Observable<any[]> {
+    const headers = this.getAuthHeaders();
+    return this.http
+      .get<{ message: string; members: any[] }>(`${this.apiProjects}/getProjectMembers/${project_id}`, { headers })
+      .pipe(map(res => res.members || []));
+  }
 }
 
 

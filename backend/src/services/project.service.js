@@ -1,16 +1,87 @@
 const e = require("express");
 const db = require("../models/index.model");
 const { Op } = require("sequelize");
-const { User, Project, Task, Team, sequelize } = db;
+const {
+  User,
+  Project,
+  Task,
+  Team,
+  ProjectMember,
+  Attachment,
+  Activity,
+  sequelize,
+} = db;
 const { logActivity } = require("./activity.service");
+
+/**
+ * Đồng bộ thành viên từ Team (teamId) vào bảng ProjectMember (projectId).
+ * Bỏ qua các thành viên đã tồn tại trong ProjectMember để tránh lỗi duplicate.
+ */
+const syncTeamMembersToProject = async (projectId, teamId, transaction) => {
+  if (!teamId || !projectId) return;
+
+  try {
+    // 1. Lấy tất cả user_id của thành viên trong Team
+    const teamWithMembers = await db.Team.findByPk(teamId, {
+      include: [
+        {
+          model: db.User,
+          as: "members",
+          attributes: ["user_id"],
+          through: { attributes: [] }, // Chỉ cần user_id, không cần thông tin bảng trung gian
+        },
+      ],
+      transaction, // Đảm bảo đọc trong transaction
+    });
+
+    if (
+      !teamWithMembers ||
+      !teamWithMembers.members ||
+      teamWithMembers.members.length === 0
+    ) {
+      console.warn(
+        `Team (id: ${teamId}) không có thành viên hoặc không tìm thấy.`
+      );
+      return;
+    }
+
+    const teamMemberIds = teamWithMembers.members.map((m) => m.user_id);
+
+    // 2. Lấy các thành viên "hiện tại" của dự án (từ bảng ProjectMember)
+    //    để tránh thêm trùng lặp
+    const existingMembers = await db.ProjectMember.findAll({
+      where: { project_id: projectId },
+      attributes: ["user_id"],
+      transaction,
+    });
+    const existingMemberIds = new Set(existingMembers.map((m) => m.user_id));
+
+    // 3. Lọc ra các thành viên mới cần thêm
+    const newMembersData = teamMemberIds
+      .filter((userId) => !existingMemberIds.has(userId)) // Chỉ thêm nếu user đó chưa có trong dự án
+      .map((userId) => ({
+        project_id: projectId,
+        user_id: userId,
+      }));
+
+    // 4. Thêm hàng loạt thành viên mới vào ProjectMember
+    if (newMembersData.length > 0) {
+      await db.ProjectMember.bulkCreate(newMembersData, {
+        transaction,
+        ignoreDuplicates: true, // Thêm để an toàn, mặc dù đã filter
+      });
+    }
+  } catch (error) {
+    // Ném lỗi để transaction bên ngoài (create/update) có thể rollback
+    console.error("Lỗi khi đồng bộ thành viên team vào dự án:", error.message);
+    throw new Error("Lỗi đồng bộ thành viên team: " + error.message);
+  }
+};
 
 // Create a new project
 const createProject = async (projectData, user) => {
   const t = await db.sequelize.transaction();
   try {
-    console.log("📥 Dữ liệu nhận từ controller:", projectData);
-    console.log("👤 Thông tin user từ controller:", user);
-
     const {
       project_name,
       team_id,
@@ -43,15 +114,21 @@ const createProject = async (projectData, user) => {
         team_id: team_id || null,
         description: description || "",
         status: status || "to_do",
+        priority: priority || "medium",
         start_date,
         due_date,
         client: client || null,
         budget: budget || 0,
-        priority: priority || "medium",
       },
       { transaction: t }
     );
-
+    if (newProject.team_id) {
+      await syncTeamMembersToProject(
+        newProject.project_id,
+        newProject.team_id,
+        t // Dùng chung transaction
+      );
+    }
     await logActivity({
       userId: owner_id,
       entityType: "project",
@@ -88,6 +165,19 @@ const updateProject = async (projectId, userId, projectData) => {
       await t.rollback();
       throw new Error("Bạn không có quyền cập nhật dự án này");
     }
+    // Đồng bộ thành viên nếu team_id được cập nhật
+    const oldTeamId = projectToUpdate.team_id;
+    const newTeamId = projectData.team_id;
+
+    // Nếu team_id được gán mới hoặc bị thay đổi
+    if (newTeamId && newTeamId !== oldTeamId) {
+      await syncTeamMembersToProject(
+        projectId,
+        newTeamId,
+        t // Dùng chung transaction
+      );
+    }
+
     // Nếu người dùng muốn đổi status thành 'completed'
     if (projectData.status === "completed") {
       projectData.progressPercent = 100; // Đảm bảo tên trường progressPercent đúng với model của bạn
@@ -106,6 +196,7 @@ const updateProject = async (projectId, userId, projectData) => {
     const updatedProject = await projectToUpdate.update(projectData, {
       transaction: t,
     });
+
     await t.commit();
     return updatedProject;
   } catch (error) {
@@ -217,10 +308,16 @@ const getProjectsByUserId = async (userId) => {
         {
           model: db.Task,
           as: "tasks",
-          attributes: [
-            /* ... */
+          attributes: ["task_id", "status"],
+          required: false,
+          include: [
+            {
+              model: db.Attachment,
+              as: "attachments",
+              attributes: ["task_id"],
+              required: false,
+            },
           ],
-          required: false, // BẮT BUỘC dùng LEFT JOIN
         },
       ],
       order: [["created_at", "DESC"]],
@@ -272,12 +369,10 @@ const getProjectById = async (projectId, userId) => {
           model: db.Team,
           as: "team", // Team được gán
           attributes: ["team_id", "team_name"],
-          // Nếu Team có association đến User (thành viên team) với alias 'members',
-          // include để kiểm tra xem userId có phải thành viên team hay không.
           include: [
             {
               model: db.User,
-              as: "members", // <-- nếu alias khác, đổi cho phù hợp với model của bạn
+              as: "members",
               attributes: ["user_id"],
               through: { attributes: [] },
             },
@@ -287,7 +382,7 @@ const getProjectById = async (projectId, userId) => {
           model: db.User,
           as: "members", // thành viên của project (project_member)
           attributes: ["user_id", "username", "avatar_url", "full_name"],
-          through: { attributes: [] }, // Bỏ qua dữ liệu của bảng trung gian
+          through: { attributes: [] },
         },
         {
           model: db.Task,
@@ -345,20 +440,6 @@ const getProjectById = async (projectId, userId) => {
       throw new Error("Bạn không có quyền truy cập dự án này.");
     }
 
-    // Format ngày (nếu bạn vẫn muốn)
-    if (projectJSON.start_date) {
-      projectJSON.start_date = new Date(projectJSON.start_date)
-        .toISOString()
-        .split("T")[0];
-    }
-    if (projectJSON.due_date) {
-      projectJSON.due_date = new Date(projectJSON.due_date)
-        .toISOString()
-        .split("T")[0];
-    }
-
-    // Nếu processProjects mong nhận instance thay vì plain object, gọi với project (hoặc chỉnh lại)
-    // Mình giữ như ban đầu: bạn đang trả về processProjects([project])[0]
     return processProjects([project])[0];
   } catch (error) {
     console.error("Lỗi lấy dự án theo project_id (Service):", error);
@@ -370,9 +451,9 @@ const processProjects = (projects) => {
   if (!projects) return [];
 
   return projects.map((p) => {
-    const project = p.toJSON(); // 1. Đếm Tasks
+    const project = p.toJSON();
 
-    const taskCount = p.tasks ? p.tasks.length : 0; // 2. Đếm Attachments
+    const taskCount = p.tasks ? p.tasks.length : 0;
 
     const attachmentCount = p.tasks
       ? p.tasks.reduce((sum, task) => {
@@ -399,6 +480,38 @@ const processProjects = (projects) => {
   });
 };
 
+const getProjectMembers = async (projectId) => {
+  try {
+    const members = await ProjectMember.findAll({
+      where: { project_id: projectId },
+      include: [
+        {
+          model: User,
+          as: "users",
+          attributes: [
+            "user_id",
+            "username",
+            "full_name",
+            "email",
+            "avatar_url",
+          ],
+        },
+      ],
+    });
+
+    return members.map((pm) => {
+      const userDetails = pm.users.toJSON();
+      return {
+        ...userDetails,
+        role: pm.role,
+      };
+    });
+  } catch (error) {
+    console.error("Lỗi lấy thành viên dự án (Service):", error);
+    throw error;
+  }
+};
+
 module.exports = {
   createProject,
   updateProject,
@@ -408,4 +521,5 @@ module.exports = {
   getAllProjects,
   getProjectsByUserId,
   getProjectById,
+  getProjectMembers,
 };
