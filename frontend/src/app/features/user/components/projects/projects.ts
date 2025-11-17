@@ -17,6 +17,7 @@ import { AuthService } from '../../../../core/services/auth/auth';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { TeamService } from '../../../../core/services/team/team-service';
+import e from 'express';
 
 @Component({
   selector: 'app-projects',
@@ -106,6 +107,7 @@ export class ProjectsComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
+
   openCreateModal() {
     this.isEditMode = false;
     this.selectedProject = null;
@@ -126,16 +128,21 @@ export class ProjectsComponent implements OnInit {
     const index = this.projects.findIndex(
       (p) => p.project_id === updatedProject.project_id
     );
-    if (index !== -1) {
-      this.projects[index] = { ...this.projects[index], ...updatedProject };
-      this.cdr.detectChanges();
-      this.toastr.success('Cập nhật dự án thành công!');
+    if (this.isEditMode) {
+      const index = this.projects.findIndex(
+        (p) => p.project_id === updatedProject.project_id
+      );
+      if (index !== -1) {
+        this.projects[index] = { ...this.projects[index], ...updatedProject };
+        this.toastr.success('Cập nhật dự án thành công!', updatedProject.project_name);
+      }
     } else {
-      this.projects.push(updatedProject);
-      this.cdr.detectChanges();
-      this.toastr.success('Tạo dự án thành công!');
+      const exists = this.projects.some(p => p.project_id === updatedProject.project_id);
+      if (!exists) {
+        this.projects.push(updatedProject);
+        this.toastr.success('Tạo dự án thành công!', updatedProject.project_name);
+      }
     }
-
     this.projects = [...this.projects];
     this.isModalOpen = false; // Tự đóng modal khi save
     this.cdr.detectChanges();
@@ -151,11 +158,12 @@ export class ProjectsComponent implements OnInit {
             (p) => p.project_id !== project_id
           );
           this.cdr.detectChanges();
+          this.toastr.success('Xoá dự án thành công!', this.projects.find(p => p.project_id === project_id)?.project_name);
         },
-        error: (err) => console.error(' Lỗi khi xoá project:', err),
       });
     } catch (error) {
       console.error(' Lỗi khi xoá project:', error);
+      this.toastr.error('Xoá dự án thất bại!');
     }
     this.openDropdownId = null;
   }
@@ -173,6 +181,7 @@ export class ProjectsComponent implements OnInit {
   }
 
   @HostListener('document:click')
+
   closeDropdown() {
     this.openDropdownId = null;
   }
@@ -211,7 +220,6 @@ export class ProjectsComponent implements OnInit {
     event.stopPropagation();
     console.log(' Mở modal thay đổi trạng thái cho:', id);
     this.openDropdownId = null; // Đóng dropdown
-
     const project = this.projects.find((p) => p.project_id === id);
 
     if (project) {

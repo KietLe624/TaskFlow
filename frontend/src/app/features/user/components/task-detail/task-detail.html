@@ -1,0 +1,117 @@
+<div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" (click)="closeModal()">
+
+  <div class="w-full max-w-2xl bg-white dark:bg-gray-800
+           rounded-3xl shadow-2xl overflow-hidden" (click)="$event.stopPropagation()">
+
+    <div class="flex items-center justify-between p-6">
+      <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+        <i class="fas fa-tasks text-blue-500"></i>
+        {{ task?.task_name }}
+      </h3>
+      <button (click)="closeModal()" class="w-9 h-9 flex items-center justify-center rounded-full
+                     bg-gray-100 hover:bg-red-100 hover:text-red-500
+                     text-gray-500 dark:bg-gray-700 dark:text-gray-400
+                     dark:hover:bg-red-900/40 dark:hover:text-red-400 transition">
+        <i class="fas fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <div class="p-6 pt-0 flex flex-col gap-4 max-h-[70vh] overflow-y-auto
+                scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600
+                bg-gray-50 dark:bg-gray-800"> @if (task?.description) {
+      <div class="p-5 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700">
+        <h4 class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-2">
+          Mô tả
+        </h4>
+        <p class="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
+          {{ task?.description }}
+        </p>
+      </div>
+      }
+
+      <div class="grid grid-cols-2 gap-4 text-sm">
+        <div class="p-4 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700">
+          <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-2">Trạng thái</div>
+          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full font-medium text-xs"
+            [ngClass]="getStatusColor(task?.status || '')">
+            <i class="w-4" [ngClass]="{
+              'fa-clock': task?.status === 'to_do',
+              'fa-play-circle': task?.status === 'in_progress',
+              'fa-search': task?.status === 'in_review',
+              'fa-check-circle': task?.status === 'completed'
+            }"></i>
+            {{ task?.status | titlecase }}
+          </span>
+        </div>
+
+        <div class="p-4 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700">
+          <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-2">Ưu tiên</div>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium text-xs capitalize"
+            [ngClass]="getColorPriority(task?.priority || '')">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path [attr.d]="
+                task?.priority === 'high' ? 'M3 4h14M3 10h14M3 16h14' :
+                task?.priority === 'medium' ? 'M3 7h14M3 13h14' : 'M3 10h14'
+              "></path>
+            </svg>
+            {{ task?.priority }}
+          </span>
+        </div>
+
+        <div class="p-4 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700">
+          <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Bắt đầu</div>
+          <div class="font-medium text-gray-900 dark:text-gray-100">
+            {{ task?.start_date | date:'dd/MM/yyyy' }}
+          </div>
+        </div>
+
+        <div class="p-4 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700">
+          <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Hết hạn</div>
+          <div class="font-medium text-gray-900 dark:text-gray-100">
+            {{ task?.due_date | date:'dd/MM/yyyy' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="p-5 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700">
+        <h4 class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-3">
+          Phân công
+        </h4>
+        <div class="flex -space-x-2">
+          @if (task!.assignees && task!.assignees.length > 0) {
+          @for (a of task!.assignees.slice(0, 5); track a.user_id) {
+          <app-user-avatar [username]="a.username" class="w-9 h-9 ring-2 ring-white dark:ring-gray-900">
+          </app-user-avatar>
+          }
+          @if (task!.assignees.length > 5) {
+          <div class="w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center
+                       text-xs font-bold text-gray-700 dark:text-gray-300
+                       ring-2 ring-white dark:ring-gray-900">
+            +{{ task!.assignees.length - 5 }}
+          </div>
+          }
+          } @else {
+          <span class="text-gray-500 text-sm">Chưa phân công</span>
+          }
+        </div>
+      </div>
+
+    </div>
+    <div class="flex gap-3 p-6 pt-5 bg-white dark:bg-gray-800
+                border-t border-gray-200 dark:border-gray-700">
+      <button (click)="editTask()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-medium
+               hover:bg-blue-700 active:scale-95 transition
+               flex items-center justify-center gap-2">
+        <i class="fas fa-edit"></i>
+        Sửa
+      </button>
+
+      <button (click)="deleteTask()" class="py-3 px-5 bg-red-100 text-red-700 rounded-xl font-medium
+               hover:bg-red-200 dark:bg-red-900/40 dark:text-red-300
+               dark:hover:bg-red-900/70 active:scale-95 transition">
+        <i class="fas fa-trash-alt"></i>
+      </button>
+    </div>
+
+  </div>
+</div>

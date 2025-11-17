@@ -118,7 +118,9 @@ const deleteTask = async (taskId) => {
 //  GET TASKS BY USER
 const getTasksByUserId = async (userId) => {
   return await Task.findAll({
-    where: { created_by: userId },
+    where: {
+      [Op.or]: [{ created_by: userId }, { "$assignees.user_id$": userId }],
+    },
     include: [
       { model: Project, as: "project" },
       {

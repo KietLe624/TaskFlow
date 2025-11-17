@@ -111,7 +111,7 @@
             Nhóm thực hiện (Team)
           </label>
           <select formControlName="team_id"
-            class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-sm py-2.5 px-3 text-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:ring-blue-500/10">
+            class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition focus:border-transparent shadow-sm py-2.5 px-3 text-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:ring-blue-500/10">
             @for (team of teams; track team.team_id) {
             <option [value]="team.team_id">
               {{ team.team_name }}

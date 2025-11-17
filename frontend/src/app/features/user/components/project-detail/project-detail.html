@@ -91,7 +91,7 @@
                   task.due_date }}</p>
               </div>
             </div>
-            <app-user-avatar [src]="task.assignee?.avatar_url" [username]="task.assignee?.username"
+            <app-user-avatar [src]="task.assignees?.[0]?.avatar_url" [username]="task.assignees?.[0]?.username"
               size="w-8 h-8"></app-user-avatar>
           </div>
           }

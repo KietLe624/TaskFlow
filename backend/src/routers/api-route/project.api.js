@@ -13,6 +13,7 @@ const {
   getPriorities,
   getProjectById,
   getProjectMembers,
+  inviteMemberToProject,
 } = require("../../controllers/project.controller");
 
 router.get("/getAllProjects", authenticateToken, getAllProjects);
@@ -31,6 +32,11 @@ router.get(
   "/getProjectMembers/:project_id",
   authenticateToken,
   getProjectMembers
+);
+router.post(
+  "/inviteMemberToProject/:project_id",
+  authenticateToken,
+  inviteMemberToProject
 );
 
 module.exports = router;

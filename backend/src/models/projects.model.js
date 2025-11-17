@@ -45,15 +45,16 @@ module.exports = (sequelize, DataTypes) => {
     Project.belongsToMany(models.User, {
       through: "project_members",
       foreignKey: "project_id",
+      otherKey: "user_id",
       as: "members",
     });
     Project.hasMany(models.Activity, {
       as: "activities",
       foreignKey: "entity_id",
       constraints: false,
-      // Chỉ lấy activity gắn với project
       scope: { entity_type: "project" },
     });
+    Project.hasOne(models.Conversation, { foreignKey: 'project_id', as: 'conversation' });
   };
 
   return Project;

@@ -1,0 +1,155 @@
+<div class="min-h-screen">
+  <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-6 sm:mb-10">
+      <h1 class="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-white">
+        Tasks
+      </h1>
+      <p class="text-xs sm:text-sm mt-1 text-gray-500 dark:text-gray-400">
+        Kéo thả để thay đổi trạng thái
+      </p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-min">
+      @for (column of kanbanColumns; track column.status) {
+      <div class="flex flex-col gap-4 w-full">
+        <!-- Column Header -->
+        <div class="mb-2 sm:mb-4 pb-2 border-b border-gray-300 dark:border-gray-700 flex items-center justify-between">
+          <h2 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-800 dark:text-white">
+            {{ column.title }}
+          </h2>
+          <span
+            class="text-sm sm:text-xs font-medium px-2.5 py-1 rounded-full bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+            {{ tasksInColumn(column.status) }}
+          </span>
+        </div>
+
+        <!-- Drop Zone -->
+        <div cdkDropList [id]="column.status" [cdkDropListData]="tasksByStatus(column.status)"
+          (cdkDropListDropped)="drop($event)" [cdkDropListConnectedTo]="connectedTo" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-3 sm:p-4 shadow-sm dark:shadow-none min-h-[220px] sm:min-h-[360px] lg:min-h-[500px] overflow-auto
+                 touch-pan-y">
+          <div class="space-y-4">
+            @for (task of tasksByStatus(column.status); track task.task_id) {
+            <div cdkDrag [cdkDragData]="task" (cdkDragStarted)="onDragStart($event)"
+              class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-600 p-3 sm:p-5 shadow hover:shadow-md dark:hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-500 select-none relative group">
+              <!-- Nút 3 chấm – hiện khi hover -->
+              <button (click)="toggleDropdown(task.task_id)"
+                class="absolute top-2 sm:top-3 right-2 sm:right-3 p-1.5 sm:p-2 opacity-0 group-hover:opacity-100 z-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <i class="fas fa-ellipsis-v text-gray-500 dark:text-gray-400 text-xs sm:text-sm"></i>
+              </button>
+
+              <!-- Nội dung task -->
+              <h3 class="font-semibold text-sm sm:text-base mb-1 sm:mb-2 text-gray-900 dark:text-white pr-8 truncate">
+                {{ task.task_name }}
+              </h3>
+
+              <!-- Mô tả — ẩn trên mobile để tiết kiệm không gian -->
+              @if (task.description) {
+              <p class="hidden sm:block text-sm mb-3 line-clamp-3 leading-relaxed text-gray-600 dark:text-gray-400">
+                {{ task.description }}
+              </p>
+              }
+
+              <div class="flex items-center justify-between text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
+                <div class="flex items-center gap-3 sm:gap-4">
+                  <span class="flex items-center gap-1.5 font-medium text-[11px] sm:text-xs">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path [attr.d]="
+                        task.priority === 'high'
+                          ? 'M3 4h14M3 10h14M3 16h14'
+                          : task.priority === 'medium'
+                          ? 'M3 7h14M3 13h14'
+                          : 'M3 10h14'
+                      "></path>
+                    </svg>
+                    <span class="capitalize">{{ task.priority }}</span>
+                  </span>
+
+                  @if (task.due_date) {
+                  <span class="font-medium text-[11px] sm:text-xs">{{ task.due_date | date:'dd MMM' }}</span>
+                  }
+                </div>
+
+                <!-- Avatars: chỉ hiển thị 1 avatar trên mobile, nhiều trên sm+ -->
+                @if (task.assignees && task.assignees.length > 0) {
+                <div class="flex -space-x-2 items-center">
+                  @for (a of task.assignees | slice:0:3; track a.user_id) {
+                  <div class="hidden sm:block">
+                    <app-user-avatar [username]="a.username" [title]="a.username"></app-user-avatar>
+                  </div>
+                  }
+                  <!-- Trên mobile: chỉ 1 avatar -->
+                  <div class="sm:hidden">
+                    <app-user-avatar [username]="task.assignees[0].username"></app-user-avatar>
+                  </div>
+
+                  @if (task.assignees.length > 3) {
+                  <div class="hidden sm:block">
+                    <app-user-avatar [username]="'+' + (task.assignees.length - 3)"></app-user-avatar>
+                  </div>
+                  }
+                </div>
+                }
+              </div>
+
+              <!-- DROPDOWN MENU -->
+              @if (openDropdownId === task.task_id) {
+              <div
+                class="absolute right-3 top-12 w-56 sm:w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50 overflow-hidden">
+                <button (click)="viewDetail(task); openDropdownId=null"
+                  class="w-full px-4 py-3 text-left text-sm flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                  <i class="fas fa-eye text-blue-600 w-5 text-center"></i>
+                  <span class="text-gray-700 dark:text-gray-300">Xem chi tiết</span>
+                </button>
+
+                <button (click)="openEditTaskModal(task); openDropdownId=null"
+                  class="w-full px-4 py-3 text-left text-sm flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                  <i class="fas fa-edit text-blue-600 w-5 text-center"></i>
+                  <span class="text-gray-700 dark:text-gray-300">Sửa </span>
+                </button>
+
+                <hr class="my-2 border-gray-200 dark:border-gray-700">
+
+                <button (click)="deleteTask(task); openDropdownId=null"
+                  class="w-full px-4 py-3 text-left text-sm flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400">
+                  <i class="fas fa-trash-alt w-5 text-center"></i>
+                  <span>Xóa</span>
+                </button>
+              </div>
+              }
+            </div>
+            }
+            <div cdkDragPlaceholder
+              class="h-16 sm:h-20 bg-gray-200 dark:bg-gray-700 rounded-lg opacity-50 border-2 border-dashed border-gray-400 dark:border-gray-600 hidden lg:block sm:block md:hidden">
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+  @if (openDropdownId !== null) {
+  <div class="fixed inset-0 z-40" (click)="openDropdownId = null"></div>
+  }
+</div>
+
+@if(isTaskModalOpen){
+<div class="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50 px-4">
+  <div class="absolute inset-0" (closed)="closeTaskForm()"></div>
+  <div class="relative z-50 w-full max-w-lg sm:max-w-xl p-4">
+    <app-form-task [isEditMode]="!!selectedTaskForEdit" [selectedTask]="selectedTaskForEdit"
+      [defaultProjectId]="defaultProjectId" [projects]="projects" (taskSaved)="onTaskSaved($event)"
+      (closed)="closeTaskForm()">
+    </app-form-task>
+  </div>
+</div>
+}
+
+<!-- MODAL TASK DETAIL -->
+@if (isTaskDetailModalOpen && selectedTaskForDetail) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="absolute inset-0" (click)="closeDetailModal()"></div>
+  <div class="relative z-10 w-full max-w-2xl mx-auto">
+    <app-task-detail [task]="selectedTaskForDetail" (closed)="closeDetailModal()"></app-task-detail>
+  </div>
+</div>
+}

@@ -22,17 +22,17 @@ export class FormTask implements OnInit, OnChanges {
 
   @Input() projects: Array<{ project_id: number; project_name: string }> = [];
   @Input() parentCandidates: Array<{ task_id: number; task_name: string }> = [];
-  @Input() selectedTask?: Tasks;
+  @Input() selectedTask: Tasks | null | undefined = null;
 
-  @Input() defaultProjectId?: number;
+  // Trong form-task.component.ts
+  @Input() defaultProjectId?: number | null = null;
 
   @Input() isEditMode = false;
   @Input() initialTask?: Tasks;
 
   @Output() saved = new EventEmitter<any>();
-  @Output() cancelled = new EventEmitter<void>();
   @Output() taskSaved = new EventEmitter<Tasks>();
-  @Output() closeModal = new EventEmitter<void>();
+  @Output() closed = new EventEmitter<void>();
 
   statuses: string[] = [];
   priorities: string[] = [];
@@ -119,8 +119,8 @@ export class FormTask implements OnInit, OnChanges {
       task_name: (formValue.task_name || '').trim(),
       parent_id: formValue.parent_id ? Number(formValue.parent_id) : null,
       description: (formValue.description ?? '').trim(),
-      status: formValue.status,         // 'to_do' | 'in_progress' | 'done'
-      priority: formValue.priority,     // 'low' | 'medium' | 'high' | 'urgent'
+      status: formValue.status,
+      priority: formValue.priority,
       start_date: formValue.start_date || null,
       due_date: formValue.due_date || null,
     };
@@ -132,8 +132,7 @@ export class FormTask implements OnInit, OnChanges {
           this.taskSaved.emit(updatedTask);
           this.isSubmitting = false;
           this.cdr.detectChanges();
-          this.closeModal.emit();
-          this.toastr.success('Cập nhật task thành công!', this.taskForm.get('task_name')?.value || 'Thành công');
+          this.close();
         },
         error: (err) => {
           this.toastr.error('Cập nhật task thất bại. Vui lòng thử lại.', 'Lỗi');
@@ -145,10 +144,9 @@ export class FormTask implements OnInit, OnChanges {
         next: (res) => {
           const newTask = (res as any).task || res;
           this.taskSaved.emit(newTask);
-          this.closeModal.emit();
           this.isSubmitting = false;
           this.cdr.detectChanges();
-          this.toastr.success('Tạo task thành công!', this.taskForm.get('task_name')?.value || 'Thành công');
+          this.close();
         },
         error: (err) => {
           this.toastr.error('Tạo task thất bại. Vui lòng thử lại.', 'Lỗi');
@@ -158,9 +156,12 @@ export class FormTask implements OnInit, OnChanges {
     }
   }
 
+  private close() {
+    this.closed.emit();
+  }
+
   cancel() {
-    this.cancelled.emit();
-    this.closeModal.emit();
+    this.close();  // Chỉ gọi cái này
   }
 
   loadStatus() {

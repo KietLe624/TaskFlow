@@ -1,6 +1,5 @@
 const db = require("../models/index.model");
-const { Conversation, Messages, User, ConversationParticipant, Attachment } =
-  db;
+const { Conversation, Messages, User, ConversationParticipant, Attachment } = db;
 
 const chatService = {
   async createConversation(team_id, team_name, owner_team_id) {
@@ -17,10 +16,36 @@ const chatService = {
       conve_id: conversation.conve_id,
       user_id: owner_team_id,
     });
-
     return conversation;
   },
 
+  async createProjectChat(project_id, project_name, owner_id, tx = null) {
+    const opts = tx ? { transaction: tx } : {};
+    const conversation = await Conversation.create(
+      {
+        type: "project",
+        title: `Project ${project_name} - Chat`,
+        project_id,
+        created_by: owner_id,
+      },
+      opts
+    );
+
+    console.log("DEBUG Project Conversation:", conversation.dataValues);
+
+    // tạo participant cho owner (trong cùng transaction nếu có)
+    await ConversationParticipant.create(
+      {
+        conve_id: conversation.conve_id,
+        user_id: owner_id,
+        role: 'owner',
+      },
+      opts
+    );
+
+    return conversation;
+  },
+  
   async sendMessage({ conve_id, sender_id, content }) {
     // 1. Tạo tin nhắn (Giả sử model Message đã sửa lỗi typo sned_id -> sender_id)
     const newMessage = await Messages.create({

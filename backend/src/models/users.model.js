@@ -30,12 +30,11 @@ module.exports = (sequelize, DataTypes) => {
       as: "ownedProjects",
     });
     User.belongsToMany(models.Project, {
-      through: "project_members",
+      through: models.ProjectMember,
       foreignKey: "user_id",
       otherKey: "project_id",
       as: "projects",
     });
-
     // --- Task ---
     User.hasMany(models.Task, { foreignKey: "created_by", as: "createdTasks" });
     User.belongsToMany(models.Task, {
@@ -50,16 +49,19 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "owner_team_id",
       as: "ownedTeams",
     });
+
     User.belongsToMany(models.Team, {
       through: models.TeamMember,
       foreignKey: "user_id",
       otherKey: "team_id",
       as: "teams",
     });
+
     User.hasMany(models.TeamMember, {
       foreignKey: "user_id",
       as: "teamMemberships",
     });
+
     User.belongsToMany(models.Role, {
       through: models.UserRole,
       as: "roles",

@@ -72,20 +72,20 @@ const updateProject = async (req, res) => {
 // Delete project
 const deleteProject = async (req, res) => {
   try {
-    const userId = req.user?.user_id; // Lấy userId từ token
-    if (!userId) {
+    const user_id = req.user?.user_id; // Lấy userId từ token
+    if (!user_id) {
       return res.status(401).json({ error: "Chưa đăng nhập" });
     }
 
-    const projectId = req.params.project_id;
-    if (!projectId) {
+    const project_id = req.params.project_id;
+    if (!project_id) {
       return res.status(400).json({ error: "Thiếu project_id" });
     }
 
     //Truyền userId vào service
     const deletedProject = await projectService.deleteProject(
-      projectId,
-      userId
+      project_id,
+      user_id
     );
 
     if (!deletedProject) {
@@ -255,6 +255,35 @@ const getProjectMembers = async (req, res) => {
   }
 };
 
+const inviteMemberToProject = async (req, res) => {
+  try {
+    const userId = req.user?.user_id;
+    if (!userId) {
+      return res.status(401).json({ error: "Chưa đăng nhập" });
+    }
+
+    const projectId = req.params.project_id;
+    const { memberEmail } = req.body;
+    if (!projectId || !memberEmail) {
+      return res
+        .status(400)
+        .json({ error: "Thiếu project_id hoặc memberEmail" });
+    }
+    const result = await projectService.inviteMemberToProject(
+      projectId,
+      userId,
+      memberEmail
+    );
+    return res.status(200).json({
+      message: "Mời thành viên vào dự án thành công",
+      result,
+    });
+  } catch (error) {
+    console.error("Lỗi mời thành viên vào dự án:", error);
+    return res.status(500).json({ error: "Lỗi server" });
+  }
+};
+
 module.exports = {
   createProject,
   updateProject,
@@ -265,4 +294,5 @@ module.exports = {
   getProjectsByUserId,
   getProjectById,
   getProjectMembers,
+  inviteMemberToProject,
 };

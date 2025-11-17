@@ -68,6 +68,11 @@ module.exports = (sequelize, DataTypes) => {
       otherKey: "user_id",
       as: "members",
     });
+
+    Conversation.belongsTo(models.Project, {
+      foreignKey: "project_id",
+      as: "project",
+    });
   };
 
   return Conversation;

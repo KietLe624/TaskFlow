@@ -28,12 +28,14 @@ module.exports = (sequelize, DataTypes) => {
   ProjectMember.associate = (models) => {
     ProjectMember.belongsTo(models.Project, {
       foreignKey: "project_id",
-      as: "projects",
+      targetKey: "project_id",
+      as: "project",
     });
 
     ProjectMember.belongsTo(models.User, {
       foreignKey: "user_id",
-      as: "users",
+      targetKey: "user_id",
+      as: "user",
     });
   };
 

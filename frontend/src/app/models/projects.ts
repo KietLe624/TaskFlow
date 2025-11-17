@@ -1,5 +1,6 @@
 import { Tasks } from './tasks';
 import { Team } from './team';
+import { Conversation } from './conversation';
 
 export interface Project {
   project_id: number;
@@ -18,6 +19,7 @@ export interface Project {
   taskCount: number;
   activityCount?: number;
   tasks?: Tasks[];
+  conversation?: Conversation;
 }
 
 export interface ProjectMember {

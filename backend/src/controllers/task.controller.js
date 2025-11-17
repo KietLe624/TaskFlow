@@ -34,14 +34,13 @@ const getAllTasks = async (req, res) => {
   }
 };
 
-  // get task by user id
-  const getTasksByUserId = async (req, res) => {
+// get task by user id
+const getTasksByUserId = async (req, res) => {
   try {
     const userId = req.user?.user_id;
     if (!userId) return res.status(401).json({ message: "Chưa đăng nhập" });
-
     const tasks = await taskService.getTasksByUserId(userId);
-    res.status(200).json(tasks);
+    res.status(200).json({ message: "Lấy task thành công", tasks });
   } catch (error) {
     console.error(" Lỗi khi lấy task:", error);
     res.status(500).json({ message: error.message });
@@ -64,7 +63,7 @@ const getTaskById = async (req, res) => {
   }
 };
 
-// update task 
+// update task
 const updateTask = async (req, res) => {
   try {
     const userId = req.user?.user_id;
@@ -125,7 +124,7 @@ const getTasksByProjectId = async (req, res) => {
 const getStatus = async (req, res) => {
   try {
     const statuses = await taskService.getStatus();
-    res.status(200).json({message: "Lấy trạng thái thành công", statuses});
+    res.status(200).json({ message: "Lấy trạng thái thành công", statuses });
   } catch (error) {
     console.error("Lỗi khi lấy trạng thái:", error);
     res.status(500).json({ message: error.message });
@@ -135,7 +134,9 @@ const getStatus = async (req, res) => {
 const getPriorities = async (req, res) => {
   try {
     const priorities = await taskService.getPriorities();
-    res.status(200).json({message: "Lấy mức độ ưu tiên thành công", priorities});
+    res
+      .status(200)
+      .json({ message: "Lấy mức độ ưu tiên thành công", priorities });
   } catch (error) {
     console.error("Lỗi khi lấy mức độ ưu tiên:", error);
     res.status(500).json({ message: error.message });

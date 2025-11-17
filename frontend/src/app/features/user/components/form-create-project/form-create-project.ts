@@ -43,8 +43,8 @@ export class FormCreateProject {
   isSubmitting = false;
   selectedProjectId: number | null = null;
 
-  statuses: string[] = [];
-  priorities: string[] = [];
+  statuses: any[] = [];
+  priorities: any[] = [];
 
   ngOnInit() {
     this.loadPriorities();
@@ -179,25 +179,34 @@ export class FormCreateProject {
     this.cdr.detectChanges();
   }
 
-  // form-create-project.ts
-
+  // phương thức loadTeamByOwner
   loadTeamByOwner() {
     this.teamService.getAllTeamsByOwner().subscribe({
-      next: (res: any) => { // Dùng 'res' (response) thay vì 'data' để rõ nghĩa hơn
-        console.log("API response:", res);
+      next: (res: any) => {
+        console.log('API response:', res);
 
-        // Kiểm tra và lấy mảng teams từ response
+        // nếu API trả { teams: [...] }
         if (res && Array.isArray(res.teams)) {
           this.teams = res.teams;
-        } else if (Array.isArray(res)) {
-          // Phòng trường hợp backend sửa lại trả về mảng trực tiếp
+        }
+        // nếu API trả mảng trực tiếp
+        else if (Array.isArray(res)) {
           this.teams = res;
+        }
+        // nếu API trả { data: [...] }
+        else if (res && Array.isArray(res.data)) {
+          this.teams = res.data;
+        }
+        // nếu API trả một object map -> chuyển thành array giá trị
+        else if (res && typeof res === 'object') {
+          this.teams = Object.values(res);
         } else {
           this.teams = [];
-          console.warn("API không trả về định dạng mảng mong đợi:", res);
+          console.warn('API không trả về định dạng mảng mong đợi:', res);
         }
 
-        this.cdr.detectChanges();
+        // detect nếu dùng ChangeDetectorRef
+        this.cdr?.detectChanges?.();
       },
       error: (err) => {
         console.error('Lỗi lấy teams:', err);
@@ -205,4 +214,5 @@ export class FormCreateProject {
       },
     });
   }
+
 }

@@ -9,7 +9,7 @@ import { MainLayout } from './layout/main-layout/main-layout';
 import { authGuard } from './core/guards/auth-guard';
 import { ProjectsComponent } from './features/user/components/projects/projects';
 import { PageProjectDetailComponent } from './features/user/components/page-project-detail/page-project-detail';
-
+import { TaskComponent } from './features/user/components/task/task';
 
 export const routes: Routes = [
   { path: '', component: PublicPageComponent },
@@ -25,7 +25,8 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: DashboardComponent, data: { title: 'Dashboard' } },
       { path: 'projects', component: ProjectsComponent, data: { title: 'Projects' } },
-      { path: 'projects/:id', component: PageProjectDetailComponent, data: { title: 'Project Detail' } }
+      { path: 'projects/:id', component: PageProjectDetailComponent, data: { title: 'Project Detail' } },
+      { path: 'tasks', component: TaskComponent, data: { title: 'Tasks' } }
     ]
   },
 

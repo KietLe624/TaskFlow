@@ -2,10 +2,10 @@ const db = require("../models/index.model");
 const { Team, User, TeamMember, Conversation, ConversationParticipant } = db;
 const chatService = require("./chat.service");
 
-// Create Team
+// create team
 const createTeam = async ({ team_name, owner_team_id }) => {
   try {
-    // Logic nghiệp vụ
+    // logic nghiệp vụ
     const user = await User.findByPk(owner_team_id);
     if (!user) throw new Error("Người dùng không tồn tại");
 
@@ -66,7 +66,6 @@ const deleteTeam = async ({ team_id, owner_team_id }) => {
   }
 };
 // get all teams by owner_team_id
-// ...
 const getAllTeamsByOwner = async (owner_team_id) => {
   try {
     return await Team.findAll({
@@ -102,6 +101,7 @@ const getTeamMembers = async (team_id) => {
         },
       ],
     });
+
     if (!team) throw new Error("Nhóm không tồn tại");
 
     const conversation = await Conversation.findOne({

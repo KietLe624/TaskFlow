@@ -28,7 +28,9 @@ module.exports = (sequelize, DataTypes) => {
           "deleted",
           "assigned",
           "commented",
-          "uploaded"
+          "uploaded",
+          "invited",
+          "removed"
         ),
         allowNull: false,
       },

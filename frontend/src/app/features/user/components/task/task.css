@@ -1,0 +1,9 @@
+/* styles.css */
+html.dark .cdk-drag-preview {
+  @apply bg-gray-800 border border-gray-600 shadow-xl rounded-xl;
+}
+html.dark .cdk-drag-placeholder {
+  @apply bg-gray-700 opacity-50;
+}
+.grab { cursor: grab; }
+.grabbing { cursor: grabbing; }

@@ -20,6 +20,7 @@ export class TaskService {
   }
 
   constructor(private http: HttpClient) { }
+
   createTask(data: any): Observable<{ message: string; task: Tasks }> {
     const headers = this.getAuthHeaders();
     return this.http.post<{ message: string; task: Tasks }>(`${this.apiTasks}/createTask`, data, { headers });
@@ -28,6 +29,11 @@ export class TaskService {
   updateTask(taskId: number, data: any): Observable<{ message: string; task: Tasks }> {
     const headers = this.getAuthHeaders();
     return this.http.patch<{ message: string; task: Tasks }>(`${this.apiTasks}/updateTask/${taskId}`, data, { headers });
+  }
+
+  deleteTask(taskId: number): Observable<{ message: string }> {
+    const headers = this.getAuthHeaders();
+    return this.http.delete<{ message: string }>(`${this.apiTasks}/deleteTask/${taskId}`, { headers });
   }
 
   getTasksByProjectId(projectId: number): Observable<Tasks[]> {
@@ -56,4 +62,15 @@ export class TaskService {
       .pipe(map(res => res.priorities ?? res.priority ?? []));
   }
 
+  getTaskByUserId(user_id: number): Observable<Tasks[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<{ message: string; tasks: Tasks[] }>(`${this.apiTasks}/getTasksByUserId/${user_id}`, { headers })
+      .pipe(map(res => res.tasks));
+  }
+
+  getTaskById(taskId: number): Observable<Tasks> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<{ message: string; task: Tasks }>(`${this.apiTasks}/getTaskById/${taskId}`, { headers })
+      .pipe(map(res => res.task));
+  }
 }

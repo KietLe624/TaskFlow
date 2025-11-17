@@ -11,6 +11,7 @@ import { TeamService } from '../../../../core/services/team/team-service';
 import { ToastrService } from 'ngx-toastr';
 import { UserAvatarComponent } from '../user-avatar/user-avatar';
 import { ChatboxComponent } from '../chatbox/chatbox';
+import { InviteMemberComponent } from '../invite-member/invite-member';
 
 @Component({
   selector: 'app-page-project-detail',
@@ -21,6 +22,7 @@ import { ChatboxComponent } from '../chatbox/chatbox';
     FormTask,
     UserAvatarComponent,
     ChatboxComponent,
+    InviteMemberComponent,
   ],
   templateUrl: './page-project-detail.html',
   styleUrls: ['./page-project-detail.css'],
@@ -29,7 +31,7 @@ export class PageProjectDetailComponent implements OnInit {
   isLoadingDetail: boolean = true;
   projectDetail: any = null;
   errMsg: string = '';
-  isTaskModalOpen = false;
+  isTaskModalOpen: boolean = false;
   isSavingTask = false;
   isEdit = false;
   selectedTask?: Tasks;
@@ -64,6 +66,9 @@ export class PageProjectDetailComponent implements OnInit {
     this.projectService.getProjectById(project_id).subscribe({
       next: (data: Project) => {
         this.projectDetail = data;
+        if (data.conversation) {
+          this.ConversationId = data.conversation.conve_id;
+        }
         this.loadProjectMembers(project_id);
         this.isLoadingDetail = false;
         this.cdr.markForCheck();
@@ -198,6 +203,17 @@ export class PageProjectDetailComponent implements OnInit {
   handleTaskSaved(task: Tasks) {
     this.loadProjectDetails(this.projectDetail.project_id);
     this.closeTaskModal();
+    if (this.isEdit) {
+      this.toastr.success(
+        `Task "${task.task_name}" đã được cập nhật thành công!`,
+        'Cập nhật task',
+      );
+    } else {
+      this.toastr.success(
+        `Task "${task.task_name}" đã được tạo thành công!`,
+        'Tạo task mới',
+      );
+    }
   }
 
   updateProgress() {
@@ -218,6 +234,7 @@ export class PageProjectDetailComponent implements OnInit {
 
   members: ProjectMember[] = [];
   isLoadingMembers = false;
+
   loadProjectMembers(project_id: number) {
     this.isLoadingMembers = true;
     this.projectService.getProjectMembers(project_id).subscribe({
@@ -234,4 +251,11 @@ export class PageProjectDetailComponent implements OnInit {
       },
     });
   }
+
+  onMemberAdded() {
+    if (this.projectDetail?.project_id) {
+      this.loadProjectMembers(this.projectDetail.project_id);
+    }
+  }
+
 }

@@ -16,6 +16,6 @@ export interface Tasks {
   due_date?: Date;
   created_at: Date;
   updated_at: Date;
-  assignee?: TaskAssignee;
+  assignees?: TaskAssignee[];
   project_id?: number;
 }
