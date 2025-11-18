@@ -143,6 +143,56 @@ const getPriorities = async (req, res) => {
   }
 };
 
+const addComment = async (req, res) => {
+  try {
+    const taskId = req.params.task_id;
+    if (!taskId || taskId === "undefined" || taskId === "null") {
+      return res.status(400).json({ error: "taskId không hợp lệ" });
+    }
+    const { content } = req.body;
+    const user_id = req.user.user_id; // từ auth middleware
+
+    if (!content?.trim()) {
+      return res
+        .status(400)
+        .json({ error: "Nội dung bình luận không được để trống" });
+    }
+
+    const comment = await taskService.addComment(
+      taskId,
+      user_id,
+      content.trim()
+    );
+
+    return res.status(201).json({
+      message: "Thêm bình luận thành công",
+      comment,
+    });
+  } catch (error) {
+    console.error("Lỗi thêm comment:", error);
+    return res.status(500).json({ error: "Thêm bình luận thất bại" });
+  }
+};
+
+const getComments = async (req, res) => {
+  try {
+    const taskId = req.params.task_id;
+
+    if (!taskId || taskId === "undefined" || taskId === "null") {
+      return res.status(400).json({ error: "taskId không hợp lệ" });
+    }
+    const comments = await taskService.getCommentsByTaskId(taskId);
+
+    return res.json({
+      message: "Lấy bình luận thành công",
+      comments,
+    });
+  } catch (error) {
+    console.error("Lỗi lấy comment:", error);
+    return res.status(500).json({ error: "Lấy bình luận thất bại" });
+  }
+};
+
 module.exports = {
   createTask,
   getAllTasks,
@@ -153,4 +203,6 @@ module.exports = {
   getTasksByProjectId,
   getStatus,
   getPriorities,
+  addComment,
+  getComments,
 };

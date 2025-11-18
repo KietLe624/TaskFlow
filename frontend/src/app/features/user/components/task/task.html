@@ -9,6 +9,43 @@
         Kéo thả để thay đổi trạng thái
       </p>
     </div>
+    <!-- FILTER BAR SIÊU NHỎ GỌN, ĐƠN GIẢN, ĐẸP NHƯ PHẦN CÒN LẠI -->
+    <div class="mb-6 flex flex-wrap items-center gap-3 text-sm">
+
+      <!-- SEARCH -->
+      <div
+        class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-2.5 border border-gray-300 dark:border-gray-700">
+        <i class="fas fa-search text-gray-400"></i>
+        <input [(ngModel)]="filter.search" (ngModelChange)="applyFilter()" placeholder="Tìm task..."
+          class="bg-transparent outline-none w-48 placeholder-gray-500 dark:placeholder-gray-400">
+      </div>
+
+      <!-- PRIORITY -->
+      <select [(ngModel)]="filter.priority" (ngModelChange)="applyFilter()"
+        class="px-4 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 outline-none text-gray-700 dark:text-gray-300 font-medium">
+        <option value="">Ưu tiên</option>
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
+      </select>
+
+      <!-- ASSIGNEE -->
+      <select [(ngModel)]="filter.assignee" (ngModelChange)="applyFilter()"
+        class="px-4 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 outline-none text-gray-700 dark:text-gray-300 font-medium">
+        <option value="">Thực hiện bởi</option>
+        @for (user of allUsers; track user.user_id) {
+        <option [value]="user.user_id">{{ user.username }}</option>
+        }
+      </select>
+
+      <!-- NÚT XÓA LỌC (chỉ hiện khi đang lọc) -->
+      @if (filter.search || filter.priority || filter.assignee) {
+      <button (click)="clearFilter()"
+        class="px-4 py-2.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg font-medium hover:bg-red-200 dark:hover:bg-red-900/50 transition">
+        <i class="fas fa-times mr-1"></i> Xóa lọc
+      </button>
+      }
+    </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-min">
       @for (column of kanbanColumns; track column.status) {
       <div class="flex flex-col gap-4 w-full">
@@ -41,31 +78,28 @@
               <h3 class="font-semibold text-sm sm:text-base mb-1 sm:mb-2 text-gray-900 dark:text-white pr-8 truncate">
                 {{ task.task_name }}
               </h3>
-
-              <!-- Mô tả — ẩn trên mobile để tiết kiệm không gian -->
               @if (task.description) {
-              <p class="hidden sm:block text-sm mb-3 line-clamp-3 leading-relaxed text-gray-600 dark:text-gray-400">
-                {{ task.description }}
-              </p>
+              <div class="group">
+                <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed
+              line-clamp-2 group-hover:line-clamp-none transition-all">
+                  {{ task.description }}
+                </p>
+                <button *ngIf="task.description.length > 100" (click)="viewDetail(task)" class="text-xs font-medium text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100
+                   hover:underline mt-1 inline-block">
+                  Xem thêm
+                </button>
+              </div>
               }
 
               <div class="flex items-center justify-between text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
                 <div class="flex items-center gap-3 sm:gap-4">
                   <span class="flex items-center gap-1.5 font-medium text-[11px] sm:text-xs">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path [attr.d]="
-                        task.priority === 'high'
-                          ? 'M3 4h14M3 10h14M3 16h14'
-                          : task.priority === 'medium'
-                          ? 'M3 7h14M3 13h14'
-                          : 'M3 10h14'
-                      "></path>
-                    </svg>
-                    <span class="capitalize">{{ task.priority }}</span>
+                    <span class="capitalize px-2 py-1 rounded-lg" [ngClass]="getColorPriority(task.priority)">{{
+                      task.priority }}</span>
                   </span>
 
                   @if (task.due_date) {
-                  <span class="font-medium text-[11px] sm:text-xs">{{ task.due_date | date:'dd MMM' }}</span>
+                  <span class="font-medium text-[11px] sm:text-xs">{{ task.due_date | date:'dd/MM' }}</span>
                   }
                 </div>
 
@@ -132,6 +166,20 @@
   }
 </div>
 
+<!-- NÚT TẠO TASK SIÊU NHỎ GỌN - CỐ ĐỊNH GÓC DƯỚI PHẢI -->
+<button (click)="openCreateTaskModal()" class="fixed bottom-5 right-5 z-40
+               w-12 h-12
+               bg-blue-600 hover:bg-blue-700 active:scale-95
+               text-white rounded-full shadow-lg
+               flex items-center justify-center
+               transition-all duration-200
+               group">
+
+  <i class="fas fa-plus text-xl
+            group-hover:rotate-90 transition-transform duration-300"></i>
+</button>
+
+<!-- MODAL TASK FORM -->
 @if(isTaskModalOpen){
 <div class="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50 px-4">
   <div class="absolute inset-0" (closed)="closeTaskForm()"></div>

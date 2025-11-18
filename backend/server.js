@@ -33,6 +33,7 @@ const teamApi = require("./src/routers/api-route/team.api");
 const testApi = require("./src/routers/api-route/test.api");
 const attachmentRoutes = require("./src/routers/api-route/attachment.api");
 const chat = require("./src/routers/api-route/chat.api");
+const notificationApi = require("./src/routers/api-route/notification.api");
 
 app.use(`${API_PREFIX}/auth`, authApi);
 app.use(`${API_PREFIX}/dashboard`, dashboardApi);
@@ -43,6 +44,7 @@ app.use(`${API_PREFIX}/team`, teamApi);
 app.use(`${API_PREFIX}/test`, testApi);
 app.use(`${API_PREFIX}/attachment`, attachmentRoutes);
 app.use(`${API_PREFIX}/chat`, chat);
+app.use(`${API_PREFIX}/notifications`, notificationApi);
 
 // route admin
 const roleApi = require("./src/routers/ad-route/role.api");

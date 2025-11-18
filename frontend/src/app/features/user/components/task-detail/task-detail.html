@@ -1,117 +1,156 @@
-<div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" (click)="closeModal()">
+<div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6"
+  (click)="closeModal()">
 
-  <div class="w-full max-w-2xl bg-white dark:bg-gray-800
-           rounded-3xl shadow-2xl overflow-hidden" (click)="$event.stopPropagation()">
+  <div class="w-full max-w-4xl h-full max-h-[90vh] bg-white dark:bg-gray-900
+              rounded-2xl shadow-2xl flex flex-col overflow-hidden ring-1 ring-gray-200 dark:ring-gray-800"
+    (click)="$event.stopPropagation()">
 
-    <div class="flex items-center justify-between p-6">
-      <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-        <i class="fas fa-tasks text-blue-500"></i>
-        {{ task?.task_name }}
-      </h3>
-      <button (click)="closeModal()" class="w-9 h-9 flex items-center justify-center rounded-full
-                     bg-gray-100 hover:bg-red-100 hover:text-red-500
-                     text-gray-500 dark:bg-gray-700 dark:text-gray-400
-                     dark:hover:bg-red-900/40 dark:hover:text-red-400 transition">
-        <i class="fas fa-xmark text-lg"></i>
+    <div
+      class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0 bg-white dark:bg-gray-900 z-10">
+      <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+        <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-bold uppercase">TASK-{{task.task_id ||
+          '???'}}</span>
+        <span class="text-gray-300">/</span>
+        <span class="flex items-center gap-1"><i class="fas fa-list-ul"></i> General</span>
+      </div>
+
+      <button (click)="closeModal()"
+        class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 transition">
+        <i class="fas fa-times text-lg"></i>
       </button>
     </div>
 
-    <div class="p-6 pt-0 flex flex-col gap-4 max-h-[70vh] overflow-y-auto
-                scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600
-                bg-gray-50 dark:bg-gray-800"> @if (task?.description) {
-      <div class="p-5 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700">
-        <h4 class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-2">
-          Mô tả
-        </h4>
-        <p class="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
-          {{ task?.description }}
-        </p>
+    <div
+      class="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+
+      <div class="space-y-3">
+        <input [(ngModel)]="task.task_name" class="text-2xl sm:text-3xl font-bold w-full bg-transparent border-none outline-none
+                      placeholder-gray-400 text-gray-900 dark:text-white
+                      focus:ring-0 p-0" placeholder="Enter task title..." />
       </div>
-      }
 
-      <div class="grid grid-cols-2 gap-4 text-sm">
-        <div class="p-4 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700">
-          <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-2">Trạng thái</div>
-          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full font-medium text-xs"
-            [ngClass]="getStatusColor(task?.status || '')">
-            <i class="w-4" [ngClass]="{
-              'fa-clock': task?.status === 'to_do',
-              'fa-play-circle': task?.status === 'in_progress',
-              'fa-search': task?.status === 'in_review',
-              'fa-check-circle': task?.status === 'completed'
-            }"></i>
-            {{ task?.status | titlecase }}
-          </span>
-        </div>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="md:col-span-3 space-y-6">
 
-        <div class="p-4 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700">
-          <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-2">Ưu tiên</div>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium text-xs capitalize"
-            [ngClass]="getColorPriority(task?.priority || '')">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path [attr.d]="
-                task?.priority === 'high' ? 'M3 4h14M3 10h14M3 16h14' :
-                task?.priority === 'medium' ? 'M3 7h14M3 13h14' : 'M3 10h14'
-              "></path>
-            </svg>
-            {{ task?.priority }}
-          </span>
-        </div>
+          <div class="group">
+            <h3 class="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              <i class="fas fa-align-left text-gray-400"></i> Description
+            </h3>
+            <textarea [(ngModel)]="task.description" placeholder="Add a more detailed description..."
+              class="w-full min-h-[120px] p-3 rounded-lg border border-gray-200 dark:border-gray-700
+                              bg-gray-50 dark:bg-gray-800/50 resize-y text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition" rows="4"></textarea>
+          </div>
 
-        <div class="p-4 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700">
-          <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Bắt đầu</div>
-          <div class="font-medium text-gray-900 dark:text-gray-100">
-            {{ task?.start_date | date:'dd/MM/yyyy' }}
+          <div>
+            <h3 class="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              <i class="fas fa-paperclip text-gray-400"></i> Attachments
+            </h3>
+            <div
+              class="flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-6 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition cursor-pointer group">
+              <div class="text-center">
+                <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 group-hover:text-blue-500 mb-2 transition"></i>
+                <p class="text-sm text-gray-500 font-medium">Click to upload file</p>
+              </div>
+            </div>
+          </div>
+          <div class="pt-6 mt-6 border-t border-gray-100 dark:border-gray-800 flex flex-col h-50">
+
+            <h3
+              class="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4 flex-shrink-0">
+              <i class="fas fa-comments text-gray-400"></i> Comments
+            </h3>
+
+            <div
+              class="space-y-5 overflow-y-auto pr-2 h-[350px] scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 mb-4 border border-gray-100 dark:border-gray-800 rounded-xl p-4 bg-gray-50/50 dark:bg-gray-800/30">
+              @for (cmt of comments; track cmt.cmt_id) {
+              <div class="flex gap-3 group">
+                <app-user-avatar [username]="cmt.author?.username" class="w-8 h-8 mt-1 flex-shrink-0"></app-user-avatar>
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-sm text-gray-900 dark:text-white">{{ cmt.author?.username }}</span>
+                    <span class="text-xs text-gray-500">{{ cmt.created_at | date:'MMM d, h:mm a' }}</span>
+                  </div>
+                  <div
+                    class="bg-white dark:bg-gray-700 p-3 rounded-lg rounded-tl-none text-sm text-gray-700 dark:text-gray-200 shadow-sm border border-gray-100 dark:border-gray-600">
+                    {{ cmt.content }}
+                  </div>
+                </div>
+              </div>
+              } @empty {
+              <div class="h-full flex flex-col items-center justify-center text-gray-400 text-sm italic">
+                <i class="far fa-comment-dots text-3xl mb-2 opacity-40"></i>
+                <p>Chưa có bình luận nào.</p>
+              </div>
+              }
+            </div>
+
+            <div class="flex gap-3 flex-shrink-0">
+              <app-user-avatar [username]="currentUser.username" class="w-9 h-9 mt-1 flex-shrink-0"></app-user-avatar>
+              <div class="relative flex-1">
+                <textarea [(ngModel)]="newComment" class="w-full p-4 pr-12 rounded-xl border border-gray-200 dark:border-gray-700
+               bg-white dark:bg-gray-800 focus:bg-gray-50 dark:focus:bg-gray-900
+               focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+               resize-none transition-all shadow-sm text-sm" placeholder="Viết bình luận..." rows="2"></textarea>
+                <button (click)="addComment()" [disabled]="!newComment.trim()" class="absolute bottom-3 right-3 w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200
+               text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/30
+               disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none disabled:cursor-not-allowed">
+                  <i class="fas fa-paper-plane text-xs"></i>
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
 
-        <div class="p-4 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700">
-          <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Hết hạn</div>
-          <div class="font-medium text-gray-900 dark:text-gray-100">
-            {{ task?.due_date | date:'dd/MM/yyyy' }}
+        <div class="space-y-6">
+          <div>
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5 block">Status</label>
+            <select [(ngModel)]="task.status"
+              class="w-full p-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 border-transparent focus:bg-white dark:focus:bg-gray-700 focus:border-blue-500 text-sm font-medium cursor-pointer transition">
+              <option value="to_do">To Do</option>
+              <option value="in_progress">In Progress</option>
+              <option value="in_review">In Review</option>
+              <option value="completed">Done</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5 block">Priority</label>
+            <select [(ngModel)]="task.priority"
+              class="w-full p-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 border-transparent focus:bg-white dark:focus:bg-gray-700 focus:border-blue-500 text-sm font-medium cursor-pointer transition">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5 block">Dates</label>
+            <div class="space-y-2">
+              <input type="date" [(ngModel)]="task.start_date"
+                class="w-full p-2 text-sm rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                title="Start Date">
+              <input type="date" [(ngModel)]="task.due_date"
+                class="w-full p-2 text-sm rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                title="Due Date">
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 block">Assignees</label>
+            <div class="flex flex-col gap-2">
+              @if (task.assignees?.length) {
+              @for (a of task.assignees; track a.user_id) {
+              <div
+                class="flex items-center gap-2 p-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+                <app-user-avatar [username]="a.username" class="w-6 h-6"></app-user-avatar>
+                <span class="text-sm truncate flex-1">{{ a.username }}</span>
+                <button class="text-gray-400 hover:text-red-500 px-1"><i class="fas fa-times text-xs"></i></button>
+              </div>
+              }
+              }
+            </div>
           </div>
         </div>
       </div>
-
-      <div class="p-5 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700">
-        <h4 class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-3">
-          Phân công
-        </h4>
-        <div class="flex -space-x-2">
-          @if (task!.assignees && task!.assignees.length > 0) {
-          @for (a of task!.assignees.slice(0, 5); track a.user_id) {
-          <app-user-avatar [username]="a.username" class="w-9 h-9 ring-2 ring-white dark:ring-gray-900">
-          </app-user-avatar>
-          }
-          @if (task!.assignees.length > 5) {
-          <div class="w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center
-                       text-xs font-bold text-gray-700 dark:text-gray-300
-                       ring-2 ring-white dark:ring-gray-900">
-            +{{ task!.assignees.length - 5 }}
-          </div>
-          }
-          } @else {
-          <span class="text-gray-500 text-sm">Chưa phân công</span>
-          }
-        </div>
-      </div>
-
     </div>
-    <div class="flex gap-3 p-6 pt-5 bg-white dark:bg-gray-800
-                border-t border-gray-200 dark:border-gray-700">
-      <button (click)="editTask()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-medium
-               hover:bg-blue-700 active:scale-95 transition
-               flex items-center justify-center gap-2">
-        <i class="fas fa-edit"></i>
-        Sửa
-      </button>
-
-      <button (click)="deleteTask()" class="py-3 px-5 bg-red-100 text-red-700 rounded-xl font-medium
-               hover:bg-red-200 dark:bg-red-900/40 dark:text-red-300
-               dark:hover:bg-red-900/70 active:scale-95 transition">
-        <i class="fas fa-trash-alt"></i>
-      </button>
-    </div>
-
-  </div>
-</div>

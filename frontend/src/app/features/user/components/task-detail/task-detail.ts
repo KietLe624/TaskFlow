@@ -6,20 +6,21 @@ import { Input, Output } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { TaskService } from '../../../../core/services/task/task-service';
 import { UserAvatarComponent } from '../user-avatar/user-avatar';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-task-detail',
-  imports: [CommonModule, UserAvatarComponent],
+  imports: [CommonModule, UserAvatarComponent, FormsModule],
   templateUrl: './task-detail.html',
   styleUrls: ['./task-detail.css']
 })
 export class TaskDetailComponent implements OnInit {
   @Input() task_id!: number;
-  @Input() task?: Tasks;
+  @Input() task!: Tasks;
   @Output() closed = new EventEmitter<void>();
   isLoading = true;
 
-  constructor(private taskService: TaskService, private toastr: ToastrService) { }
+  constructor(private taskService: TaskService, private toastr: ToastrService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     if (this.task_id) {
@@ -30,6 +31,7 @@ export class TaskDetailComponent implements OnInit {
       this.toastr.error('Không có thông tin task để hiển thị chi tiết.');
       this.isLoading = false;
     }
+    this.loadComments();
   }
 
   loadTaskDetail(id: number) {
@@ -104,4 +106,46 @@ export class TaskDetailComponent implements OnInit {
   closeModal() {
     this.closed.emit();   // Phát ra event để parent biết đóng
   }
+
+  comments: any[] = [];
+  newComment = '';
+  commentLoading = false;
+  currentUser: any = { username: 'you' };
+
+  loadComments() {
+    const taskId = this.task?.task_id || this.task?.task_id;
+    if (!this.task?.task_id) {
+      console.error("Task không có task_id:", this.task);
+      return;
+    }
+    this.taskService.getComments(this.task.task_id).subscribe({
+      next: (response: any) => {
+        this.comments = response.comments || [];
+        console.log('Comments loaded:', this.comments);
+      },
+      error: (err) => {
+        console.error('Lỗi load comment:', err);
+        this.comments = [];
+      }
+    });
+  }
+  addComment() {
+    if (!this.newComment?.trim()) return;
+
+    this.commentLoading = true;
+    this.taskService.addComment(this.task!.task_id, this.newComment.trim()).subscribe({
+      next: (response: any) => {
+        // Backend trả { message: "...", comment: { ... } }
+        const newCmt = response.comment || response;
+        this.comments = [...this.comments, newCmt];
+        this.newComment = '';
+        this.commentLoading = false;
+      },
+      error: () => {
+        this.toastr.error('Gửi bình luận thất bại');
+        this.commentLoading = false;
+      }
+    });
+  }
+
 }

@@ -39,13 +39,16 @@ module.exports = (sequelize, DataTypes) => {
 
   Task.associate = (models) => {
     Task.belongsTo(models.Project, { foreignKey: "project_id", as: "project" });
+
     Task.belongsTo(models.User, { foreignKey: "created_by", as: "creator" });
+
     Task.belongsToMany(models.User, {
-      through: "task_assignees",
+      through: models.TaskAssignees,
       foreignKey: "task_id",
       otherKey: "user_id",
       as: "assignees",
     });
+
     Task.hasMany(models.Attachment, {
       as: "attachments",
       foreignKey: "task_id",
@@ -53,11 +56,17 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: "CASCADE",
       hooks: true,
     });
+
     Task.hasMany(models.Activity, {
       as: "activities",
       foreignKey: "entity_id",
       constraints: false,
       scope: { entity_type: "task" },
+    });
+    // Trong Task.associate
+    Task.hasMany(models.TaskComment, {
+      foreignKey: "task_id",
+      as: "comments",
     });
   };
 

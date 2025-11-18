@@ -26,6 +26,12 @@ export class TaskComponent implements OnInit {
   isEdit = false;
   connectedTo: string[] = [];
   projects: any[] = [];
+  filter = {
+    search: '',
+    priority: '',
+    assignee: ''
+  }
+  allUsers: any[] = [];
 
   constructor(private taskService: TaskService, private authService: AuthService, private toastr: ToastrService, private cdr: ChangeDetectorRef, private projectService: ProjectService) { }
 
@@ -44,25 +50,31 @@ export class TaskComponent implements OnInit {
       this.loadProjects(user_id);
     }
     this.connectedTo = this.kanbanColumns.map(c => c.status);
-  }
 
-  // Hàm loadTasks giữ nguyên
-  loadTasks(user_id: number): void {
+  }
+  project_id: number = 0;
+  // load tasks
+  loadTasks(user_id: number) {
     this.taskService.getTaskByUserId(user_id).subscribe({
       next: (tasks) => {
-        console.log('Dữ liệu tasks nhận được:', tasks); // Debug xem có vào đây không
         this.tasks = tasks;
+
+        // SIÊU QUAN TRỌNG: LẤY project_id TỪ TASK ĐẦU TIÊN
+        if (tasks.length > 0 && !this.project_id) {
+          this.project_id = tasks[0].project_id!;
+          console.log("Lấy project_id từ task:", this.project_id);
+
+          // GỌI NGAY LẬP TỨC KHI CÓ projectId
+          this.loadProjectMembers();
+        }
       },
       error: (err) => {
-        console.error('Lỗi khi load tasks:', err);
-        if (err.status === 401) {
-          alert('Phiên đăng nhập hết hạn');
-          this.authService.logout();
-        }
+        console.error('Lỗi load tasks:', err);
       }
     });
   }
 
+  // load projects
   loadProjects(user_id: number) {
     this.projectService.getProjectsByUserId(user_id).subscribe({
       next: (projects) => {
@@ -75,6 +87,23 @@ export class TaskComponent implements OnInit {
     });
   }
 
+  // load project members
+  loadProjectMembers() {
+    const project_id = this.project_id;
+
+    this.projectService.getProjectMembers(project_id).subscribe({
+      next: (response: any) => {
+        this.allUsers = response;
+        console.log("Danh sách thành viên:", this.allUsers);
+      },
+      error: (err) => {
+        console.error("Lỗi lấy thành viên:", err);
+        this.allUsers = [];
+      }
+    });
+  }
+
+  // Hàm lấy màu priority
   getColorPriority(priority: string): string {
     switch (priority) {
       case 'low':
@@ -87,7 +116,7 @@ export class TaskComponent implements OnInit {
         return 'bg-gray-200';
     }
   }
-
+  // Hàm lấy màu status
   getStatusColor(status: string): string {
     switch (status) {
       case 'completed':
@@ -109,7 +138,7 @@ export class TaskComponent implements OnInit {
         return 'bg-gray-300'; // Mặc định
     }
   }
-
+  // Map status thành tiêu đề hiển thị
   private statusTitle: Record<string, string> = {
     to_do: 'To Do',
     in_progress: 'In Progress',
@@ -117,14 +146,11 @@ export class TaskComponent implements OnInit {
     completed: 'Completed',
   };
 
-  // Computed: đếm task trong từng cột
+  // đếm task trong từng cột
   tasksInColumn = (status: string) =>
     this.tasks.filter(t => t.status === status).length;
 
-  // Lấy task theo status
-  tasksByStatus = (status: string) =>
-    this.tasks.filter(t => t.status === status);
-
+  // Kéo thả
   onDragStart(event: CdkDragStart) {
     console.log('Drag started', event);
   }
@@ -168,6 +194,7 @@ export class TaskComponent implements OnInit {
       }
     });
   }
+  // end drag drop
 
   // dropdown
   openDropdownId: number | null = null;
@@ -192,7 +219,6 @@ export class TaskComponent implements OnInit {
     this.selectedTaskForDetail = null;
   }
 
-  // Thêm các biến này vào class
   isCompleteTaskModalOpen = false;
   taskToComplete: Tasks | null = null;
 
@@ -260,6 +286,7 @@ export class TaskComponent implements OnInit {
 
   // Mở modal tạo task mới
   openCreateTaskModal(projectId?: number) {
+    this.openDropdownId = null;
     this.defaultProjectId = projectId;
     this.selectedTaskForEdit = undefined;
     this.isTaskModalOpen = true;
@@ -268,6 +295,7 @@ export class TaskComponent implements OnInit {
 
   // Mở modal sửa task
   openEditTaskModal(task: Tasks) {
+    this.openDropdownId = null;
     this.selectedTaskForEdit = task;
     this.isTaskModalOpen = true;
     this.isEdit = true;
@@ -305,5 +333,48 @@ export class TaskComponent implements OnInit {
       this.openDropdownId = null;
     }
   }
+  // Hàm lọc tasks
 
+  tasksByStatus(status: string): Tasks[] {
+    let tasks = this.tasks.filter(t => t.status === status);
+
+    // Lọc theo từ khóa
+    if (this.filter.search.trim()) {
+      const keyword = this.filter.search.toLowerCase();
+      tasks = tasks.filter(t =>
+        t.task_name.toLowerCase().includes(keyword) ||
+        (t.description && t.description.toLowerCase().includes(keyword))
+      );
+    }
+
+    // Lọc theo ưu tiên
+    if (this.filter.priority) {
+      tasks = tasks.filter(t => t.priority === this.filter.priority);
+    }
+
+    // Lọc theo người được giao
+    if (this.filter.assignee) {
+      const selectedUserId = Number(this.filter.assignee);
+      tasks = tasks.filter(task =>
+        task.assignees?.some((a: any) => a.user_id === selectedUserId)
+      );
+    }
+
+    return tasks;
+  }
+  // ÁP DỤNG LỌC
+  applyFilter() {
+    // Tự động cập nhật do tasksByStatus() được gọi lại
+  }
+
+  // XÓA LỌC
+  clearFilter() {
+    this.filter = { search: '', priority: '', assignee: '' };
+  }
+  filteredTaskCount(): number {
+    return this.tasksByStatus('to_do').length +
+      this.tasksByStatus('in_progress').length +
+      this.tasksByStatus('in_review').length +
+      this.tasksByStatus('completed').length;
+  }
 }

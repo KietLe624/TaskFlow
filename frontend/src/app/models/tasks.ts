@@ -8,6 +8,7 @@ export interface TaskAssignee {
 export interface Tasks {
   task_id: number;
   task_name: string;
+  project_id?: number;
   parent_id?: number | null;
   description?: string;
   status: string;
@@ -17,5 +18,4 @@ export interface Tasks {
   created_at: Date;
   updated_at: Date;
   assignees?: TaskAssignee[];
-  project_id?: number;
 }

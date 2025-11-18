@@ -73,4 +73,14 @@ export class TaskService {
     return this.http.get<{ message: string; task: Tasks }>(`${this.apiTasks}/getTaskById/${taskId}`, { headers })
       .pipe(map(res => res.task));
   }
+
+  addComment(taskId: number, content: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.post(`${this.apiTasks}/${taskId}/comments`, { content }, { headers });
+  }
+
+  getComments(taskId: number): Observable<any[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<any[]>(`${this.apiTasks}/${taskId}/comments`, { headers });
+  }
 }

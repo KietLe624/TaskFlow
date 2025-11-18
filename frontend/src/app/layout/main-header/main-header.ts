@@ -5,11 +5,12 @@ import { ActivatedRoute, Router, RouterModule, NavigationEnd } from '@angular/ro
 import { Subscription } from 'rxjs/internal/Subscription';
 import { filter, map, mergeMap } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth/auth';
+import { NotificationsComponent } from '../../features/user/components/notifications/notifications';
 
 @Component({
   selector: 'app-main-header',
   standalone: true,
-  imports: [ThemeToggle, CommonModule, RouterModule],
+  imports: [ThemeToggle, CommonModule, RouterModule, NotificationsComponent],
   templateUrl: './main-header.html',
   styleUrls: ['./main-header.css']
 })
@@ -25,6 +26,7 @@ export class MainHeaderComponent implements OnInit {
   elementRef = inject(ElementRef);
   isDropdownOpen = false; // trạng thái nút dropdown
   isCollapsed: boolean = false;
+  isOpenNoti: boolean = false;
 
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
@@ -66,5 +68,13 @@ export class MainHeaderComponent implements OnInit {
   onLogout() {
     this.authService.logout();
     this.isDropdownOpen = false;
+  }
+
+  openNotifications() {
+    this.isOpenNoti = true;
+    this.isDropdownOpen = false;
+  }
+  closeNotifications() {
+    this.isOpenNoti = false;
   }
 }

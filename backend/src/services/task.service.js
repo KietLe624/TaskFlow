@@ -1,6 +1,6 @@
 const db = require("../models/index.model");
-const { get } = require("../routers/api-route/project.api");
-const { sequelize, User, Project, Task, Activity } = db;
+const { get } = require("../routers/api-route/project.api"); 
+const { sequelize, User, Project, Task, Activity, TaskComment } = db;
 const { logActivity } = require("./activity.service");
 const { Op } = require("sequelize");
 
@@ -17,29 +17,37 @@ const createTask = async (taskData, user_id) => {
       priority,
       start_date,
       due_date,
+      assignee_ids = [], // ← frontend gửi mảng [3,7,12]
     } = taskData;
 
-    // Validate project (nếu được truyền)
-    if (project_id) {
-      const project = await Project.findByPk(project_id, { transaction: t });
-      if (!project) throw new Error("Project không tồn tại");
-    }
-
-    // Tạo task
+    // Tạo task trước
     const task = await Task.create(
       {
         task_name,
         project_id: project_id || null,
         parent_id: parent_id || null,
         description: description || "",
-        status,
-        priority,
+        status: status || "to_do",
+        priority: priority || "medium",
         start_date,
         due_date,
         created_by: user_id,
       },
       { transaction: t }
     );
+
+    if (assignee_ids.length > 0) {
+      const records = assignee_ids.map((user_id) => ({
+        task_id: task.task_id,
+        user_id: user_id,
+        assigned_by: user_id, // người tạo task giao việc
+        assigned_at: new Date(),
+      }));
+      await sequelize.models.TaskAssignees.bulkCreate(records, {
+        transaction: t,
+      });
+    }
+
     await logActivity(
       {
         user_id: user_id,
@@ -52,7 +60,7 @@ const createTask = async (taskData, user_id) => {
     );
 
     await t.commit();
-    return task; // hoặc: task.get({ plain: true })
+    return task;
   } catch (err) {
     await t.rollback();
     throw err;
@@ -85,24 +93,41 @@ const getTaskById = async (taskId) => {
 };
 
 //  UPDATE TASK
-const updateTask = async (taskId, updatedData) => {
+const updateTask = async (taskId, updatedData, current_user_id = null) => {
+  const t = await sequelize.transaction();
   try {
-    const task = await Task.findByPk(taskId);
-    if (!task) {
-      throw new Error("Không tìm thấy task");
+    const task = await Task.findByPk(taskId, { transaction: t });
+    if (!task) throw new Error("Task not found");
+
+    const { assignee_ids, ...taskFields } = updatedData;
+
+    await task.update(taskFields, { transaction: t });
+
+    // CẬP NHẬT ASSIGNEES
+    if (assignee_ids !== undefined) {
+      await sequelize.models.TaskAssignees.destroy({
+        where: { task_id: taskId },
+        transaction: t,
+      });
+
+      if (assignee_ids.length > 0) {
+        const records = assignee_ids.map((user_id) => ({
+          task_id: taskId,
+          user_id,
+          assigned_by: current_user_id || task.created_by,
+          assigned_at: new Date(),
+        }));
+        await sequelize.models.TaskAssignees.bulkCreate(records, {
+          transaction: t,
+        });
+      }
     }
-    await task.update(updatedData, { fields: Object.keys(updatedData) });
-    const newProjectProgress = await processTasks({
-      project_id: task.project_id,
-    });
-    await Project.update(
-      { progressPercent: newProjectProgress },
-      { where: { id: task.project_id } }
-    );
+
+    await t.commit();
     return task;
-  } catch (error) {
-    console.error("Lỗi khi cập nhật task:", error);
-    throw new Error("Cập nhật task thất bại: " + error.message);
+  } catch (err) {
+    await t.rollback();
+    throw err;
   }
 };
 
@@ -200,6 +225,44 @@ const processTasks = async (whereClause) => {
   }
 };
 
+// Thêm comment
+const addComment = async (taskId, user_id, content) => {
+  const comment = await sequelize.models.TaskComment.create({
+    task_id: taskId,
+    user_id,
+    content,
+  });
+
+  // Trả về comment + info user để frontend hiển thị luôn
+  return await sequelize.models.TaskComment.findByPk(comment.cmt_id, {
+    include: [
+      {
+        model: sequelize.models.User,
+        as: "author",
+        attributes: ["user_id", "username", "avatar_url"],
+      },
+    ],
+  });
+};
+
+// Lấy tất cả comment của task
+const getCommentsByTaskId = async (taskId) => {
+  if (!taskId) {
+    throw new Error("taskId là bắt buộc!");
+  }
+  return await sequelize.models.TaskComment.findAll({
+    where: { task_id: taskId },
+    order: [["created_at", "ASC"]],
+    include: [
+      {
+        model: sequelize.models.User,
+        as: "author",
+        attributes: ["user_id", "username", "avatar_url"],
+      },
+    ],
+  });
+};
+
 module.exports = {
   createTask,
   getAllTasks,
@@ -211,4 +274,6 @@ module.exports = {
   getStatus,
   getPriorities,
   processTasks,
+  addComment,
+  getCommentsByTaskId,
 };

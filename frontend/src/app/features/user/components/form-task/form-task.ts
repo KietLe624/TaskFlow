@@ -1,41 +1,39 @@
 import { Component, Input, Output, EventEmitter, inject, ChangeDetectorRef, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { TaskService } from '../../../../core/services/task/task-service';
 import { ProjectPriorityPipe } from '../../../../pipes/project-priority-pipe';
 import { ProjectStatusPipe } from '../../../../pipes/project-status-pipe';
 import { Tasks } from '../../../../models/tasks';
 import { ToastrService } from 'ngx-toastr';
+import { UserAvatarComponent } from '../user-avatar/user-avatar';
+import { ProjectService } from '../../../../core/services/project/project-service';
 
 @Component({
   selector: 'app-form-task',
-  imports: [ReactiveFormsModule, CommonModule, ProjectStatusPipe, ProjectPriorityPipe],
+  imports: [ReactiveFormsModule, CommonModule, FormsModule, ProjectStatusPipe, ProjectPriorityPipe, UserAvatarComponent],
   templateUrl: './form-task.html',
   styleUrls: ['./form-task.css']
 })
 
 export class FormTask implements OnInit, OnChanges {
   private fb = inject(FormBuilder);
-  constructor(private taskService: TaskService, private cdr: ChangeDetectorRef, private toastr: ToastrService) { }
+  constructor(private taskService: TaskService, private cdr: ChangeDetectorRef, private toastr: ToastrService, private projectService: ProjectService) { }
 
   @Input() initialValue: any | null = null;
-
   @Input() projects: Array<{ project_id: number; project_name: string }> = [];
   @Input() parentCandidates: Array<{ task_id: number; task_name: string }> = [];
   @Input() selectedTask: Tasks | null | undefined = null;
-
-  // Trong form-task.component.ts
   @Input() defaultProjectId?: number | null = null;
-
   @Input() isEditMode = false;
-  @Input() initialTask?: Tasks;
 
-  @Output() saved = new EventEmitter<any>();
   @Output() taskSaved = new EventEmitter<Tasks>();
   @Output() closed = new EventEmitter<void>();
 
   statuses: string[] = [];
   priorities: string[] = [];
+  projectMembers: any[] = [];
+  selectedAssignees: any[] = [];
 
   dateError = false;
   loading = false;
@@ -53,33 +51,46 @@ export class FormTask implements OnInit, OnChanges {
   });
 
   ngOnInit(): void {
-    if (!this.isEditMode && this.defaultProjectId) {
-      this.taskForm.patchValue({ project_id: this.defaultProjectId });
-    }
-    if (this.isEditMode && this.selectedTask) {
-      const t = this.selectedTask;
-      this.taskForm.patchValue({
-        project_id: t.project_id,
-        parent_id: t.parent_id ?? null,
-        task_name: t.task_name,
-        description: t.description ?? '',
-        status: t.status,
-        priority: t.priority,
-        start_date: this.toDateInput(t.start_date),
-        due_date: this.toDateInput(t.due_date),
-      });
-    }
     this.loadStatus();
     this.loadPriorities();
+
+    this.taskForm.get('project_id')?.valueChanges.subscribe(projectId => {
+      this.loadProjectMembers(projectId);
+    });
+    
+    if (this.defaultProjectId) {
+      this.taskForm.patchValue({ project_id: this.defaultProjectId });
+      this.loadProjectMembers(this.defaultProjectId);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['selectedTask'] && this.selectedTask && this.isEditMode) {
+    if (changes['selectedTask'] && this.isEditMode && this.selectedTask) {
       this.fillFormData();
+      if (this.selectedTask.project_id) {
+        this.loadProjectMembers(this.selectedTask.project_id);
+      }
+      if (this.selectedTask.assignees?.length) {
+        this.selectedAssignees = this.selectedTask.assignees;
+      }
     }
-    if (changes['defaultProjectId'] && this.defaultProjectId && !this.isEditMode) {
-      this.taskForm.patchValue({ project_id: this.defaultProjectId });
+  }
+
+  private loadProjectMembers(projectId: number | null) {
+    if (!projectId) {
+      this.projectMembers = [];
+      return;
     }
+    this.projectService.getProjectMembers(projectId).subscribe({
+      next: (members) => {
+        this.projectMembers = members;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Lỗi load members:', err);
+        this.projectMembers = [];
+      }
+    });
   }
 
   private fillFormData() {
@@ -112,32 +123,22 @@ export class FormTask implements OnInit, OnChanges {
 
     this.isSubmitting = true;
 
-    // Lấy dữ liệu form và chuẩn hoá payload gửi BE
-    const formValue = this.taskForm.value;
     const payload: any = {
-      project_id: this.taskForm.get('project_id')?.value,
-      task_name: (formValue.task_name || '').trim(),
-      parent_id: formValue.parent_id ? Number(formValue.parent_id) : null,
-      description: (formValue.description ?? '').trim(),
-      status: formValue.status,
-      priority: formValue.priority,
-      start_date: formValue.start_date || null,
-      due_date: formValue.due_date || null,
+      ...this.taskForm.value,
+      assignee_ids: this.selectedAssignees.map(m => m.user_id)
     };
 
     if (this.isEditMode && this.selectedTask) {
-      this.taskService.updateTask(this.selectedTask.task_id, payload).subscribe({
+      this.taskService.updateTask(this.selectedTask.task_id!, payload).subscribe({
         next: (res) => {
           const updatedTask = (res as any).task || res;
           this.taskSaved.emit(updatedTask);
           this.isSubmitting = false;
-          this.cdr.detectChanges();
           this.close();
         },
         error: (err) => {
-          this.toastr.error('Cập nhật task thất bại. Vui lòng thử lại.', 'Lỗi');
           this.isSubmitting = false;
-        },
+        }
       });
     } else {
       this.taskService.createTask(payload).subscribe({
@@ -145,13 +146,11 @@ export class FormTask implements OnInit, OnChanges {
           const newTask = (res as any).task || res;
           this.taskSaved.emit(newTask);
           this.isSubmitting = false;
-          this.cdr.detectChanges();
           this.close();
         },
         error: (err) => {
-          this.toastr.error('Tạo task thất bại. Vui lòng thử lại.', 'Lỗi');
           this.isSubmitting = false;
-        },
+        }
       });
     }
   }
@@ -163,7 +162,22 @@ export class FormTask implements OnInit, OnChanges {
   cancel() {
     this.close();  // Chỉ gọi cái này
   }
+  // Toggle chọn/gỡ thành viên
+  toggleAssignee(member: any) {
+    const index = this.selectedAssignees.findIndex(m => m.user_id === member.user_id);
+    if (index > -1) {
+      this.selectedAssignees.splice(index, 1);
+    } else {
+      this.selectedAssignees.push(member);
+    }
+  }
 
+  // Kiểm tra đã chọn chưa (dùng trong template)
+  isAssigneeSelected(member: any): boolean {
+    return this.selectedAssignees.some(m => m.user_id === member.user_id);
+  }
+
+  // load thêm trạng thái và độ ưu tiên từ backend
   loadStatus() {
     this.taskService.getStatus().subscribe(statuses => {
       this.statuses = statuses;

@@ -10,5 +10,5 @@ import { MainHeaderComponent } from "../main-header/main-header";
   styleUrls: ['./main-layout.css']
 })
 export class MainLayout {
-
+  
 }

@@ -6,113 +6,128 @@
     </h2>
   </div>
 
-  <form [formGroup]="taskForm" (ngSubmit)="submitTaskForm()" class="p-6 space-y-8">
+  <form [formGroup]="taskForm" (ngSubmit)="submitTaskForm()" class="p-6 space-y-7">
 
-    <section class="space-y-5">
-      <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
-        <i class="fas fa-info-circle"></i> Thông tin chung
-      </h3>
+    <!-- TIÊU ĐỀ + TÊN TASK -->
+    <div class="space-y-3">
+      <input type="text" formControlName="task_name" placeholder="Tên công việc..." class="w-full text-2xl font-bold bg-transparent border-none outline-none placeholder:text-gray-400
+                  text-gray-900 dark:text-white" />
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Dự án <span class="text-red-500">*</span>
-          </label>
-          <select formControlName="project_id" class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-sm py-2.5 px-3 text-sm
-                               dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:ring-blue-500/10">
-            @for (p of projects; track p.project_id) {
-            <option [value]="p.project_id">{{ p.project_name }}</option>
-            }
-          </select>
+      <textarea rows="2" formControlName="description" placeholder="Thêm mô tả (tùy chọn)..." class="w-full text-sm resize-none bg-transparent border-none outline-none placeholder:text-gray-400
+                     text-gray-600 dark:text-gray-400"></textarea>
+    </div>
+
+    <!-- DỰ ÁN -->
+    <div class="space-y-2">
+      <div class="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2">
+        <i class="fas fa-folder text-blue-500"></i> Dự án
+      </div>
+      <select formControlName="project_id" class="w-full px-4 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700
+                   bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/30">
+        @for (p of projects; track p.project_id) {
+        <option [value]="p.project_id">{{ p.project_name }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- NGÀY BẮT ĐẦU + HẠN CHÓT – RIÊNG MỘT HÀNG, RẤT RÕ RÀNG -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div class="space-y-2">
+        <div class="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2">
+          <i class="fas fa-play-circle text-green-500"></i> Ngày bắt đầu
         </div>
-
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Công việc cha</label>
-          <select formControlName="parent_id" class="w-full rounded-lg border-gray-100 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-sm py-2.5 px-3 text-sm
-                               dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:ring-blue-500/10">
-            <option [ngValue]="null">-- Không có --</option>
-            @for (t of parentCandidates; track t.task_id) {
-            <option [value]="t.task_id">{{ t.task_name }}</option>
-            }
-          </select>
-        </div>
+        <input type="date" formControlName="start_date" class="w-full px-4 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700
+                    bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/30" />
       </div>
 
-      <div class="space-y-5">
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Tên công việc <span class="text-red-500">*</span>
-          </label>
-          <input type="text" formControlName="task_name" placeholder="Nhập tên công việc..."
-            class="w-full rounded-lg border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-sm py-2.5 px-3 text-sm
-                               dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder:text-gray-500 dark:focus:ring-blue-500/10" />
+      <div class="space-y-2">
+        <div class="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2">
+          <i class="fas fa-calendar-check text-red-500"></i> Hạn chót
         </div>
-
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Mô tả</label>
-          <textarea rows="3" formControlName="description" placeholder="Thêm mô tả chi tiết..."
-            class="w-full rounded-lg border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-sm py-2.5 px-3 text-sm resize-none
-                               dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder:text-gray-500 dark:focus:ring-blue-500/10"></textarea>
-        </div>
+        <input type="date" formControlName="due_date" class="w-full px-4 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700
+                    bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/30" />
       </div>
-    </section>
+    </div>
 
-    <section class="pt-6 border-t border-gray-100 dark:border-gray-800/50 space-y-5">
-      <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
-        <i class="fas fa-sliders-h"></i> Cài đặt
-      </h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Trạng thái</label>
-          <select formControlName="status" class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-sm py-2.5 px-3 text-sm
-                               dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:ring-blue-500/10">
-            @for (s of statuses; track s) {
-            <option [value]="s">{{ s | projectStatus }}</option>
-            }
-          </select>
+    <!-- TRẠNG THÁI + ƯU TIÊN -->
+    <div class="grid grid-cols-2 gap-5">
+      <div class="space-y-2">
+        <div class="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2">
+          <i class="fas fa-tasks"></i> Trạng thái
         </div>
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Độ ưu tiên</label>
-          <select formControlName="priority" class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-sm py-2.5 px-3 text-sm
-                               dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:ring-blue-500/10">
-            @for (p of priorities; track p) {
-            <option [value]="p">{{ p | projectPriority }}</option>
-            }
-          </select>
-        </div>
+        <select formControlName="status" class="w-full px-4 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700
+                     bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          @for (s of statuses; track s) {
+          <option [value]="s">{{ s | projectStatus }}</option>
+          }
+        </select>
       </div>
-    </section>
 
-    <section class="pt-6 border-t border-gray-100 dark:border-gray-800/50 space-y-5">
-      <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
-        <i class="far fa-calendar-alt"></i> Thời gian
-      </h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Bắt đầu</label>
-          <input type="date" formControlName="start_date"
-            class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-sm py-2.5 px-3 text-sm
-                               dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:[color-scheme:dark] dark:focus:ring-blue-500/10" />
+      <div class="space-y-2">
+        <div class="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2">
+          <i class="fas fa-flag"></i> Ưu tiên
         </div>
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Hạn chót</label>
-          <input type="date" formControlName="due_date"
-            class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-sm py-2.5 px-3 text-sm
-                               dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:[color-scheme:dark] dark:focus:ring-blue-500/10" />
-        </div>
+        <select formControlName="priority" class="w-full px-4 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700
+                     bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          @for (p of priorities; track p) {
+          <option [value]="p">{{ p | projectPriority }}</option>
+          }
+        </select>
       </div>
-    </section>
+    </div>
 
-    <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800/50">
+    <!-- GIAO VIỆC – ĐÃ FIX, ĐÃ ĐẸP, ĐÃ HOẠT ĐỘNG 100% -->
+    <div class="space-y-3">
+      <div class="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2">
+        <i class="fas fa-users text-purple-500"></i> Giao cho
+      </div>
+
+      <!-- Danh sách đã chọn -->
+      <div class="flex flex-wrap gap-2">
+        @for (member of selectedAssignees; track member.user_id) {
+        <div
+          class="flex items-center gap-2 bg-purple-100 dark:bg-purple-900/30 px-3 py-1.5 rounded-full text-sm font-medium">
+          <app-user-avatar [username]="member.username" class="w-6 h-6"></app-user-avatar>
+          <span>{{ member.username }}</span>
+          <button type="button" (click)="toggleAssignee(member)" class="ml-1 hover:text-red-500 transition">
+            <i class="fas fa-times text-xs"></i>
+          </button>
+        </div>
+        }
+      </div>
+
+      <!-- Danh sách thành viên dự án -->
+      @if (projectMembers.length > 0) {
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        @for (member of projectMembers; track member.user_id) {
+        <button type="button" (click)="toggleAssignee(member)"
+          class="flex items-center gap-3 p-3 rounded-lg border transition hover:bg-gray-50 dark:hover:bg-gray-800
+                       {{ isAssigneeSelected(member) ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/30' : 'border-gray-300 dark:border-gray-700' }}">
+          <app-user-avatar [username]="member.username" class="w-8 h-8"></app-user-avatar>
+          <span class="text-sm font-medium truncate">{{ member.username }}</span>
+          @if (isAssigneeSelected(member)) {
+          <i class="fas fa-check text-purple-600 ml-auto"></i>
+          }
+        </button>
+        }
+      </div>
+      } @else if (taskForm.get('project_id')?.value) {
+      <p class="text-sm text-gray-500 dark:text-gray-400 italic">Dự án chưa có thành viên</p>
+      }
+    </div>
+
+    <!-- NÚT HÀNH ĐỘNG -->
+    <div class="flex justify-end gap-3 pt-6 border-t dark:border-gray-700">
       <button type="button" (click)="closed.emit()"
-        class="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-transparent border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700">
-        Hủy bỏ
+        class="px-6 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition">
+        Hủy
       </button>
       <button type="submit" [disabled]="isSubmitting"
-        class="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm">
+        class="px-7 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition shadow-sm flex items-center gap-2 disabled:opacity-50">
         @if (isSubmitting) { <i class="fas fa-spinner fa-spin"></i> }
-        {{ isEditMode ? 'Lưu thay đổi' : 'Tạo công việc' }}
+        {{ isEditMode ? 'Lưu thay đổi' : 'Tạo task' }}
       </button>
     </div>
   </form>
+
 </div>

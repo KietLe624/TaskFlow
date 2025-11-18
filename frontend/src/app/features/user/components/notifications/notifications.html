@@ -1,0 +1,83 @@
+
+  <div class="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
+    <div class="flex items-center gap-2">
+      <h2 class="text-lg font-bold text-gray-800">Thông báo</h2>
+      @if (unreadCount > 0) {
+        <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+          {{ unreadCount }} mới
+        </span>
+      }
+    </div>
+
+    @if (unreadCount > 0) {
+      <button
+        (click)="markAllRead()"
+        class="text-xs font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded transition-colors">
+        Đánh dấu đã đọc hết
+      </button>
+    }
+  </div>
+
+  <div class="overflow-y-auto max-h-[500px] scroll-smooth">
+    @if (isLoading && notifications.length === 0) {
+      <div class="p-4 space-y-3 animate-pulse">
+        <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+        <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+      </div>
+    } @else {
+
+      @for (noti of notifications; track noti.noti_id) {
+        <div
+          class="relative p-4 border-b border-gray-100 cursor-pointer transition duration-200 group hover:bg-gray-50"
+          [class.bg-blue-50]="!noti.is_read"
+          [class.bg-white]="noti.is_read"
+          (click)="onItemClick(noti)"
+        >
+          <div class="flex gap-3">
+            <div class="flex-shrink-0 mt-1">
+               <div class="w-8 h-8 rounded-full flex items-center justify-center"
+                    [class.bg-blue-100]="!noti.is_read"
+                    [class.text-blue-600]="!noti.is_read"
+                    [class.bg-gray-100]="noti.is_read"
+                    [class.text-gray-400]="noti.is_read">
+                  <i class="fa-solid fa-bell text-sm"></i>
+               </div>
+            </div>
+
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-gray-900 leading-snug">
+                {{ noti.title }}
+              </p>
+              <p class="text-sm text-gray-600 mt-0.5 line-clamp-2">
+                {{ noti.noti_content }}
+              </p>
+              <p class="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                <i class="fa-regular fa-clock text-[10px]"></i>
+                {{ noti.created_at | date:'dd/MM/yyyy HH:mm' }}
+              </p>
+            </div>
+
+            @if (!noti.is_read) {
+              <span class="absolute top-4 right-4 w-2.5 h-2.5 bg-blue-500 rounded-full shadow-sm"></span>
+            }
+          </div>
+        </div>
+      } @empty {
+        <div class="flex flex-col items-center justify-center py-10 text-gray-500">
+          <i class="fa-regular fa-bell-slash text-4xl text-gray-300 mb-3"></i>
+          <p>Không có thông báo nào</p>
+        </div>
+      }
+    }
+
+    @if (hasMore) {
+      <div class="p-2 text-center bg-gray-50 border-t border-gray-100">
+        <button
+          (click)="loadMore()"
+          [disabled]="isLoading"
+          class="text-sm text-blue-600 font-medium hover:text-blue-800 py-2 px-4 rounded w-full hover:bg-blue-50 transition-colors disabled:opacity-50">
+          {{ isLoading ? 'Đang tải...' : 'Xem thêm thông báo cũ' }}
+        </button>
+      </div>
+    }
+  </div>

@@ -37,8 +37,9 @@ module.exports = (sequelize, DataTypes) => {
     });
     // --- Task ---
     User.hasMany(models.Task, { foreignKey: "created_by", as: "createdTasks" });
+
     User.belongsToMany(models.Task, {
-      through: "task_assignees",
+      through: models.TaskAssignees,
       foreignKey: "user_id",
       otherKey: "task_id",
       as: "assignedTasks",
