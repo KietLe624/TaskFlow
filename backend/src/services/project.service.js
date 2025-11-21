@@ -4,6 +4,7 @@ const { Op } = require("sequelize");
 const { User, Project, Task, ProjectMember, sequelize } = db;
 const { logActivity } = require("./activity.service");
 const chatService = require("./chat.service");
+const NotificationService = require("./notification.service");
 
 const syncTeamMembersToProject = async (projectId, teamId, transaction) => {
   if (!teamId || !projectId) return;
@@ -616,15 +617,16 @@ const inviteMemberToProject = async (
       throw new Error("Vui lòng cung cấp email thành viên.");
     }
 
-    // 2. Kiểm tra quyền: Người mời phải là Owner
+    // 2. Kiểm tra quyền: Người mời phải là Owner (hoặc Admin tùy logic bro)
     const inviterPermission = await ProjectMember.findOne({
       where: { project_id: projectId, user_id: requestingUserId },
       attributes: ["role"],
       transaction: t,
     });
 
+    // Check null trước khi check role để tránh crash
     if (!inviterPermission || inviterPermission.role !== "owner") {
-      throw new Error("Chỉ 'owner' của dự án mới có quyền mời thành viên.");
+      throw new Error("Bạn không có quyền mời thành viên vào dự án này.");
     }
 
     // 3. Tìm người dùng cần mời qua Email
@@ -657,19 +659,39 @@ const inviteMemberToProject = async (
         project_id: projectId,
         user_id: userToInvite.user_id,
         role: "member",
+        joined_at: new Date(), // Thêm thời gian join cho chuẩn
       },
       { transaction: t }
     );
 
-    // 6. Log hoạt động
-    await logActivity({
-      user_id: requestingUserId, // Sửa lại key cho khớp model activity (user_id thay vì userId)
-      entity_type: "project",
-      entity_id: projectId,
-      action: "invited",
-      description: `Đã mời thành viên ${userToInvite.email} vào dự án.`,
-      tx: t,
+    // --- UPDATE: Lấy thông tin Project để bắn thông báo ---
+    const project = await Project.findByPk(projectId, {
+      attributes: ["project_id", "project_name"],
+      transaction: t,
     });
+
+    // 6. BẮN THÔNG BÁO (Notification)
+    if (project) {
+      await NotificationService.notifyProjectInvite(
+        requestingUserId, // Người mời
+        userToInvite.user_id, // Người được mời
+        project, // Info dự án (để lấy tên hiển thị)
+        t
+      );
+    }
+
+    // 7. LOG HOẠT ĐỘNG (Activity)
+    // Sửa lại cách truyền transaction 't' cho đúng với activity.service.js
+    await logActivity(
+      {
+        user_id: requestingUserId,
+        entity_type: "project",
+        entity_id: projectId,
+        action: "invited",
+        description: `Đã mời thành viên ${userToInvite.email} vào dự án.`,
+      },
+      t
+    ); // <--- 't' là tham số thứ 2
 
     await t.commit();
 

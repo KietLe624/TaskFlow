@@ -8,13 +8,13 @@ const {
   login,
   changePassword,
   forgotPassword,
-  resetPassword
+  resetPassword,
 } = require("../../controllers/auth.controller");
 
 // Auth routes
 router.post("/register", register);
 router.post("/login", login);
-router.patch("/change-password", authenticateToken, changePassword);
+router.patch("/changePassword", authenticateToken, changePassword);
 router.post("/forgot-password", forgotPassword);
 router.patch("/reset-password", resetPassword);
 

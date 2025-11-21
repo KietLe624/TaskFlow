@@ -1,4 +1,4 @@
-import { Component, HostListener, ElementRef, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, HostListener, ElementRef, inject, OnInit, ChangeDetectorRef, Input, EventEmitter, Output } from '@angular/core';
 import { ThemeToggle } from "../../shared/theme-toggle/theme-toggle";
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule, NavigationEnd } from '@angular/router';
@@ -27,6 +27,13 @@ export class MainHeaderComponent implements OnInit {
   isDropdownOpen = false; // trạng thái nút dropdown
   isCollapsed: boolean = false;
   isOpenNoti: boolean = false;
+
+  @Output() toggleSidebar = new EventEmitter<void>();
+
+  onMenuClick() {
+    // Phát tín hiệu ra ngoài
+    this.toggleSidebar.emit();
+  }
 
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;

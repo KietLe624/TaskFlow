@@ -1,7 +1,7 @@
 export interface Notification {
   noti_id: number;
   user_id: number;
-  type: string;
+  type?: 'task' | 'mention' | 'comment' | 'system';
   title: string;
   noti_content: string | null;
   entity_type: string;
@@ -12,7 +12,7 @@ export interface Notification {
 }
 
 export interface NotificationResponse {
-  notifications: Notification[];
+  data: Notification[];
   pagination: {
     total: number;
     page: number;

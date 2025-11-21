@@ -1,6 +1,7 @@
 const db = require("../models/index.model");
-const { get } = require("../routers/api-route/project.api"); 
-const { sequelize, User, Project, Task, Activity, TaskComment } = db;
+const NotificationService = require("./notification.service");
+const { sequelize, User, Project, Task, Activity, TaskComment, TaskAssignees } =
+  db;
 const { logActivity } = require("./activity.service");
 const { Op } = require("sequelize");
 
@@ -46,6 +47,14 @@ const createTask = async (taskData, user_id) => {
       await sequelize.models.TaskAssignees.bulkCreate(records, {
         transaction: t,
       });
+      for (const assigneeId of assignee_ids) {
+        await NotificationService.notifyTaskAssignment(
+          user_id, // Người gán (Actor)
+          assigneeId, // Người nhận (Target)
+          task, // Thông tin Task
+          t // Transaction
+        );
+      }
     }
 
     await logActivity(
@@ -104,6 +113,17 @@ const updateTask = async (taskId, updatedData, current_user_id = null) => {
     await task.update(taskFields, { transaction: t });
 
     // CẬP NHẬT ASSIGNEES
+    if (updatedData.status === "completed" && task.status === "completed") {
+      // (Logic check task.status ở trên là sau khi đã update rồi)
+      await NotificationService.notifyTaskCompletion(
+        current_user_id, // Người bấm hoàn thành
+        task.created_by, // Người tạo task
+        task,
+        t
+      );
+    }
+
+    // 2. CẬP NHẬT ASSIGNEES
     if (assignee_ids !== undefined) {
       await sequelize.models.TaskAssignees.destroy({
         where: { task_id: taskId },
@@ -120,9 +140,53 @@ const updateTask = async (taskId, updatedData, current_user_id = null) => {
         await sequelize.models.TaskAssignees.bulkCreate(records, {
           transaction: t,
         });
+
+        if (assignee_ids !== undefined) {
+          // --- BƯỚC 1: Lấy danh sách ID hiện tại TRƯỚC KHI xóa ---
+          const currentRecords = await TaskAssignees.findAll({
+            where: { task_id: taskId },
+            attributes: ["user_id"],
+            transaction: t,
+          });
+          const currentIds = currentRecords.map((r) => r.user_id);
+
+          // --- BƯỚC 2: Tìm ra những người MỚI (Có trong assignee_ids nhưng không có trong currentIds) ---
+          // Ví dụ: Cũ [1, 2], Mới [1, 2, 3] -> Người mới là [3]
+          const newMembersToNotify = assignee_ids.filter(
+            (id) => !currentIds.includes(id)
+          );
+
+          // --- BƯỚC 3: Cập nhật DB (Vẫn giữ logic Xóa hết đi tạo lại cho sạch data) ---
+          await TaskAssignees.destroy({
+            where: { task_id: taskId },
+            transaction: t,
+          });
+
+          if (assignee_ids.length > 0) {
+            const records = assignee_ids.map((user_id) => ({
+              task_id: taskId,
+              user_id,
+              assigned_by: current_user_id || task.created_by,
+              assigned_at: new Date(),
+            }));
+
+            await TaskAssignees.bulkCreate(records, {
+              transaction: t,
+            });
+
+            // --- BƯỚC 4: Chỉ bắn thông báo cho người MỚI ---
+            for (const assigneeId of newMembersToNotify) {
+              await NotificationService.notifyTaskAssignment(
+                current_user_id || task.created_by, // Người thực hiện gán
+                assigneeId, // Người được gán
+                task,
+                t
+              );
+            }
+          }
+        }
       }
     }
-
     await t.commit();
     return task;
   } catch (err) {
@@ -227,17 +291,45 @@ const processTasks = async (whereClause) => {
 
 // Thêm comment
 const addComment = async (taskId, user_id, content) => {
+  const t = await sequelize.transaction();
   const comment = await sequelize.models.TaskComment.create({
     task_id: taskId,
     user_id,
     content,
   });
+  const task = await Task.findByPk(taskId, { transaction: t });
+  if (task) {
+    // Bắn thông báo cho Creator (nếu người cmt không phải creator)
+    if (task.created_by !== user_id) {
+      await NotificationService.notifyTaskComment(
+        user_id, // Người comment
+        task.created_by, // Người nhận (Creator)
+        task, // Info task
+        content,
+        t
+      );
+    }
 
-  // Trả về comment + info user để frontend hiển thị luôn
-  return await sequelize.models.TaskComment.findByPk(comment.cmt_id, {
+    // Log Activity (Optional)
+    await logActivity(
+      {
+        user_id,
+        entity_type: "task",
+        entity_id: taskId,
+        action: "commented",
+        description: `Đã bình luận: ${content.substring(0, 30)}...`,
+      },
+      t
+    );
+  }
+
+  await t.commit();
+
+  // Trả về data để hiển thị
+  return await TaskComment.findByPk(comment.cmt_id, {
     include: [
       {
-        model: sequelize.models.User,
+        model: User,
         as: "author",
         attributes: ["user_id", "username", "avatar_url"],
       },

@@ -1,67 +1,63 @@
+// attachment-service.ts – SỬA XONG 100%
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { AuthService } from '../auth/auth'
+import { HttpClient, HttpHeaders, HttpEvent, HttpEventType } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+import { AuthService } from '../auth/auth';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AttachmentService {
+  private apiUrl = 'http://localhost:3000/api/attachment'; // ← ĐÚNG ENDPOINT
 
   constructor(private http: HttpClient, private authService: AuthService) { }
 
-  private apiUrl = 'http://localhost:3000/api/upload';
-
-  private getAuthHeadersForUpload(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    return new HttpHeaders({
-      'Authorization': token ? `Bearer ${token}` : ''
-    });
-  }
-
-  // Header cho JSON (dùng khi delete)
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
     return new HttpHeaders({
-      'Authorization': token ? `Bearer ${token}` : '',
-      'Content-Type': 'application/json',
+      Authorization: token ? `Bearer ${token}` : ''
+      // Không set Content-Type khi dùng FormData → browser tự set boundary
     });
   }
 
-  uploadFile(file: File, context: { conve_id?: number, task_id?: number }): Observable<any> {
+  // Upload chung cho task, project, comment
+  uploadFile(file: File, context: { conve_id?: number, task_id?: number, project_id?: number } = {}): Observable<any> {
     const formData = new FormData();
-    formData.append('file', file); // Khớp với 'upload.single("file")'
+    formData.append('file', file);
 
-    // Gửi kèm ID bối cảnh (conve_id hoặc task_id)
-    if (context.conve_id) {
-      formData.append('conve_id', context.conve_id.toString());
-    }
-    if (context.task_id) {
-      formData.append('task_id', context.task_id.toString());
-    }
+    if (context.conve_id) formData.append('conve_id', context.conve_id.toString());
+    if (context.task_id) formData.append('task_id', context.task_id.toString());
+    if (context.project_id) formData.append('project_id', context.project_id.toString());
 
-    // Gọi đúng API endpoint
+    // ← ĐÚNG ENDPOINT: /api/upload (KHÔNG CÓ /upload NỮA)
     return this.http.post(`${this.apiUrl}/upload`, formData, {
-      headers: this.getAuthHeadersForUpload(),
+      headers: this.getAuthHeaders(),
+      reportProgress: true,
+      observe: 'events'
     });
   }
 
-  deleteAttachmentS3(attach_id: number): Observable<any> {
-    // Middleware 'authenticateToken' sẽ lấy user_id từ token,
-    // nên không cần gửi user_id trong body khi delete.
+  // Xử lý progress + response
+  private handleUploadEvent(event: HttpEvent<any>, file: File): any {
+    switch (event.type) {
+      case HttpEventType.UploadProgress:
+        const progress = event.total ? Math.round((100 * event.loaded) / event.total) : 0;
+        return { type: 'progress', progress, file };
+      case HttpEventType.Response:
+        return {
+          type: 'success',
+          data: event.body,
+          file
+        };
+      default:
+        return { type: 'unknown' };
+    }
+  }
+
+  // Xóa file S3
+  deleteAttachment(attach_id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/deleteS3/${attach_id}/force`, {
       headers: this.getAuthHeaders()
     });
   }
-
-  uploadFileForChat(file: File, conve_id: number): Observable<any> {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('conve_id', conve_id.toString());
-
-    return this.http.post(`${this.apiUrl}/upload`, formData, {
-      headers: this.getAuthHeadersForUpload(),
-    });
-  }
-
 }

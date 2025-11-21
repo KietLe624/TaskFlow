@@ -10,6 +10,7 @@ import { authGuard } from './core/guards/auth-guard';
 import { ProjectsComponent } from './features/user/components/projects/projects';
 import { PageProjectDetailComponent } from './features/user/components/page-project-detail/page-project-detail';
 import { TaskComponent } from './features/user/components/task/task';
+import { ProfileComponent } from './features/user/components/profile/profile';
 
 export const routes: Routes = [
   { path: '', component: PublicPageComponent },
@@ -26,7 +27,9 @@ export const routes: Routes = [
       { path: 'dashboard', component: DashboardComponent, data: { title: 'Dashboard' } },
       { path: 'projects', component: ProjectsComponent, data: { title: 'Projects' } },
       { path: 'projects/:id', component: PageProjectDetailComponent, data: { title: 'Project Detail' } },
-      { path: 'tasks', component: TaskComponent, data: { title: 'Tasks' } }
+      { path: 'tasks', component: TaskComponent, data: { title: 'Tasks' } },
+      { path: 'tasks/:id', component: TaskComponent, data: { title: 'Task Detail' } },
+      { path: 'profile', component: ProfileComponent, data: { title: 'Profile' } }
     ]
   },
 

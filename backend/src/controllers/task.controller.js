@@ -5,7 +5,6 @@ const createTask = async (req, res) => {
   try {
     const user_id = req.user?.user_id;
     if (!user_id) return res.status(401).json({ message: "Chưa đăng nhập" });
-
     const { task_name, status, priority, start_date, due_date } = req.body;
 
     //  Validation cơ bản tại Controller (input validation)

@@ -1,0 +1,88 @@
+<div class="w-full" style="height:500px">
+  @if (!loading && profile) {
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Left: Avatar + Info -->
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-8 text-center h-fit">
+      <img
+        [src]="profile.user.avatar_url || 'https://ui-avatars.com/api/?name=' + (profile.user.full_name || profile.user.username) + '&background=1e293b&color=fff&size=256'"
+        alt="Avatar" class="w-32 h-32 rounded-full mx-auto ring-4 ring-gray-200 dark:ring-gray-700 object-cover" />
+      <h2 class="mt-4 text-xl font-semibold text-gray-900 dark:text-white">
+        {{ profile.user.full_name || profile.user.username }}
+      </h2>
+      <p class="text-gray-500 dark:text-gray-400">{{ profile.user.email }}</p>
+      <p class="text-sm text-gray-500 mt-2">ID: {{ profile.user.user_id }}</p>
+    </div>
+
+    <!-- Right: Forms -->
+    <div class="lg:col-span-2 space-y-8">
+
+      <!-- Form Thông tin cá nhân -->
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-8">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Thông tin cá nhân</h3>
+
+        <form [formGroup]="profileForm" (ngSubmit)="onUpdateProfile()" class="space-y-5">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Họ và tên</label>
+            <input type="text" formControlName="full_name"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 transition"
+              placeholder="Nhập họ và tên" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Số điện thoại</label>
+            <input type="tel" formControlName="phone_number"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800"
+              placeholder="090x xxx xxxx" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Địa chỉ</label>
+            <input type="text" formControlName="address"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800"
+              placeholder="Nhập địa chỉ" />
+          </div>
+
+          <button type="submit" [disabled]="saving || profileForm.pristine"
+            class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition disabled:opacity-50">
+            {{ saving ? 'Đang lưu...' : 'Lưu thay đổi' }}
+          </button>
+        </form>
+      </div>
+
+      <!-- Form Đổi mật khẩu -->
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-8">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Đổi mật khẩu</h3>
+
+        <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="space-y-5">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mật khẩu hiện tại</label>
+            <input type="password" formControlName="currentPassword"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mật khẩu mới</label>
+            <input type="password" formControlName="newPassword"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Xác nhận mật khẩu mới</label>
+            <input type="password" formControlName="confirmPassword"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800" />
+            @if (passwordForm.hasError('mismatch') && passwordForm.get('confirmPassword')?.touched) {
+            <p class="text-red-500 text-sm mt-1">Mật khẩu không khớp</p>
+            }
+          </div>
+
+          <button type="submit" [disabled]="saving || passwordForm.invalid"
+            class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition disabled:opacity-50">
+            {{ saving ? 'Đang đổi...' : 'Đổi mật khẩu' }}
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+  }
+</div>

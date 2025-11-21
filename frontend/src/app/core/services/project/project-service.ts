@@ -80,7 +80,6 @@ export class ProjectService {
   inviteMember(projectId: number, email: string): Observable<any> {
     return this.http.post(`${this.apiProjects}/inviteMemberToProject/${projectId}`, { memberEmail: email }, { headers: this.getAuthHeaders() });
   }
-
 }
 
 

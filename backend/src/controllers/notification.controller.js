@@ -1,51 +1,27 @@
 const notificationService = require("../services/notification.service");
 
-const createNotification = async (req, res) => {
-  try {
-    // Lấy dữ liệu từ body request
-    const notiData = req.body;
-
-    // Gọi service
-    const newNotification = await notificationService.createNotification(
-      notiData
-    );
-
-    return res.status(201).json({
-      message: "Tạo thông báo thành công",
-      data: newNotification,
-    });
-  } catch (error) {
-    console.error("Error creating notification:", error);
-    return res.status(500).json({
-      message: "Lỗi khi tạo thông báo",
-      error: error.message,
-    });
-  }
-};
-
-// 2. Lấy danh sách thông báo của user đang đăng nhập
+// 1. Lấy danh sách thông báo (GET /api/notifications)
+// Có phân trang & sắp xếp mới nhất
 const getMyNotifications = async (req, res) => {
   try {
-    // Giả định: req.user.user_id được lấy từ token xác thực
-    const userId = req.user.user_id;
-
-    // Lấy tham số phân trang từ query params (?page=1&limit=20)
+    const userId = req.user.user_id; // Lấy từ middleware xác thực
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-
+    let limit = parseInt(req.query.limit) || 20;
+    if (limit > 50) limit = 50; // Giới hạn max 50 để tránh quá tải
     const result = await notificationService.getNotificationsByUserId(
       userId,
       page,
       limit
     );
 
+    // Trả về đúng format Frontend mong đợi: { data: [], pagination: {} }
     return res.status(200).json({
       message: "Lấy danh sách thông báo thành công",
-      data: result.notifications,
+      data: result.data,
       pagination: result.pagination,
     });
   } catch (error) {
-    console.error("Error fetching notifications:", error);
+    console.error("Get notifications error:", error);
     return res.status(500).json({
       message: "Lỗi khi lấy danh sách thông báo",
       error: error.message,
@@ -53,75 +29,86 @@ const getMyNotifications = async (req, res) => {
   }
 };
 
-// 3. Lấy số lượng thông báo chưa đọc
+// 2. Lấy số lượng chưa đọc (GET /api/notifications/unread-count)
+// Dùng để hiển thị chấm đỏ trên quả chuông
 const getUnreadCount = async (req, res) => {
   try {
     const userId = req.user.user_id;
-
     const result = await notificationService.getUnreadCountByUserId(userId);
 
     return res.status(200).json({
-      message: "Lấy số lượng thông báo chưa đọc thành công",
-      data: result,
+      message: "Thành công",
+      data: result, // { unread_count: 5 }
     });
   } catch (error) {
-    console.error("Error fetching unread count:", error);
-    return res.status(500).json({
-      message: "Lỗi server",
-      error: error.message,
-    });
+    console.error("Get unread count error:", error);
+    return res.status(500).json({ message: "Lỗi server" });
   }
 };
 
-// 4. Đánh dấu một thông báo cụ thể là đã đọc
+// 3. Đánh dấu 1 thông báo là đã đọc (PATCH /api/notifications/:id/read)
 const markOneAsRead = async (req, res) => {
   try {
     const userId = req.user.user_id;
-    const { id } = req.params; // Lấy noti_id từ URL (VD: /notifications/:id/read)
+    const notiId = req.params.id; // Lấy id từ URL
 
-    const isUpdated = await notificationService.markAsRead(id, userId);
+    const isUpdated = await notificationService.markAsRead(notiId, userId);
 
     if (!isUpdated) {
-      return res.status(404).json({
-        message: "Không tìm thấy thông báo hoặc thông báo đã được đọc",
+      // Có thể thông báo không tồn tại hoặc đã đọc rồi
+      return res.status(400).json({
+        message: "Không thể đánh dấu đã đọc (ID không tồn tại hoặc lỗi)",
       });
     }
 
     return res.status(200).json({
-      message: "Đánh dấu đã đọc thành công",
+      message: "Đã đánh dấu là đã đọc",
     });
   } catch (error) {
-    console.error("Error marking notification as read:", error);
-    return res.status(500).json({
-      message: "Lỗi server",
-      error: error.message,
-    });
+    console.error("Mark read error:", error);
+    return res.status(500).json({ message: "Lỗi server" });
   }
 };
 
-// 5. Đánh dấu tất cả là đã đọc
+// 4. Đánh dấu tất cả là đã đọc (PATCH /api/notifications/read-all)
 const markAllRead = async (req, res) => {
   try {
     const userId = req.user.user_id;
-
     await notificationService.markAllAsRead(userId);
 
     return res.status(200).json({
       message: "Đã đánh dấu tất cả là đã đọc",
     });
   } catch (error) {
-    console.error("Error marking all as read:", error);
-    return res.status(500).json({
-      message: "Lỗi server",
-      error: error.message,
+    console.error("Mark all read error:", error);
+    return res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+// 5. (Optional) Tạo thông báo thủ công (POST /api/notifications)
+// Hàm này thường chỉ dùng cho Admin test hoặc bắn thông báo hệ thống chung
+const createManual = async (req, res) => {
+  try {
+    // Dữ liệu từ body: { user_id, title, content, type... }
+    const notiData = req.body;
+
+    // Gọi service tạo (không cần log activity ở đây vì service đã sạch)
+    const newNoti = await notificationService.createNotification(notiData);
+
+    return res.status(201).json({
+      message: "Tạo thông báo thành công",
+      data: newNoti,
     });
+  } catch (error) {
+    console.error("Create notification error:", error);
+    return res.status(500).json({ message: "Lỗi tạo thông báo" });
   }
 };
 
 module.exports = {
-  createNotification,
   getMyNotifications,
   getUnreadCount,
   markOneAsRead,
   markAllRead,
+  createManual,
 };

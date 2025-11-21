@@ -107,7 +107,6 @@ export class ProjectsComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-
   openCreateModal() {
     this.isEditMode = false;
     this.selectedProject = null;

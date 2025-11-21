@@ -18,7 +18,7 @@ const getUserById = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "Người dùng không tồn tại" });
     }
-    res.status(200).json(user);
+    res.status(200).json({message: "Lấy người dùng thành công", user});
   } catch (error) {
     console.error("Lỗi khi lấy người dùng:", error);
     res.status(500).json({ message: "Lỗi máy chủ" });

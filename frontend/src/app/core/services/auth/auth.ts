@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AuthResponse, LoginRequest, RegisterRequest, ChangePasswordRequest, ForgotPasswordRequest, ResetPasswordRequest, MyJwtPayload } from '../../../models/users';
@@ -37,6 +37,10 @@ export class AuthService {
     );
   }
 
+  changePassword(data: ChangePasswordRequest): Observable<{ message: string }> {
+    return this.http.patch<{ message: string }>(`${this.apiAuthUrl}/changePassword`, data, { headers: this.getAuthHeaders() });
+  }
+
   isLoggedIn(): boolean {
     if (this.isBrowser) {
       const token = localStorage.getItem('token');
@@ -63,4 +67,11 @@ export class AuthService {
     }
   }
 
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      Authorization: token ? `Bearer ${token}` : '',
+      'Content-Type': 'application/json',
+    });
+  }
 }

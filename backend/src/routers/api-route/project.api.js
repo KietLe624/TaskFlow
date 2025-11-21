@@ -14,6 +14,8 @@ const {
   getProjectById,
   getProjectMembers,
   inviteMemberToProject,
+  changeMemberRole,
+  removeMemberFromProject,
 } = require("../../controllers/project.controller");
 
 router.get("/getAllProjects", authenticateToken, getAllProjects);
@@ -37,6 +39,17 @@ router.post(
   "/inviteMemberToProject/:project_id",
   authenticateToken,
   inviteMemberToProject
+);
+router.patch(
+  "/changeMemberRole/:project_id/:user_id",
+  authenticateToken,
+  changeMemberRole
+);
+
+router.delete(
+  "/removeMemberFromProject/:project_id/:user_id",
+  authenticateToken,
+  removeMemberFromProject
 );
 
 module.exports = router;

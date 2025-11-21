@@ -1,7 +1,8 @@
 <header
   class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
   <div class="flex items-center space-x-4 ">
-    <button class="md:hidden text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 text-xl">
+    <button (click)="onMenuClick()"
+      class="md:hidden text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 text-xl">
       <i class="fa-solid fa-bars"></i>
     </button>
 
@@ -24,63 +25,90 @@
     </div>
 
     <div class="flex items-center space-x-4">
-
       <div class="relative">
-
         <button (click)="openNotifications()"
-          class="relative text-gray-500 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white focus:outline-none transition-colors">
+          class="relative p-2 text-gray-500 hover:text-gray-700 dark:text-gray-500 dark:hover:text-white focus:outline-none transition-colors rounded-full">
           <i class="fas fa-bell fa-lg"></i>
-
         </button>
 
         @if (isOpenNoti) {
         <div class="fixed inset-0 z-40 cursor-default" (click)="closeNotifications()"></div>
-
         <div
           class="absolute right-0 mt-3 w-80 sm:w-96 z-50 origin-top-right bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-
           <app-notifications></app-notifications>
-
         </div>
         }
       </div>
       <app-theme-toggle></app-theme-toggle>
-
     </div>
 
-    <div class="relative inline-block text-left">
-      <div>
-        <button type="button" (click)="toggleDropdown()"
-          class="flex items-center rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-          id="user-menu-button" aria-expanded="false" aria-haspopup="true">
-          <span class="sr-only">Open user menu</span>
-          <img class="h-10 w-10 rounded-full object-cover"
-            src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=40&h=40&fit=crop&crop=faces"
-            alt="User Avatar" />
-        </button>
+    <!-- User Avatar & Dropdown Menu -->
+    <div class="relative" #userMenu>
+      <!-- Avatar Button -->
+      <button type="button" (click)="toggleDropdown()"
+        class="group relative flex items-center focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 rounded-full transition-all duration-200"
+        aria-expanded="false" aria-haspopup="true" id="user-menu-button">
+
+        <span class="sr-only">Mở menu người dùng</span>
+
+        <!-- Avatar với hiệu ứng hover tinh tế -->
+        <div class="relative">
+          <img [src]="'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=160&h=160&fit=crop&crop=face'"
+            alt="Avatar"
+            class="h-10 w-10 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700 transition-all duration-300 group-hover:ring-primary-400 dark:group-hover:ring-primary-600" />
+
+          <!-- Online indicator (tùy chọn) -->
+          <span
+            class="absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white dark:ring-gray-950 bg-green-500"></span>
+        </div>
+      </button>
+
+      <!-- Dropdown Menu - Animation mượt với Angular @if + Tailwind -->
+      @if (isDropdownOpen) {
+      <!-- Overlay mờ khi mở menu (đóng khi click ngoài) -->
+      <div class="fixed inset-0 z-40" (click)="isDropdownOpen = false">
       </div>
 
-      <div [ngClass]="{
-     'hidden opacity-0 scale-95': !isDropdownOpen,
-     'block opacity-100 scale-100': isDropdownOpen
-   }" class="absolute right-0 z-10 mt-4 w-64 h-64 origin-top-right rounded-md bg-white dark:bg-gray-800
-           py-1 shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-gray-700 focus:outline-none
-           transition ease-out duration-100 transform" role="menu" aria-orientation="vertical"
-        aria-labelledby="user-menu-button" tabindex="-1">
-        <a href="#"
-          class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-          role="menuitem" tabindex="-1">Your Profile</a>
-        <a href="#"
-          class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-          role="menuitem" tabindex="-1">Settings</a>
+      <!-- Menu chính -->
+      <div [@slideDown]
+        class="absolute right-0 mt-3 w-72 origin-top-right transform rounded-2xl bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black ring-opacity-10 dark:ring-gray-800 overflow-hidden z-50">
 
-        <button (click)="onLogout()"
-          class="block w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-gray-700"
-          role="menuitem" tabindex="-1">
-          <i class="fa-solid fa-right-to-bracket"></i>
-          Đăng xuất
-        </button>
+        <!-- User Info Header -->
+        <div
+          class="px-5 py-4 bg-gradient-to-r from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-800">
+          <!-- <p class="text-sm font-semibold text-white">
+            {{ currentUser?.full_name || 'Nguyễn Văn A' }}
+          </p>
+          <p class="text-xs text-primary-100 mt-1">
+            {{ currentUser?.email || 'user@example.com' }}
+          </p> -->
+        </div>
+
+        <!-- Menu Items -->
+        <div class="py-2">
+          <a routerLink="/app/profile"
+            class="flex items-center gap-3 px-5 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <i class="fa-regular fa-user w-5 text-center"></i>
+            Hồ sơ cá nhân
+          </a>
+
+          <a routerLink="/settings/account"
+            class="flex items-center gap-3 px-5 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <i class="fa-regular fa-cog w-5 text-center"></i>
+            Cài đặt tài khoản
+          </a>
+        </div>
+
+        <!-- Logout Button -->
+        <div class="border-t border-gray-200 dark:border-gray-700">
+          <button (click)="onLogout()"
+            class="w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors">
+            <i class="fa-solid fa-right-from-bracket w-5 text-center"></i>
+            Đăng xuất
+          </button>
+        </div>
       </div>
+      }
     </div>
   </div>
 </header>

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ChangeDetectorRef} from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, EventEmitter, Output, Input } from '@angular/core';
 import { RouterModule } from "@angular/router";
 
 @Component({
@@ -11,13 +11,26 @@ import { RouterModule } from "@angular/router";
 export class SideBarComponent implements OnInit {
   constructor(private cdr: ChangeDetectorRef) { }
   ngOnInit(): void {
-    this.isCollapsed = false; // Khởi tạo trạng thái sidebar
+    const saved = localStorage.getItem('sidebarCollapsed');
+    this.isCollapsed = saved === 'true';
   }
+
   isCollapsed: boolean = false;
   isDropdownOpen: boolean = false;
 
+
   toggleSidebar() {
     this.isCollapsed = !this.isCollapsed;
-    this.cdr.detectChanges(); 
+    // Lưu trạng thái để lần sau vào vẫn giữ
+    localStorage.setItem('sidebarCollapsed', this.isCollapsed.toString());
+  }
+
+  @Input() isOpen = false;
+
+  // Báo lại cho cha khi muốn đóng (ví dụ click vào overlay)
+  @Output() closeSidebar = new EventEmitter<void>();
+
+  close() {
+    this.closeSidebar.emit();
   }
 }

@@ -15,5 +15,8 @@ console.log("AccessKey:", process.env.AWS_ACCESS_KEY_ID);
 s3.listBuckets((err, data) => {
   if (err) console.error(" Lỗi:", err);
   else
-    console.log(" Kết nối thành công:", data.Buckets.map((b) => b.Name));
+    console.log(
+      " Kết nối thành công:",
+      data.Buckets.map((b) => b.Name)
+    );
 });

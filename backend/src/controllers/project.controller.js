@@ -1,4 +1,5 @@
 const projectService = require("../services/project.service");
+const projectMemberService = require("../services/project-member.service");
 
 // Create project
 const createProject = async (req, res) => {
@@ -284,6 +285,60 @@ const inviteMemberToProject = async (req, res) => {
   }
 };
 
+const changeMemberRole = async (req, res) => {
+  try {
+    let { project_id, user_id } = req.params;
+    const { role } = req.body;
+    const currentUserId = req.user.user_id;
+
+    project_id = parseInt(project_id, 10);
+    user_id = parseInt(user_id, 10);
+
+    console.log("---------------------------------------------");
+    console.log("📌 [DEBUG] Bắt đầu đổi role:");
+    console.log(" - Project ID:", project_id);
+    console.log(" - Target User ID:", user_id);
+    console.log(" - New Role:", role);
+    console.log(" - Current User ID (Requester):", currentUserId);
+    console.log("---------------------------------------------");
+
+    const result = await projectMemberService.changeRole(
+      project_id,
+      user_id,
+      role,
+      currentUserId
+    );
+
+    // global.sendNotification(user_id, {
+    //   title: "Vai trò đã thay đổi",
+    //   message: `Bạn giờ là ${role.toUpperCase()} của dự án`,
+    //   type: "system",
+    //   link: `/projects/${project_id}`,
+    // });
+
+    res.json(result);
+  } catch (error) {
+    res.status(error.status || 500).json({ message: error.message });
+  }
+};
+
+const removeMemberFromProject = async (req, res) => {
+  try {
+    let { project_id, user_id } = req.params;
+    const currentUserId = req.user.user_id;
+    project_id = parseInt(project_id, 10);
+    user_id = parseInt(user_id, 10);
+    const result = await projectMemberService.removeMember(
+      project_id,
+      user_id,
+      currentUserId
+    );
+    res.json(result);
+  } catch (error) {
+    res.status(error.status || 500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createProject,
   updateProject,
@@ -295,4 +350,6 @@ module.exports = {
   getProjectById,
   getProjectMembers,
   inviteMemberToProject,
+  changeMemberRole,
+  removeMemberFromProject,
 };

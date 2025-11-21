@@ -23,6 +23,10 @@ router.post(
 router.get("/task/:task_id", authenticateToken, getAttachmentsByTask);
 router.get("/message/:message_id", authenticateToken, getAttachmentsByMessage);
 router.delete("/delete/:attach_id", authenticateToken, deleteAttachment);
-router.delete("/deleteS3/:attach_id/force", authenticateToken, deleteAttachmentS3);
+router.delete(
+  "/deleteS3/:attach_id/force",
+  authenticateToken,
+  deleteAttachmentS3
+);
 
 module.exports = router;

@@ -1,73 +1,127 @@
-<div
-  class="flex flex-col h-[500px] border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 shadow-sm">
-
-  <div #messageContainer class="flex-1 overflow-y-auto p-4 space-y-4">
+<div class="flex flex-col h bg-white dark:bg-gray-900 relative" style="height: 450px;">
+  <div #messageContainer class="flex-1 overflow-y-auto px-4 py-6 space-y-6 scroll-smooth">
 
     @if (isLoadingHistory) {
-    <div class="flex justify-center items-center h-full">
-      <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
+    <div class="flex justify-center items-center py-10 text-gray-400">
+      <i class="fas fa-circle-notch fa-spin mr-2"></i> Đang tải tin nhắn...
     </div>
     }
 
     @for (msg of messages; track msg.mess_id) {
-    <div class="flex" [ngClass]="msg.sender_id === currentUserId ? 'justify-end' : 'justify-start'">
-      <div class="flex items-start gap-2.5 max-w-[75%]">
 
-        @if (msg.sender_id !== currentUserId) {
-        <app-user-avatar [src]="msg.sender?.avatar_url" [username]="msg.sender?.username || msg.sender?.full_name"
-          size="w-8 h-8" textSize="text-sm">
+    @if (msg.sender_id !== currentUserId) {
+    <div class="flex gap-3 items-end group">
+      <div class="mb-1 shrink-0">
+        <app-user-avatar [src]="msg.sender?.avatar_url" [username]="msg.sender?.full_name || msg.sender?.username"
+          size="w-8 h-8" textSize="text-xs">
         </app-user-avatar>
-        }
+      </div>
 
-        <div class="flex flex-col">
-          @if (msg.sender_id !== currentUserId) {
-          <span class="text-xs text-gray-500 dark:text-gray-400 mb-0.5 ml-2">
-            {{ msg.sender?.full_name || msg.sender?.username }}
+      <div class="max-w-[80%] sm:max-w-[70%]">
+        <div class="ml-1 mb-1 flex items-center gap-2">
+          <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+            {{ msg.sender?.full_name || 'Unknown' }}
           </span>
+          <span class="text-[10px] text-gray-400">{{ msg.created_at | date:'HH:mm' }}</span>
+        </div>
+
+        <div
+          class="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 px-4 py-2.5 rounded-2xl rounded-bl-none shadow-sm">
+          @if (msg.content) {
+          <p class="whitespace-pre-wrap break-words leading-relaxed text-[15px]">{{ msg.content }}</p>
           }
 
-          <div [class.owner]="msg.sender_id === currentUserId" [class.guest]="msg.sender_id !== currentUserId"
-            class="rounded-xl px-3.5 py-2.5 shadow-sm" [ngClass]="msg.sender_id === currentUserId
-        ? 'bg-blue-600 text-white rounded-br-none'
-        : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-bl-none'">
-
-            @if (msg.attachments && msg.attachments.length > 0) {
-            <a [href]="msg.attachments[0].file_url" target="_blank"
-              class="flex items-center gap-2.5 p-2 rounded-lg bg-black/10 dark:bg-white/10"
-              [title]="msg.attachments[0].file_name">
-              <i class="fas fa-file-alt text-xl opacity-80"></i>
-              <div class="text-sm">
-                <p class="font-medium line-clamp-1">{{ msg.attachments[0].file_name }}</p>
-                <p class="text-xs opacity-70">{{ (msg.attachments[0].file_size / 1024) | number:'1.0-0' }} KB</p>
-              </div>
-            </a>
-            } @else {
-            <p class="text-sm break-words whitespace-pre-wrap">{{ msg.content }}</p>
-            }
+          @for (attach of msg.attachments; track attach.attach_id) {
+          <div
+            class="mt-2 flex items-center gap-3 p-2 bg-white dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+            <div class="p-2 bg-blue-50 dark:bg-blue-900/30 rounded text-blue-600">
+              <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+              <a [href]="attach.file_url" target="_blank"
+                class="block text-sm font-medium text-blue-600 hover:underline truncate">
+                {{ attach.file_name }}
+              </a>
+              <span class="text-xs text-gray-400">{{ formatFileSize(attach.file_size) }}</span>
+            </div>
           </div>
+          }
         </div>
       </div>
     </div>
     }
+
+    @else {
+    <div class="flex justify-end items-end gap-2 group">
+      <div class="max-w-[80%] sm:max-w-[70%] flex flex-col items-end">
+        <div class="bg-blue-600 text-white px-4 py-2.5 rounded-2xl rounded-br-none shadow-md order-1">
+          @if (msg.content) {
+          <p class="whitespace-pre-wrap break-words leading-relaxed text-[15px]">{{ msg.content }}</p>
+          }
+
+          @for (attach of msg.attachments; track attach.attach_id) {
+          <div class="mt-2 flex items-center gap-3 p-2 bg-blue-700/50 rounded-lg border border-blue-500/30">
+            <div class="p-2 bg-white/20 rounded text-white">
+              <i class="fas fa-file-arrow-down"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+              <a [href]="attach.file_url" target="_blank"
+                class="block text-sm font-medium text-white hover:underline truncate">
+                {{ attach.file_name }}
+              </a>
+              <span class="text-xs text-blue-200">{{ formatFileSize(attach.file_size) }}</span>
+            </div>
+          </div>
+          }
+        </div>
+
+        <span class="text-[10px] text-gray-400 mt-1 mr-1 order-2">
+          {{ msg.created_at | date:'HH:mm' }}
+          @if(msg.status === 'read') { <i class="fas fa-check-double text-blue-500 ml-1"></i> }
+        </span>
+      </div>
+    </div>
+    }
+    }
   </div>
 
-  <div class="p-3 border-t border-gray-200 dark:border-gray-700/50 flex items-center gap-2">
-    <button (click)="fileInput.click()" [disabled]="isUploading"
-      class="flex-shrink-0 w-10 h-10 grid place-items-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition disabled:opacity-50">
-      @if (isUploading) {
-      <i class="fas fa-spinner fa-spin"></i>
-      } @else {
-      <i class="fas fa-paperclip"></i>
-      }
-    </button>
-    <input type="file" #fileInput (change)="onFileSelected($event)" class="hidden" />
+  <div
+    class="bg-white dark:bg-gray-900 px-4 py-4 border-t border-gray-100 dark:border-gray-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] z-10">
 
-    <input type="text" [(ngModel)]="newMessageContent" (keyup.enter)="sendText()" placeholder="Nhập tin nhắn..." class="flex-1 rounded-full border-gray-300 bg-gray-50 text-gray-900 px-4 py-2
-             dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-500
-             focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
-    <button (click)="sendText()"
-      class="flex-shrink-0 w-10 h-10 grid place-items-center bg-blue-600 text-white rounded-full hover:bg-blue-700 transition shadow">
-      <i class="fas fa-paper-plane"></i>
-    </button>
+    @if (selectedFiles.length > 0) {
+    <div class="flex flex-wrap gap-2 mb-3 px-1">
+      @for (file of selectedFiles; track file.name) {
+      <div
+        class="flex items-center gap-2 bg-blue-50 dark:bg-gray-800 text-blue-700 dark:text-blue-400 px-3 py-1.5 rounded-full text-xs font-medium border border-blue-100 dark:border-gray-700 animate-fade-in">
+        <i class="fas fa-paperclip"></i>
+        <span class="max-w-[150px] truncate">{{ file.name }}</span>
+        <button (click)="removeFile(file)" class="hover:text-red-500 transition ml-1 p-0.5">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      }
+    </div>
+    }
+
+    <div class="flex items-end gap-2">
+      <label
+        class="p-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+        <input type="file" (change)="onFileSelected($event)" class="hidden" multiple />
+        <i class="fas fa-paperclip text-xl"></i>
+      </label>
+
+      <div
+        class="flex-1 bg-gray-100 dark:bg-gray-800 rounded-3xl flex items-center border border-transparent focus-within:border-blue-300 focus-within:bg-white dark:focus-within:bg-gray-900 focus-within:ring-2 focus-within:ring-blue-100 transition-all duration-200">
+        <textarea [(ngModel)]="newMessageContent" (keydown.enter)="$event.preventDefault(); sendMessage()" rows="1"
+          placeholder="Nhập tin nhắn..."
+          class="w-full bg-transparent px-5 py-3 focus:outline-none text-gray-800 dark:text-gray-200 resize-none overflow-hidden max-h-32"
+          style="min-height: 48px; line-height: 24px;"></textarea>
+      </div>
+
+      <button (click)="sendMessage()" [disabled]="!newMessageContent.trim() && selectedFiles.length === 0"
+        class="p-3 w-12 h-12 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 hover:shadow-blue-500/30 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none transition-all duration-200 flex items-center justify-center">
+        <i class="fas fa-paper-plane text-sm"></i>
+      </button>
+    </div>
   </div>
 </div>

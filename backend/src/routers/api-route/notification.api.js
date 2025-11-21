@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {
-  createNotification,
+  createManual,
   getMyNotifications,
   getUnreadCount,
   markAllRead,
@@ -16,7 +16,7 @@ const { authenticateToken } = require("../../middleware/auth.middleware");
 
 // 1. Tạo thông báo mới (POST /api/notifications)
 // Thường dùng cho Admin hoặc các service khác gọi vào
-router.post("/createNotification", authenticateToken, createNotification);
+router.post("/createNotification", authenticateToken, createManual);
 // 2. Lấy danh sách thông báo của user (GET /api/notifications?page=1&limit=10)
 router.get("/getNotifications", authenticateToken, getMyNotifications);
 

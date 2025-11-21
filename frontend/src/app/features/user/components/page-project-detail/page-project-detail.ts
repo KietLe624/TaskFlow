@@ -1,6 +1,7 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit } from '@angular/core';
 import { Project, ProjectMember } from '../../../../models/projects';
 import { ProjectService } from '../../../../core/services/project/project-service';
+import { ProjectMembersService } from '../../../../core/services/project-members-service/project-members-service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ProjectStatusPipe } from '../../../../pipes/project-status-pipe';
@@ -45,7 +46,8 @@ export class PageProjectDetailComponent implements OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private teamService: TeamService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private projectMembersService: ProjectMembersService
   ) { }
 
   ngOnInit(): void {
@@ -256,6 +258,73 @@ export class PageProjectDetailComponent implements OnInit {
     if (this.projectDetail?.project_id) {
       this.loadProjectMembers(this.projectDetail.project_id);
     }
+  }
+
+  openPrivateChat(user_id: number) {
+    this.toastr.info('Tính năng chat riêng đang phát triển 🚀');
+  }
+
+  // Thêm vào class
+  selectedMemberForRole: any = null; // member đang mở dropdown role
+  roleDropdownOpen = false;
+  projectOwnerId: number | null = null;
+
+  // Đóng dropdown khi click ngoài
+  @HostListener('document:click')
+  closeRoleDropdown() {
+    this.roleDropdownOpen = false;
+    this.selectedMemberForRole = null;
+  }
+
+  // Hàm đổi role thật (gọi API)
+  changeMemberRole(member: any, newRole: 'owner' | 'member') {
+    this.projectMembersService.changeRole(this.projectDetail.project_id, member.user_id, newRole)
+      .subscribe({
+        next: () => {
+          this.toastr.success(`Đã đổi thành ${newRole === 'owner' ? 'Owner' : 'Member'}`);
+          this.loadProjectMembers(this.projectDetail.project_id); // refresh list
+          this.roleDropdownOpen = false;
+        },
+        error: (err) => {
+          this.toastr.error(err.error.message || 'Đổi vai trò thất bại');
+        }
+      });
+  }
+  removeMember(member: any) {
+    this.projectMembersService.removeMember(this.projectDetail.project_id, member.user_id)
+      .subscribe({
+        next: () => {
+          this.toastr.success(`Đã xóa thành viên khỏi dự án`);
+          this.loadProjectMembers(this.projectDetail.project_id); // refresh list
+        },
+        error: (err) => {
+          this.toastr.error(err.error.message || 'Xóa thành viên thất bại');
+        }
+      });
+  }
+  // dropdown
+  // Thêm biến này vào class component
+  dropdownPosition: 'up' | 'down' = 'down';
+
+  openRoleMenu(event: MouseEvent, member: any) {
+    event.stopPropagation();
+    this.selectedMemberForRole = member;
+    this.roleDropdownOpen = true;
+
+    // --- LOGIC TÍNH TOÁN VỊ TRÍ ---
+    const target = event.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect(); // Lấy tọa độ nút bấm
+    const spaceBelow = window.innerHeight - rect.bottom; // Khoảng trống bên dưới
+    const dropdownHeight = 256; // Chiều cao ước lượng của menu (px)
+
+    // Nếu khoảng trống bên dưới < chiều cao menu -> Hiển thị lên trên
+    if (spaceBelow < dropdownHeight) {
+      this.dropdownPosition = 'up';
+    } else {
+      this.dropdownPosition = 'down';
+    }
+
+    this.cdr.detectChanges();
   }
 
 }

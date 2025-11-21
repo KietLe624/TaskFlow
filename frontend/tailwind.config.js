@@ -20,6 +20,12 @@ module.exports = {
           DEFAULT: "#007ACC",
         },
       },
+      spacing: {
+        68: "17rem", // = 272px (đẹp nhất luôn bro)
+        70: "17.5rem", // = 280px (rất rộng rãi)
+        sidebar: "272px",
+        "sidebar-collapsed": "80px",
+      },
     },
   },
   variants: {

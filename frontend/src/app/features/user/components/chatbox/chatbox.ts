@@ -6,6 +6,7 @@ import {
   ChangeDetectorRef,
   ElementRef,
   ViewChild,
+  afterNextRender,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -76,6 +77,9 @@ export class ChatboxComponent implements OnInit, OnDestroy {
       .subscribe((error) => {
         this.toastr.error(error.error || 'Không thể gửi tin nhắn');
       });
+    afterNextRender(() => {
+      this.scrollToBottom();
+    });
   }
 
   ngOnDestroy(): void {
@@ -96,7 +100,7 @@ export class ChatboxComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.toastr.error('Lỗi tải lịch sử tin nhắn');
         this.isLoadingHistory = false;
-      }
+      },
     });
   }
 
@@ -107,10 +111,11 @@ export class ChatboxComponent implements OnInit, OnDestroy {
     this.chatSocketService.sendMessage({
       conve_id: this.conve_id,
       sender_id: this.currentUserId,
-      content: this.newMessageContent.trim()
+      content: this.newMessageContent.trim(),
     });
     this.newMessageContent = '';
   }
+
   onFileSelected(event: any): void {
     const file: File = event.target.files[0];
     if (!file) return;
@@ -118,17 +123,19 @@ export class ChatboxComponent implements OnInit, OnDestroy {
     this.isUploading = true;
     this.toastr.info(`Đang tải lên: ${file.name}...`);
 
-    this.attachmentService.uploadFileForChat(file, this.conve_id).subscribe({
-      next: (res) => {
-        // Backend (controller uploadAttachment) sẽ emit socket
-        // Chúng ta không cần làm gì ở đây, chỉ cần chờ `onNewMessage`
-        this.isUploading = false;
-      },
-      error: (err) => {
-        this.isUploading = false;
-        this.toastr.error(`Lỗi tải file: ${err.message || 'Thất bại'}`);
-      },
-    });
+    this.attachmentService
+      .uploadFile(file, { conve_id: this.conve_id })
+      .subscribe({
+        next: (res) => {
+          // Backend (controller uploadAttachment) sẽ emit socket
+          // Chúng ta không cần làm gì ở đây, chỉ cần chờ `onNewMessage`
+          this.isUploading = false;
+        },
+        error: (err) => {
+          this.isUploading = false;
+          this.toastr.error(`Lỗi tải file: ${err.message || 'Thất bại'}`);
+        },
+      });
     event.target.value = null; // Reset input
   }
 
@@ -140,5 +147,46 @@ export class ChatboxComponent implements OnInit, OnDestroy {
           this.messageContainer.nativeElement.scrollHeight;
       } catch (err) { }
     }, 50);
+  }
+
+  selectedFiles: File[] = [];
+
+  // Xóa file khỏi preview
+  removeFile(file: File) {
+    this.selectedFiles = this.selectedFiles.filter((f) => f !== file);
+  }
+  sendMessage() {
+    if (!this.newMessageContent.trim() && this.selectedFiles.length === 0)
+      return;
+
+    // Gửi file trước
+    if (this.selectedFiles.length > 0) {
+      this.selectedFiles.forEach((file) => {
+        this.attachmentService
+          .uploadFile(file, { conve_id: this.conve_id })
+          .subscribe({
+            next: () => { }, // backend sẽ emit socket → onNewMessage sẽ bắt
+            error: (err) => this.toastr.error('Upload file thất bại'),
+          });
+      });
+      this.selectedFiles = [];
+    }
+
+    // Gửi text
+    if (this.newMessageContent.trim()) {
+      this.chatSocketService.sendMessage({
+        conve_id: this.conve_id,
+        sender_id: this.currentUserId,
+        content: this.newMessageContent.trim(),
+      });
+      this.newMessageContent = '';
+    }
+  }
+
+  // Helper format file size
+  formatFileSize(bytes: number): string {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
 }

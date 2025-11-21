@@ -12,15 +12,18 @@
         <i class="fas fa-th-large"></i>
         }
       </button>
-      <button (click)="openCreateModal()"
-        class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition">
-        <i class="fas fa-plus mr-2"></i> Tạo mới
-      </button>
+      <!-- Nút + cố định góc dưới phải -->
+      <div class="fixed bottom-8 right-8 z-50 group">
+        <button (click)="openCreateModal()"
+          class="relative w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-blue-500/50 focus:outline-none focus:ring-4 focus:ring-blue-500/50">
+          <i class="fas fa-plus text-2xl"></i>
+        </button>
+      </div>
     </div>
   </div>
 
   @if (isGrid) { @if (projects.length > 0) {
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr">
     @for (project of projects; track project.project_id) {
     <div
       class="group flex flex-col rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-sm transition hover:shadow-lg hover:-translate-y-1">
@@ -296,6 +299,7 @@
         }
       </tbody>
     </table>
+
   </div>
   } @else {
   <div class="flex flex-col items-center justify-center py-20 text-center text-gray-600 dark:text-gray-400">

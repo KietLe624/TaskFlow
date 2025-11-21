@@ -4,6 +4,8 @@ export interface User {
   username: string;
   email: string;
   full_name?: string | null;
+  phone_number?: string | null;
+  address?: string | null;
   avatar_url?: string | null;
   roles?: string[]; // ['admin', 'member', ...]
   created_at?: string;
@@ -22,15 +24,11 @@ export interface LoginRequest {
   loginInput: string; // có thể là email hoặc username
   password: string;
 }
-
-// Dữ liệu backend trả về khi đăng nhập thành công
 export interface AuthResponse {
   message: string;
   token: string;
   user: User;
 }
-
-// Đổi mật khẩu
 export interface ChangePasswordRequest {
   email: string;
   oldPassword: string;
@@ -53,3 +51,5 @@ export interface MyJwtPayload {
   iat: number;
   exp: number;
 }
+
+

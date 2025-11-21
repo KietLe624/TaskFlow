@@ -1,5 +1,16 @@
+const { where } = require("sequelize");
 const db = require("../models/index.model");
-const { User, Role, UserRole } = db; // Lấy model User từ đối tượng db
+const {
+  User,
+  Role,
+  UserRole,
+  TaskAssignees,
+  Task,
+  Project,
+  Team,
+  TeamMember,
+  Activity,
+} = db; // Lấy model User từ đối tượng db
 
 // func get all users
 const getAllUsers = async () => {
@@ -27,7 +38,57 @@ const getUserById = async (user_id) => {
     const user = await User.findByPk(user_id, {
       attributes: { exclude: ["password"] },
     });
-    return user;
+    const tasksCompleted = await Task.count({
+      where: { status: "completed" },
+      include: [
+        {
+          model: User,
+          as: "assignees",
+          where: { user_id }, // lọc user được gán
+          through: { attributes: [] }, // không lấy trường của junction table
+          required: true, // bắt buộc phải có assignee này để đếm
+        },
+      ],
+    });
+
+    const projectCount = await user.countProjects(); // nhờ association
+    const teamCount = await user.countTeams();
+
+    const recentActivities = await Activity.findAll({
+      where: { user_id: user_id },
+      order: [["created_at", "DESC"]],
+      limit: 10,
+      include: [
+        { model: Project, as: "project", attributes: ["project_name"] },
+        { model: Task, as: "task", attributes: ["task_name"] },
+      ],
+    });
+
+    const teams = await Team.findAll({
+      include: [
+        {
+          model: TeamMember,
+          as: "teamMemberships",
+          where: { user_id: user_id },
+          attributes: ["role"],
+        },
+      ],
+      attributes: ["team_id", "team_name"],
+    });
+    return {
+      user,
+      stats: {
+        tasksCompleted,
+        projects: projectCount,
+        teams: teamCount,
+      },
+      recentActivities,
+      teams: teams.map((t) => ({
+        team_id: t.team_id,
+        team_name: t.team_name,
+        role: t.teamMemberships?.[0]?.role || "member",
+      })),
+    };
   } catch (error) {
     console.error("Lỗi khi lấy người dùng:", error);
     throw error;
@@ -88,7 +149,6 @@ const changeUserRole = async (user_id, roleName) => {
       throw new Error("User hoặc Role không tìm thấy.");
     }
     return user;
-    
   } catch (error) {
     console.error("Lỗi khi thay đổi vai trò người dùng:", error);
     throw error;

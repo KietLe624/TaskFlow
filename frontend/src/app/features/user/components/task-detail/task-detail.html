@@ -1,156 +1,148 @@
-<div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6"
+<!-- task-detail-modal.component.html - FULL @if @for @switch 2025 -->
+<div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
   (click)="closeModal()">
 
-  <div class="w-full max-w-4xl h-full max-h-[90vh] bg-white dark:bg-gray-900
-              rounded-2xl shadow-2xl flex flex-col overflow-hidden ring-1 ring-gray-200 dark:ring-gray-800"
+  <div
+    class="w-full max-w-5xl max-h-[94vh] bg-white dark:bg-gray-900 rounded-3xl shadow-2xl overflow-hidden flex flex-col"
     (click)="$event.stopPropagation()">
 
+    <!-- Header -->
     <div
-      class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0 bg-white dark:bg-gray-900 z-10">
-      <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-        <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-bold uppercase">TASK-{{task.task_id ||
-          '???'}}</span>
-        <span class="text-gray-300">/</span>
-        <span class="flex items-center gap-1"><i class="fas fa-list-ul"></i> General</span>
+      class="flex items-center justify-between px-8 py-6 text-black dark:text-white border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center gap-4">
+        <h2 class="text-2xl font-bold truncate max-w-3xl">{{ task.task_name || 'Untitled Task' }}</h2>
       </div>
-
       <button (click)="closeModal()"
-        class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 transition">
-        <i class="fas fa-times text-lg"></i>
+        class="w-10 h-10 rounded-full hover:bg-white/20 transition flex items-center justify-center">
+        <i class="fas fa-times text-xl"></i>
       </button>
     </div>
 
-    <div
-      class="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+    <!-- Body Scrollable -->
+    <div class="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700">
+      <div class="p-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          <!-- Main Content -->
+          <div class="lg:col-span-2 space-y-8">
+            <!-- Description -->
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+              <div class="flex items-center gap-3 mb-4">
+                <i class="fas fa-align-left text-gray-500"></i>
+                <h3 class="font-semibold text-gray-900 dark:text-white">Mô tả</h3>
+              </div>
+              <p class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap min-h-[80px]">
+                {{ task.description || 'Chưa có mô tả' }}
+              </p>
+            </div>
+            <!-- Comments -->
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+              <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                  <i class="fas fa-comments text-gray-500"></i>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">Bình luận</h3>
+                </div>
+                <span class="text-sm text-gray-500">{{ comments.length }}</span>
+              </div>
 
-      <div class="space-y-3">
-        <input [(ngModel)]="task.task_name" class="text-2xl sm:text-3xl font-bold w-full bg-transparent border-none outline-none
-                      placeholder-gray-400 text-gray-900 dark:text-white
-                      focus:ring-0 p-0" placeholder="Enter task title..." />
-      </div>
+              <div class="space-y-5 max-h-96 overflow-y-auto pr-2">
+                @for (cmt of comments; track cmt.cmt_id) {
+                <div class="flex gap-4">
+                  <app-user-avatar [username]="cmt.author?.username || 'U'"
+                    class="w-10 h-10 flex-shrink-0"></app-user-avatar>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="font-semibold text-gray-900 dark:text-white">
+                        {{ cmt.author?.full_name || cmt.author?.username || 'Anonymous' }}
+                      </span>
+                      <span class="text-xs text-gray-500">{{ cmt.created_at | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                    <div
+                      class="bg-white dark:bg-gray-800 p-4 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 dark:border-gray-700">
+                      <p class="text-gray-800 dark:text-gray-200">{{ cmt.content }}</p>
+                    </div>
+                  </div>
+                </div>
+                } @empty {
+                <div class="text-center py-12 text-gray-400">
+                  <i class="far fa-comment-dots text-5xl mb-4 opacity-30"></i>
+                  <p>Chưa có bình luận nào</p>
+                </div>
+                }
+              </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div class="md:col-span-3 space-y-6">
-
-          <div class="group">
-            <h3 class="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              <i class="fas fa-align-left text-gray-400"></i> Description
-            </h3>
-            <textarea [(ngModel)]="task.description" placeholder="Add a more detailed description..."
-              class="w-full min-h-[120px] p-3 rounded-lg border border-gray-200 dark:border-gray-700
-                              bg-gray-50 dark:bg-gray-800/50 resize-y text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition" rows="4"></textarea>
-          </div>
-
-          <div>
-            <h3 class="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              <i class="fas fa-paperclip text-gray-400"></i> Attachments
-            </h3>
-            <div
-              class="flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-6 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition cursor-pointer group">
-              <div class="text-center">
-                <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 group-hover:text-blue-500 mb-2 transition"></i>
-                <p class="text-sm text-gray-500 font-medium">Click to upload file</p>
+              <!-- Send Comment -->
+              <div class="flex gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
+                <div class="relative flex-1">
+                  <textarea [(ngModel)]="newComment"
+                    class="w-full px-4 py-3 pr-14 rounded-2xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 resize-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition shadow-sm"
+                    placeholder="Viết bình luận..." rows="2"></textarea>
+                  <button (click)="addComment()" [disabled]="!newComment.trim()"
+                    class="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center transition disabled:opacity-50">
+                    <i class="fas fa-paper-plane"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-          <div class="pt-6 mt-6 border-t border-gray-100 dark:border-gray-800 flex flex-col h-50">
 
-            <h3
-              class="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4 flex-shrink-0">
-              <i class="fas fa-comments text-gray-400"></i> Comments
-            </h3>
+          <!-- Sidebar -->
+          <div class="space-y-6">
+            <!-- Status -->
+            <div class="bg-gray-50 dark:bg-gray-900 rounded -2xl p-5 border border-gray-200 dark:border-gray-700">
+              <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Trạng thái</p>
+              {{ task.status | titlecase }}
+            </div>
 
-            <div
-              class="space-y-5 overflow-y-auto pr-2 h-[350px] scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 mb-4 border border-gray-100 dark:border-gray-800 rounded-xl p-4 bg-gray-50/50 dark:bg-gray-800/30">
-              @for (cmt of comments; track cmt.cmt_id) {
-              <div class="flex gap-3 group">
-                <app-user-avatar [username]="cmt.author?.username" class="w-8 h-8 mt-1 flex-shrink-0"></app-user-avatar>
-                <div>
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-sm text-gray-900 dark:text-white">{{ cmt.author?.username }}</span>
-                    <span class="text-xs text-gray-500">{{ cmt.created_at | date:'MMM d, h:mm a' }}</span>
+            <!-- Priority -->
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-5 border border-gray-200 dark:border-gray-700">
+              <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Độ ưu tiên</p>
+              {{ task.priority | titlecase }}
+            </div>
+
+            <!-- Dates -->
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-5 border border-gray-200 dark:border-gray-700">
+              <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Ngày</p>
+              <div class="space-y-3 text-sm">
+                <div class="flex items-center gap-3">
+                  <i class="fas fa-calendar-alt text-gray-400"></i>
+                  <div>
+                    <p class="text-gray-500">Bắt đầu</p>
+                    <p class="font-medium text-gray-900 dark:text-white">
+                      {{ task.start_date ? (task.start_date | date:'mediumDate') : '—' }}
+                    </p>
                   </div>
-                  <div
-                    class="bg-white dark:bg-gray-700 p-3 rounded-lg rounded-tl-none text-sm text-gray-700 dark:text-gray-200 shadow-sm border border-gray-100 dark:border-gray-600">
-                    {{ cmt.content }}
+                </div>
+                <div class="flex items-center gap-3">
+                  <i class="fas fa-flag-checkered text-gray-400"></i>
+                  <div>
+                    <p class="text-gray-500">Hạn chót</p>
+                    <p class="font-medium text-gray-900 dark:text-white">
+                      {{ task.due_date ? (task.due_date | date:'mediumDate') : '—' }}
+                    </p>
                   </div>
                 </div>
               </div>
-              } @empty {
-              <div class="h-full flex flex-col items-center justify-center text-gray-400 text-sm italic">
-                <i class="far fa-comment-dots text-3xl mb-2 opacity-40"></i>
-                <p>Chưa có bình luận nào.</p>
-              </div>
-              }
             </div>
 
-            <div class="flex gap-3 flex-shrink-0">
-              <app-user-avatar [username]="currentUser.username" class="w-9 h-9 mt-1 flex-shrink-0"></app-user-avatar>
-              <div class="relative flex-1">
-                <textarea [(ngModel)]="newComment" class="w-full p-4 pr-12 rounded-xl border border-gray-200 dark:border-gray-700
-               bg-white dark:bg-gray-800 focus:bg-gray-50 dark:focus:bg-gray-900
-               focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
-               resize-none transition-all shadow-sm text-sm" placeholder="Viết bình luận..." rows="2"></textarea>
-                <button (click)="addComment()" [disabled]="!newComment.trim()" class="absolute bottom-3 right-3 w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200
-               text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/30
-               disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none disabled:cursor-not-allowed">
-                  <i class="fas fa-paper-plane text-xs"></i>
-                </button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <div class="space-y-6">
-          <div>
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5 block">Status</label>
-            <select [(ngModel)]="task.status"
-              class="w-full p-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 border-transparent focus:bg-white dark:focus:bg-gray-700 focus:border-blue-500 text-sm font-medium cursor-pointer transition">
-              <option value="to_do">To Do</option>
-              <option value="in_progress">In Progress</option>
-              <option value="in_review">In Review</option>
-              <option value="completed">Done</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5 block">Priority</label>
-            <select [(ngModel)]="task.priority"
-              class="w-full p-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 border-transparent focus:bg-white dark:focus:bg-gray-700 focus:border-blue-500 text-sm font-medium cursor-pointer transition">
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5 block">Dates</label>
-            <div class="space-y-2">
-              <input type="date" [(ngModel)]="task.start_date"
-                class="w-full p-2 text-sm rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300"
-                title="Start Date">
-              <input type="date" [(ngModel)]="task.due_date"
-                class="w-full p-2 text-sm rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300"
-                title="Due Date">
-            </div>
-          </div>
-
-          <div>
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 block">Assignees</label>
-            <div class="flex flex-col gap-2">
-              @if (task.assignees?.length) {
+            <!-- Assignees -->
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-5 border border-gray-200 dark:border-gray-700">
+              <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Người được giao</p>
+              @if (task.assignees && task.assignees.length > 0) {
               @for (a of task.assignees; track a.user_id) {
-              <div
-                class="flex items-center gap-2 p-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
-                <app-user-avatar [username]="a.username" class="w-6 h-6"></app-user-avatar>
-                <span class="text-sm truncate flex-1">{{ a.username }}</span>
-                <button class="text-gray-400 hover:text-red-500 px-1"><i class="fas fa-times text-xs"></i></button>
+              <div class="flex items-center gap-3 py-2">
+                <app-user-avatar [username]="a.username" class="w-10 h-10"></app-user-avatar>
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-white">{{ a.full_name || a.username }}</p>
+                </div>
               </div>
               }
+              } @else {
+              <p class="text-gray-500 italic text-center py-4">Chưa có người được giao</p>
               }
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
+</div>
