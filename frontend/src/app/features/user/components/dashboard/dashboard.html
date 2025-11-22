@@ -73,7 +73,7 @@
           class="text-sm font-medium text-gray-400 dark:hover:text-primary-500 hover:underline">Xem tất cả dự
           án ></a>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-gray-200">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 dark:text-gray-200">
         @for (project of data.pendingProjects.slice(0, 4); track project.project_id; ) {
         <div
           class="group flex flex-col rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-sm transition hover:shadow-lg hover:-translate-y-1">
@@ -232,7 +232,7 @@
           class="flex flex-col sm:flex-row sm:justify-between sm:items-start p-4 rounded-lg border-b border-gray-200 dark:border-gray-700">
           <div class="flex-grow ">
             <h3 class="text-lg font-bold text-gray-900 dark:text-gray-200 line-clamp-1 sm:line-clamp-2">
-              {{ event.title }}
+              <a routerLink="/app/task,(event.id)">{{ event.title }}</a>
             </h3>
             <div class="flex items-center flex-wrap space-x-4 text-sm text-gray-500 dark:text-gray-400 mt-1">
               <div class="flex -space-x-2">
@@ -279,13 +279,13 @@
       <a routerLink="#" class="text-sm text-gray-400 dark:hover:text-primary-200 hover:underline">Xem tất cả</a>
     </div>
     <section class="rounded-lg bg-white p-6 shadow h-full dark:text-gray-200 dark:bg-gray-800">
-      @for (group of data.latestActivities; track $index) {
+      @for (group of data.latestActivities | slice:0:5; track $index) {
       <div class="mb-6">
         <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">
           {{ group.date }}
         </h3>
         <ul class="relative border-l border-gray-300 dark:border-gray-600 pl-6">
-          @for (act of group.items | slice:0:20; track act.id) {
+          @for (act of group.items | slice:0:10; track act.id) {
           <li class="relative pb-2 last:pb-0">
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-y-1">
               <div class="flex items-start space-x-3">

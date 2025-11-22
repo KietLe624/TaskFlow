@@ -54,7 +54,10 @@ module.exports = (sequelize, DataTypes) => {
       constraints: false,
       scope: { entity_type: "project" },
     });
-    Project.hasOne(models.Conversation, { foreignKey: 'project_id', as: 'conversation' });
+    Project.hasOne(models.Conversation, {
+      foreignKey: "project_id",
+      as: "conversation",
+    });
   };
 
   return Project;

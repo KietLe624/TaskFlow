@@ -97,15 +97,58 @@ const getTeamMembers = async (req, res) => {
   }
 };
 
+// [GET] /api/teams/:id/overview
+const getTeamOverview = async (req, res) => {
+  try {
+    const { team_id } = req.params;
+    const user_id = req.user.user_id;
+
+    const data = await teamService.getTeamOverview(team_id, user_id);
+
+    res.json({
+      message: "Lấy thông tin team thành công",
+      data,
+    });
+  } catch (error) {
+    console.error("Lỗi controller getTeamOverview:", error.message);
+    res.status(400).json({
+      message: error.message || "Lỗi server khi lấy thông tin team",
+    });
+  }
+};
+
+// [GET] /api/teams/:id/projects
+const getTeamProjects = async (req, res) => {
+  try {
+    const { team_id } = req.params;
+    const userId = req.user.user_id;
+
+    const projects = await teamService.getTeamProjects(team_id, userId);
+
+    res.json({
+      message: "Lấy danh sách dự án thành công",
+      data: projects,
+    });
+  } catch (err) {
+    if (err.message === "Team không tồn tại") {
+      return res.status(404).json({ message: err.message });
+    }
+    if (err.message === "Bạn không có quyền truy cập team này") {
+      return res.status(403).json({ message: err.message });
+    }
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
 // invite member to team
 const inviteMember = async (req, res) => {
   try {
-    const { team_id, user_id } = req.body;
+    const { team_id, email } = req.body;
     const owner_team_id = req.user?.user_id; // Lấy từ token
 
     const result = await teamService.inviteMember({
       team_id,
-      user_id,
+      email,
       owner_team_id,
     });
     res
@@ -142,7 +185,26 @@ const removeMember = async (req, res) => {
   }
 };
 
-
+// change member role in team
+const changeMemberRole = async (req, res) => {
+  try {
+    const { team_id, user_id, new_role } = req.body;
+    const owner_team_id = req.user?.user_id; // Lấy từ token
+    const result = await teamService.changeMemberRole({
+      team_id,
+      user_id,
+      new_role,
+      owner_team_id,
+    });
+    res.status(200).json({
+      message: "Thay đổi vai trò thành viên thành công",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Lỗi khi thay đổi vai trò thành viên:", error.message);
+    res.status(400).json({ message: error.message });
+  }
+};
 
 module.exports = {
   createTeam,
@@ -152,4 +214,7 @@ module.exports = {
   removeMember,
   getAllTeamsByOwner,
   getTeamMembers,
+  getTeamOverview,
+  getTeamProjects,
+  changeMemberRole,
 };

@@ -7,10 +7,11 @@ import { CommonModule } from '@angular/common';
 import { FormUserComponent } from '../form-user/form-user';
 import { FormTeamComponent } from '../form-team/form-team';
 import { ToastrService } from 'ngx-toastr';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-profile',
-  imports: [CommonModule, FormUserComponent, FormTeamComponent],
+  imports: [CommonModule, FormUserComponent, FormTeamComponent, RouterLink],
   templateUrl: './profile.html',
   styleUrls: ['./profile.css'],
 })

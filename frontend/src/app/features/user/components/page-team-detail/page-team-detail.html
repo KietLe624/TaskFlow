@@ -1,1 +1,362 @@
-<p>page-team-detail works!</p>
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+  <!-- Loading -->
+  @if (loading) {
+  <div class="max-w-7xl mx-auto px-6 py-16">
+    <div class="space-y-8 animate-pulse">
+      <div class="h-32 bg-gray-200 dark:bg-gray-800 rounded-2xl"></div>
+      <div class="grid grid-cols-4 gap-6">
+        @for (i of [1,2,3,4]; track i) {
+        <div class="h-24 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
+        }
+      </div>
+    </div>
+  </div>
+  }
+
+  @if (!loading && team) {
+  <div class="max-w-7xl mx-auto px-6 py-12 space-y-12">
+
+    <!-- Header tinh tế -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-6">
+          <div
+            class="w-20 h-20 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+            {{ team.team_name[0] }}
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+              {{ team.team_name }}
+            </h1>
+            <div class="flex items-center gap-6 mt-3 text-sm text-gray-500">
+              <span>{{ team.members.length }} thành viên</span>
+              <span>{{ team.projects.length }} dự án</span>
+              <span class="text-green-600 font-medium">{{ completionRate }}% hoàn thành</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-right">
+          <div class="text-sm text-gray-500">Owner</div>
+          <div class="font-medium text-gray-900 dark:text-white">
+            {{ team.owner?.full_name || team.owner?.username }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs – siêu tối giản mà sang -->
+    <div class="border-b border-gray-200 dark:border-gray-700">
+      <div class="flex gap-8">
+        @for (tab of tabs; track tab.id) {
+        <button (click)="activeTab = tab.id" class="pb-4 px-1 relative font-medium text-sm transition-colors"
+          [class.text-indigo-600]="activeTab === tab.id" [class.text-gray-900]="activeTab === tab.id"
+          [class.text-white]="activeTab === tab.id" [class.text-gray-500]="activeTab !== tab.id">
+          {{ tab.label }}
+          @if (activeTab === tab.id) {
+          <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full"></span>
+          }
+        </button>
+        }
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div>
+      @switch (activeTab) {
+
+      <!-- Overview -->
+      @case ('overview') {
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="space-y-6">
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="text-4xl font-bold text-indigo-600">{{ completionRate }}%</div>
+            <div class="text-sm text-gray-500 mt-1">Tổng tiến độ</div>
+            <div class="mt-4 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div class="h-2 rounded-full bg-indigo-600 transition-all duration-700" [style.width.%]="completionRate">
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="text-2xl font-bold">{{ totalTasks }}</div>
+            <div class="text-sm text-gray-500">Tổng nhiệm vụ</div>
+            <div class="text-xs text-green-600 mt-2">{{ completedTasks }} đã hoàn thành</div>
+          </div>
+        </div>
+
+        <!-- Phần Thành viên -->
+        <div class="lg:col-span-2">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 class="font-semibold mb-5 text-gray-900 dark:text-white">Thành viên ({{ team.members.length }})</h3>
+            <div class="space-y-4">
+              @for (member of team.members; track member.user_id) {
+              <div
+                class="flex items-center gap-4 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-lg transition">
+
+                <!-- Avatar -->
+                <app-user-avatar [username]="member.username"
+                  class="rounded-full ring-2 ring-gray-200 dark:ring-gray-700">
+                </app-user-avatar>
+
+                <!-- Info -->
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium text-gray-900 dark:text-white truncate">
+                    {{ member.full_name || member.username }}
+                  </div>
+                  <div class="text-xs text-gray-500 mt-0.5 flex items-center gap-2">
+                    <span>{{ member.email }}</span>
+                    <span class="mx-1">•</span>
+                    <span class="px-2 py-0.5 rounded text-xs font-medium" [ngClass]="{
+                  'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300': member.teamMemberships?.[0]?.role === 'owner',
+                  'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300': member.teamMemberships?.[0]?.role === 'admin',
+                  'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300': member.teamMemberships?.[0]?.role === 'member'
+                }">
+                      {{ member.teamMemberships?.[0]?.role === 'owner' ? 'Owner' :
+                      member.teamMemberships?.[0]?.role === 'admin' ? 'Admin' : 'Member' }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Crown cho Owner (nếu muốn nổi bật) -->
+                @if (member.teamMemberships?.[0]?.role === 'owner') {
+                <div class="ml-auto">
+                  <i class="fas fa-crown text-amber-500 text-yellow-400 text-lg"></i>
+                </div>
+                }
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+
+      </div>
+      }
+
+      <!-- Members -->
+      @case ('members') {
+      <div
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <!-- Header + Invite Button -->
+        <div class="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+          <h3 class="font-semibold text-lg">Thành viên ({{ team.members?.length || 0 }})</h3>
+
+          <!-- Nút Invite - chỉ Owner thấy -->
+          @if (isOwner) {
+          <button (click)="openInviteModal()"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow transition flex items-center gap-2">
+            <i class="fas fa-plus"></i>
+            Mời thành viên
+          </button>
+          }
+        </div>
+
+        <!-- Danh sách thành viên -->
+        <div class="divide-y divide-gray-100 dark:divide-gray-700">
+          @for (member of team.members; track member.user_id) {
+          <div class="p-5 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center justify-between gap-4">
+
+            <!-- Avatar + Info -->
+            <div class="flex items-center gap-4 flex-1 min-w-0">
+              <app-user-avatar [username]="member.username" class="w-12 h-12"></app-user-avatar>
+              <div class="min-w-0">
+                <div class="font-medium text-gray-900 dark:text-white truncate">
+                  {{ member.full_name || member.username }}
+                  @if (member.user_id === team.owner_team_id) {
+                  <i class="fas fa-crown text-yellow-500 ml-1 text-sm" title="Owner"></i>
+                  }
+                </div>
+                <div class="text-sm text-gray-500 truncate">{{ member.email }}</div>
+              </div>
+            </div>
+
+            <!-- Role Badge + Actions -->
+            <div class="flex items-center gap-3">
+
+              <!-- Role Dropdown - chỉ Owner và không phải chính mình mới được đổi -->
+              @if (isOwner && member.user_id !== team.owner_team_id) {
+              <select #roleSelect (change)="changeMemberRole(member, roleSelect.value)"
+                [value]="member.teamMemberships?.[0]?.role || 'member'"
+                class="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="owner">Owner</option>
+                <option value="member">Member</option>
+              </select>
+              } @else {
+              <!-- Hiển thị role cố định -->
+              <span class="text-xs font-medium px-3 py-1.5 rounded-lg" [ngClass]="{
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': member.teamMemberships?.[0]?.role === 'owner',
+                    'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300': member.teamMemberships?.[0]?.role === 'member'
+                  }">
+                {{ (member.teamMemberships?.[0]?.role || 'member') | titlecase }}
+                @if (member.user_id === team.owner_team_id) {
+                <i class="fas fa-crown ml-1"></i>
+                }
+              </span>
+              }
+
+              <!-- Nút Xóa - chỉ Owner và không phải chính mình -->
+              @if (isOwner && member.user_id !== team.owner_team_id) {
+              <button (click)="removeMember(member)"
+                class="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition"
+                title="Xóa khỏi team">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+              }
+            </div>
+          </div>
+          } @empty {
+          <div class="p-12 text-center text-gray-500">
+            <i class="fas fa-users text-4xl mb-3 opacity-30"></i>
+            <p>Chưa có thành viên nào</p>
+          </div>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Projects -->
+      @case ('projects') {
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+        @for (project of team.projects; track project.project_id) {
+        <a routerLink="/app/projects/{{ project.project_id }}"
+          class="group block relative overflow-hidden rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-transparent hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+
+          <!-- Background nhẹ theo status (rất tinh tế) -->
+          <div class="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity" [ngClass]="{
+               'bg-green-500': project.status === 'completed',
+               'bg-blue-500': project.status === 'in_progress',
+               'bg-yellow-500': project.status === 'to_do' || project.status === 'on_hold',
+               'bg-red-500': project.status === 'over_due',
+               'bg-gray-500': !project.status
+             }"></div>
+
+          <div class="relative p-6">
+            <!-- Tiêu đề dự án -->
+            <h3
+              class="font-bold text-lg text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
+              {{ project.project_name }}
+            </h3>
+
+            <!-- Mô tả -->
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 line-clamp-2 min-h-10">
+              {{ project.description || 'Chưa có mô tả' }}
+            </p>
+
+            <!-- Status + Deadline -->
+            <div class="mt-5 flex items-center justify-between text-sm">
+
+              <!-- Status Badge có màu chuẩn xịn -->
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium text-xs" [ngClass]="{
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300': project.status === 'completed',
+                    'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300': project.status === 'in_progress',
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300': project.status === 'to_do',
+                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300': project.status === 'over_due',
+                    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300': project.status === 'on_hold',
+                    'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300': !project.status || project.status === 'to_do'
+                  }">
+                <i class="fas fa-circle text-[8px]" [ngClass]="{
+                   'text-green-600': project.status === 'completed',
+                   'text-blue-600': project.status === 'in_progress',
+                   'text-yellow-600': project.status === 'to_do' || project.status === 'on_hold',
+                   'text-red-600': project.status === 'over_due'
+                 }"></i>
+                {{ project.status }}
+              </span>
+
+              <!-- Deadline -->
+              <span class="text-gray-500 dark:text-gray-400 flex items-center gap-1.5 font-medium">
+                <i class="far fa-calendar-alt text-xs"></i>
+                {{ project.due_date | date:'dd/MM' }}
+              </span>
+            </div>
+
+            <!-- Progress bar nhỏ xinh (nếu có task) -->
+            @if (project.tasks?.length > 0) {
+            <div class="mt-4">
+              <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
+                <span>Tiến độ</span>
+                <span>{{ getProjectProgress(project) }}%</span>
+              </div>
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                <div class="h-1.5 rounded-full transition-all duration-500"
+                  [style.width.%]="getProjectProgress(project)" [ngClass]="{
+                       'bg-green-500': getProjectProgress(project) >= 90,
+                       'bg-blue-500': getProjectProgress(project) >= 50 && getProjectProgress(project) < 90,
+                       'bg-yellow-500': getProjectProgress(project) < 50
+                     }"></div>
+              </div>
+            </div>
+            }
+          </div>
+        </a>
+        }
+
+        <!-- Empty State -->
+        @empty {
+        <div class="col-span-full text-center py-20">
+          <div
+            class="bg-gray-100 dark:bg-gray-800 w-28 h-28 rounded-full mx-auto mb-6 flex items-center justify-center">
+            <i class="fas fa-folder-open text-5xl text-gray-400"></i>
+          </div>
+          <p class="text-xl text-gray-500 dark:text-gray-400 font-medium">Chưa có dự án nào</p>
+          <p class="text-sm text-gray-400 mt-2">Tạo dự án đầu tiên cho team ngay nào!</p>
+        </div>
+        }
+      </div>
+      }
+
+      <!-- Chat -->
+      @case ('chat') {
+      <div
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-16 text-center text-gray-500">
+        <i class="fas fa-comments text-6xl mb-4"></i>
+        <p>Chat nhóm sẽ sớm có mặt</p>
+      </div>
+      }
+      }
+    </div>
+
+  </div>
+  }
+</div>
+<!-- Invite Member Modal -->
+@if (isInviteModalOpen) {
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-down">
+
+    <div class="p-5 border-b border-gray-100 dark:border-gray-700">
+      <h3 class="text-lg font-bold text-gray-900 dark:text-white">Mời thành viên vào Team</h3>
+    </div>
+
+    <div class="p-6">
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Email người nhận
+      </label>
+
+      <input type="email" [(ngModel)]="inviteEmail" (keydown.enter)="submitInvite()" placeholder="nhanvien@example.com"
+        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+        autofocus />
+    </div>
+
+    <div class="p-5 bg-gray-50 dark:bg-gray-700/30 flex justify-end gap-3">
+      <button (click)="closeInviteModal()"
+        class="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700 transition">
+        Hủy bỏ
+      </button>
+
+      <button (click)="submitInvite()" [disabled]="isLoading || !inviteEmail"
+        class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition">
+        @if (isLoading) {
+        <i class="fas fa-spinner fa-spin"></i> Đang gửi...
+        } @else {
+        Gửi lời mời
+        }
+      </button>
+    </div>
+
+  </div>
+</div>
+}
+<!-- Remove -->

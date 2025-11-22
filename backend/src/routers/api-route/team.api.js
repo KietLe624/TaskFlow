@@ -9,8 +9,11 @@ const {
   deleteTeam,
   getAllTeamsByOwner,
   getTeamMembers,
+  getTeamOverview,
+  getTeamProjects,
   inviteMember,
   removeMember,
+  changeMemberRole,
 } = require("../../controllers/team.controller");
 
 // Routes
@@ -25,5 +28,9 @@ router.get(
 router.get("/getTeamMembers/:team_id", authenticateToken, getTeamMembers);
 router.post("/inviteMember", authenticateToken, inviteMember);
 router.delete("/removeMember", authenticateToken, removeMember);
+
+router.get("/getTeamOverview/:team_id", authenticateToken, getTeamOverview);
+router.get("/getTeamProjects/:team_id", authenticateToken, getTeamProjects);
+router.patch("/changeMemberRole", authenticateToken, changeMemberRole);
 
 module.exports = router;

@@ -26,11 +26,11 @@ export class TeamService {
     return this.http.post(`${this.apiTeam}/createTeam`, payload, { headers: this.getAuthHeaders() });
   }
 
-  inviteMember(team_id: number, user_id: number): Observable<any> {
+  inviteMember(team_id: number, email: string): Observable<any> {
     const owner_id = this.authService.getUserIdFromToken();
     const payload = {
       team_id,
-      user_id,
+      email,
       owner_team_id: owner_id
     };
 
@@ -67,5 +67,50 @@ export class TeamService {
       owner_team_id: owner_id
     };
     return this.http.get<any>(`${this.apiTeam}/getAllTeamsByOwner/${user_id}`, { headers: this.getAuthHeaders() });
+  }
+
+  getTeamOverview(team_id: number): Observable<any> {
+    const owner_id = this.authService.getUserIdFromToken();
+    const payload = {
+      team_id,
+      owner_team_id: owner_id
+    };
+    return this.http.get<any>(`${this.apiTeam}/getTeamOverview/${team_id}`, { headers: this.getAuthHeaders() });
+  }
+
+  getTeamProjects(team_id: number): Observable<any> {
+    const owner_id = this.authService.getUserIdFromToken();
+    const payload = {
+      team_id,
+      owner_team_id: owner_id
+    };
+    return this.http.get<any>(`${this.apiTeam}/getTeamProjects/${team_id}`, { headers: this.getAuthHeaders() });
+  }
+
+  changeMemberRole(team_id: number, user_id: number, new_role: string): Observable<any> {
+    const owner_id = this.authService.getUserIdFromToken();
+    const payload = {
+      team_id,
+      user_id,
+      new_role,
+      owner_team_id: owner_id
+    };
+    return this.http.patch(`${this.apiTeam}/changeMemberRole`, payload, { headers: this.getAuthHeaders() });
+  }
+
+  removeMember(team_id: number, user_id: number): Observable<any> {
+    const owner_id = this.authService.getUserIdFromToken();
+
+    // Đảm bảo luôn có đủ 3 field
+    const payload = {
+      team_id,
+      user_id,
+      owner_team_id: owner_id
+    };
+
+    return this.http.request<any>('delete', `${this.apiTeam}/removeMember`, {
+      headers: this.getAuthHeaders(),
+      body: payload
+    });
   }
 }

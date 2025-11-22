@@ -24,7 +24,12 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "owner_team_id",
       as: "owner",
     });
-
+    // 1 team có nhiều project
+    Team.hasMany(models.Project, {
+      foreignKey: "team_id",
+      as: "projects",
+      onDelete: "CASCADE",
+    });
     //N-N: 1 team có nhiều user (qua TeamMember)
     Team.belongsToMany(models.User, {
       through: models.TeamMember,
