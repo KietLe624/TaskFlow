@@ -38,9 +38,9 @@ const createTeamAdmin = async (req, res) => {
       return res.status(400).json({ message: "Vui lòng chọn owner cho team" });
     }
 
-    const newTeam = await teamService.createTeamAdmin({ 
-      team_name: team_name.trim(), 
-      owner_team_id: Number(owner_team_id) 
+    const newTeam = await teamService.createTeamAdmin({
+      team_name: team_name.trim(),
+      owner_team_id: Number(owner_team_id),
     });
 
     res.status(201).json({

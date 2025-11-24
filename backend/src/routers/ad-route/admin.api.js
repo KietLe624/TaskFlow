@@ -3,7 +3,7 @@ const router = express.Router();
 const {
   authenticateToken,
   isAdmin,
-  loadUserWithRoles, 
+  loadUserWithRoles,
 } = require("../../middleware/auth.middleware");
 
 // Import admin controller
@@ -109,6 +109,10 @@ router.post(
   inviteMember
 );
 
-router.delete("/removeMember", [authenticateToken, isAdmin, loadUserWithRoles], removeMember);
+router.delete(
+  "/removeMember",
+  [authenticateToken, isAdmin, loadUserWithRoles],
+  removeMember
+);
 
 module.exports = router;
