@@ -3,7 +3,7 @@ const userService = require("../services/user.service");
 const getAllUsers = async (req, res) => {
   try {
     const users = await userService.getAllUsers();
-    res.status(200).json(users);
+    res.status(200).json({ message: "Lấy người dùng thành công", users });
   } catch (error) {
     console.error("Lỗi khi lấy danh sách người dùng:", error);
     res.status(500).json({ message: "Lỗi máy chủ" });
@@ -18,10 +18,37 @@ const getUserById = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "Người dùng không tồn tại" });
     }
-    res.status(200).json({message: "Lấy người dùng thành công", user});
+    res.status(200).json({ message: "Lấy người dùng thành công", user });
   } catch (error) {
     console.error("Lỗi khi lấy người dùng:", error);
     res.status(500).json({ message: "Lỗi máy chủ" });
+  }
+};
+// create user
+const createUser = async (req, res) => {
+  try {
+    const { username, email, full_name, role } = req.body;
+
+    if (!username || !email) {
+      return res.status(400).json({ message: "Thiếu username hoặc email" });
+    }
+
+    const result = await userService.createUser({
+      username,
+      email,
+      full_name,
+      role: role || "member",
+    });
+
+    // Chỉ trả về mật khẩu ở môi trường dev
+    if (process.env.NODE_ENV !== "production") {
+      result.defaultPassword = "123456";
+    }
+
+    res.status(201).json(result);
+  } catch (error) {
+    console.error("Admin create user error:", error);
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -71,7 +98,8 @@ const changeUserRole = async (req, res) => {
 module.exports = {
   getAllUsers,
   getUserById,
-  deleteUser,
+  createUser,
   updateUser,
+  deleteUser,
   changeUserRole,
 };

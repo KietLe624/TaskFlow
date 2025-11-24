@@ -1,0 +1,124 @@
+@if (isOpen) {
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black bg-opacity-50">
+
+  <div class="fixed inset-0 bg-gray-900/40 dark:bg-black/80 backdrop-blur-sm transition-opacity" (click)="onClose()">
+  </div>
+
+  <div
+    class="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-xl shadow-xl ring-1 ring-gray-200 dark:ring-gray-800 flex flex-col max-h-[90vh] overflow-hidden">
+
+    <div class="flex items-start justify-between p-6 border-b border-gray-100 dark:border-gray-800">
+      <div class="flex gap-4">
+        <img
+          [src]="user?.avatar_url || 'https://ui-avatars.com/api/?name=' + (user?.full_name || user?.username) + '&background=random'"
+          class="w-14 h-14 rounded-lg border border-gray-100 dark:border-gray-700 object-cover">
+        <div>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white leading-tight">
+            {{ user?.full_name || user?.username }}
+          </h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400">{{ user?.email }}</p>
+          <div class="flex items-center gap-2 mt-1.5">
+            <span
+              class="px-2 py-0.5 text-[10px] font-semibold rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 uppercase tracking-wide">
+              ID: {{ user?.user_id }}
+            </span>
+            <span class="w-1.5 h-1.5 rounded-full" [ngClass]="user?.is_banned ? 'bg-red-500' : 'bg-green-500'"></span>
+            <span class="text-xs text-gray-500">{{ user?.is_banned ? 'Restricted' : 'Active' }}</span>
+          </div>
+        </div>
+      </div>
+      <button (click)="onClose()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+        <i class="fas fa-times text-lg"></i>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-6 space-y-8">
+
+      <section>
+        <label class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3 block">
+          Quyền hạn
+        </label>
+        <div class="flex gap-3">
+          <select [(ngModel)]="selectedRole"
+            class="flex-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+            <option value="member">Member</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button (click)="onSaveRole()"
+            class="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-medium rounded-lg hover:opacity-90 transition-opacity">
+            Lưu
+          </button>
+        </div>
+      </section>
+
+      <section>
+        <label class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3 block">
+          Thao tác tài khoản
+        </label>
+        <div class="grid grid-cols-2 gap-3">
+          <button (click)="onResetPassword()"
+            class="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+            <i class="fas fa-key text-gray-400"></i> Reset Password
+          </button>
+
+          <button (click)="onToggleBan()"
+            class="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium transition-colors"
+            [ngClass]="user?.is_banned ? 'text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20' : 'text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20'">
+            <i class="fas" [ngClass]="user?.is_banned ? 'fa-unlock' : 'fa-ban'"></i>
+            {{ user?.is_banned ? 'Unban User' : 'Ban User' }}
+          </button>
+        </div>
+      </section>
+
+      <section class="rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/10 p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="text-sm font-bold text-red-700 dark:text-red-400">Xóa người dùng</h4>
+            <p class="text-xs text-red-600/70 dark:text-red-400/70 mt-0.5">Hành động này không thể hoàn tác.</p>
+          </div>
+          <button (click)="openDeleteConfirm()"
+            class="px-3 py-1.5 bg-white dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs font-bold rounded hover:bg-red-50 dark:hover:bg-red-900/50 transition-colors">
+            Xóa vĩnh viễn
+          </button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  @if (showDeleteConfirm) {
+  <div
+    class="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-in fade-in zoom-in duration-200 bg-black bg-opacity-50">
+    <div class="absolute inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-md" (click)="showDeleteConfirm = false">
+    </div>
+
+    <div
+      class="relative w-full max-w-sm bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-6 text-center">
+      <div
+        class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-500 flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-exclamation-triangle text-xl"></i>
+      </div>
+
+      <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Xác nhận xóa?</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        Bạn đang xóa tài khoản <strong class="text-gray-900 dark:text-white">{{ user?.username }}</strong>. Dữ liệu sẽ
+        mất vĩnh viễn.
+      </p>
+
+      <div class="flex gap-3">
+        <button (click)="showDeleteConfirm = false"
+          class="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+          Hủy
+        </button>
+        <button (click)="confirmDelete()" [disabled]="deleting"
+          class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm">
+          @if(deleting) { <i class="fas fa-spinner fa-spin"></i> }
+          @else { Xóa ngay }
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+
+</div>
+}

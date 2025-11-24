@@ -31,11 +31,41 @@ const authenticateToken = async (req, res, next) => {
     }
 
     req.user = user;
+
     next();
   } catch (error) {
     return res
       .status(403)
       .json({ message: "Token không hợp lệ.", error: error.message });
+  }
+};
+
+// middleware phân quyền
+const loadUserWithRoles = async (req, res, next) => {
+  if (!req.user || !req.user.user_id) {
+    return res.status(401).json({ message: "Chưa xác thực" });
+  }
+
+  try {
+    const user = await User.findByPk(req.user.user_id, {
+      include: [
+        {
+          model: Role,
+          as: "roles",
+          through: { attributes: [] },
+          attributes: ["name"],
+        },
+      ],
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User không tồn tại" });
+    }
+
+    req.user = user.toJSON(); // gán lại, có roles
+    next();
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi load user roles" });
   }
 };
 
@@ -88,4 +118,5 @@ module.exports = {
   authenticateToken,
   authorize,
   isAdmin,
+  loadUserWithRoles,
 };

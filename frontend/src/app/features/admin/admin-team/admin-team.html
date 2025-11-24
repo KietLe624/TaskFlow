@@ -1,0 +1,128 @@
+<div class="p-6 md:p-8 bg-gray-50 dark:bg-gray-900 min-h-screen font-sans">
+
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+        Quản lý Đội nhóm
+      </h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        Tổng hợp các phòng ban và nhóm làm việc.
+      </p>
+    </div>
+
+    <div class="flex gap-3 w-full md:w-auto">
+      <div class="relative flex-1 md:w-80 group">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <i class="fas fa-search text-gray-400 group-focus-within:text-indigo-500 transition-colors"></i>
+        </div>
+        <input type="text" [(ngModel)]="searchTerm" (input)="filterTeams()" placeholder="Tìm kiếm team..."
+          class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+      </div>
+
+      <button (click)="createTeamModal.open()"
+        class="px-4 py-2.5 bg-black text-white rounded-xl font-medium text-sm shadow-sm transition-all flex items-center gap-2 whitespace-nowrap">
+        <i class="fas fa-plus"></i> <span>Tạo Team</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="flex flex-col space-y-4">
+
+    @if (loading) {
+    @for (i of [1,2,3,4,5]; track i) {
+    <div
+      class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 animate-pulse flex items-center gap-4">
+      <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+      <div class="flex-1 space-y-2">
+        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+        <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+      </div>
+    </div>
+    }
+    }
+
+    @else if (filteredTeams.length === 0) {
+    <div
+      class="text-center py-20 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-dashed">
+      <div
+        class="w-16 h-16 bg-gray-50 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
+        <i class="fas fa-users-slash text-2xl"></i>
+      </div>
+      <h3 class="text-gray-900 dark:text-white font-medium">Không tìm thấy Team nào</h3>
+      <p class="text-sm text-gray-500 mt-1">Hãy thử tìm từ khóa khác hoặc tạo mới.</p>
+    </div>
+    }
+
+    @else {
+    @for (team of filteredTeams; track team.team_id) {
+    <div (click)="openTeamDetail(team)"
+      class="group bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+
+      <div class="flex items-center gap-4 flex-1 min-w-0">
+        <div
+          class="w-12 h-12 shrink-0 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-lg border border-indigo-100 dark:border-indigo-800">
+          {{ team.team_name.charAt(0).toUpperCase() }}
+        </div>
+
+        <div class="min-w-0">
+          <h3
+            class="font-semibold text-gray-900 dark:text-white text-base truncate group-hover:text-indigo-600 transition-colors">
+            {{ team.team_name }}
+          </h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
+            Đã tạo: {{ team.created_at | date:'dd/MM/yyyy' }}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 md:w-1/4">
+        <div class="flex -space-x-2 overflow-hidden">
+          @for (member of team.members.slice(0, 4); track member.user_id) {
+          <img [src]="member.avatar_url || 'https://ui-avatars.com/api/?name=' + member.full_name"
+            class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-gray-800 object-cover bg-white"
+            [title]="member.full_name">
+          }
+          @if (team.member_count > 4) {
+          <span
+            class="inline-flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-white dark:ring-gray-800 bg-gray-100 dark:bg-gray-700 text-[10px] font-bold text-gray-500 dark:text-gray-300">
+            +{{ team.member_count - 4 }}
+          </span>
+          }
+        </div>
+        @if(team.member_count === 0) {
+        <span class="text-sm text-gray-800 italic">Chưa có thành viên</span>
+        }
+      </div>
+
+      <div class="flex items-center gap-3 md:w-1/5 border-l border-gray-100 dark:border-gray-700 pl-0 md:pl-6">
+        <div class="w-8 h-8 rounded-full bg-yellow-100 dark:bg-gray-700 flex items-center justify-center text-gray-500">
+          <i class="fas fa-crown text-xs text-amber-500 text-yellow-500"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-xs text-gray-400 uppercase font-bold">Leader</p>
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
+            {{ team.owner_name || 'Unknown' }}
+          </p>
+        </div>
+      </div>
+
+      <div class="hidden md:flex items-center justify-end w-8">
+        <i
+          class="fas fa-chevron-right text-gray-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all"></i>
+      </div>
+
+    </div>
+    }
+    }
+  </div>
+
+</div>
+
+@if(showTeamDetail && selectedTeam) {
+<app-team-detail [team]="selectedTeam" [isOpen]="showTeamDetail" (close)="closeTeamDetail()"
+  (refresh)="onTeamUpdated()">
+</app-team-detail>
+}
+
+<app-form-team-modal #createTeamModal (close)="createTeamModal.isOpen = false" (created)="loadTeams()">
+</app-form-team-modal>

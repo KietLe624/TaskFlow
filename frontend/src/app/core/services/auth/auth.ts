@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { AuthResponse, LoginRequest, RegisterRequest, ChangePasswordRequest, ForgotPasswordRequest, ResetPasswordRequest, MyJwtPayload } from '../../../models/users';
 import { Router } from '@angular/router';
 import { JwtPayload, jwtDecode } from 'jwt-decode';
@@ -9,10 +9,18 @@ import { JwtPayload, jwtDecode } from 'jwt-decode';
   providedIn: 'root'
 })
 export class AuthService {
+
   private apiAuthUrl = 'http://localhost:3000/api/auth';
   private isBrowser: boolean;
+
+  private currentUserSubject = new BehaviorSubject<MyJwtPayload | null>(null);
+  public currentUser$ = this.currentUserSubject.asObservable();
+
   constructor(private http: HttpClient, @Inject(PLATFORM_ID) private platformId: Object, private router: Router) {
     this.isBrowser = this.platformId === 'browser';
+    if (this.isBrowser) {
+      this.loadUserFromToken();
+    }
   }
 
   login(data: LoginRequest): Observable<AuthResponse> {
@@ -48,6 +56,48 @@ export class AuthService {
     }
     return false;
   }
+
+  setToken(token: string): void {
+    if (this.isBrowser) {
+      localStorage.setItem('token', token);
+      this.loadUserFromToken();
+    }
+  }
+
+  private loadUserFromToken(): void {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      this.currentUserSubject.next(null);
+      return;
+    }
+
+    try {
+      const decoded = jwtDecode<MyJwtPayload>(token);
+
+      // Kiểm tra token hết hạn
+      if (decoded.exp && Date.now() >= decoded.exp * 1000) {
+        console.warn('Token đã hết hạn');
+        this.logout();
+        return;
+      }
+
+      this.currentUserSubject.next(decoded);
+    } catch (error) {
+      console.error('Token không hợp lệ:', error);
+      this.logout();
+    }
+  }
+
+  get currentUserValue(): MyJwtPayload | null {
+    return this.currentUserSubject.value;
+  }
+
+  isAdmin(): boolean {
+    const user = this.currentUserValue;
+    if (!user?.roles) return false;
+    return user.roles.includes('admin');
+  }
+
   logout(): void {
     if (this.isBrowser) {
       localStorage.removeItem('token');
@@ -65,6 +115,10 @@ export class AuthService {
     } catch {
       return 0;
     }
+  }
+
+  getUserRoles(): string[] {
+    return this.currentUserValue?.roles || [];
   }
 
   private getAuthHeaders(): HttpHeaders {

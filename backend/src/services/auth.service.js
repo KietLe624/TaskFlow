@@ -140,7 +140,7 @@ const forgotPassword = async (email) => {
   // Tạo token reset với thời hạn ngắn hơn so với key chính
   const resetToken = jwt.sign(
     { user_id: user.user_id, email: user.email },
-    RESET_SECRET, 
+    RESET_SECRET,
     { expiresIn: "15m" } // time 15p
   );
   return resetToken;
@@ -169,10 +169,28 @@ const resetPassword = async (token, newPassword) => {
   await user.save();
 };
 
+const resetPasswordForAdmin = async (userId, newPassword) => {
+  const user = await db.User.findByPk(userId);
+  if (!user) {
+    throw new Error("Người dùng không tồn tại.");
+  }
+  const defaultPassword = "123456";
+  const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+  await user.update({ password: hashedPassword });
+
+  return {
+    message: "Reset mật khẩu thành công",
+    newPassword:
+      process.env.NODE_ENV === "development" ? defaultPassword : undefined,
+  };
+};
+
 module.exports = {
   registerUser,
   loginUser,
   changePassword,
   forgotPassword,
   resetPassword,
+  resetPasswordForAdmin,
 };

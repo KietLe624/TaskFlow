@@ -37,3 +37,4 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(SocketIoModule.forRoot(config))
   ]
 };
+

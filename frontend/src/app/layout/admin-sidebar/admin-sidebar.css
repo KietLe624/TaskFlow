@@ -1,0 +1,44 @@
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #64748b;
+  text-decoration: none;
+  margin-bottom: 4px;
+
+  i {
+    width: 20px;
+    text-align: center;
+    margin-right: 12px;
+    font-size: 1.1rem;
+  }
+
+  &:hover {
+    background-color: #f3f4f6;
+    color: #1f293b;
+  }
+}
+
+.active-link {
+  background-color: #eff6ff !important;
+  color: #2563eb !important;
+
+  i {
+    color: #2563eb;
+  }
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 20px;
+}

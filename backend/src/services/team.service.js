@@ -7,6 +7,7 @@ const {
   ConversationParticipant,
   Task,
   Project,
+  Role,
 } = db;
 const chatService = require("./chat.service");
 const NotificationService = require("./notification.service");
@@ -24,6 +25,12 @@ const createTeam = async ({ team_name, owner_team_id }) => {
       owner_team_id,
     });
 
+    await db.TeamMember.create({
+      team_id: newTeam.team_id,
+      user_id: owner_team_id,
+      role: "owner",
+    });
+
     await chatService.createConversation(
       newTeam.team_id,
       team_name,
@@ -37,6 +44,38 @@ const createTeam = async ({ team_name, owner_team_id }) => {
   }
 };
 
+// create team admin
+const createTeamAdmin = async ({ team_name, owner_team_id }) => {
+  try {
+    const user = await User.findByPk(owner_team_id);
+    if (!user) throw new Error("Người dùng không tồn tại");
+
+    const newTeam = await Team.create({
+      team_name: team_name.trim(),
+      owner_team_id,
+    });
+
+    await db.TeamMember.create({
+      team_id: newTeam.team_id,
+      user_id: owner_team_id,
+      role: "owner",
+    });
+
+    // Tạo conversation (nếu cần)
+    await chatService.createConversation(
+      newTeam.team_id,
+      team_name,
+      owner_team_id
+    );
+
+    return newTeam;
+  } catch (error) {
+    console.error("Lỗi khi tạo team (Service):", error.message);
+    throw error;
+  }
+};
+
+// update team
 const updateTeam = async (teamData) => {
   try {
     const { team_id, team_name, owner_team_id } = teamData;
@@ -77,6 +116,55 @@ const deleteTeam = async ({ team_id, owner_team_id }) => {
     throw error;
   }
 };
+// get all teams admin
+const getAllTeams = async () => {
+  const teams = await db.Team.findAll({
+    attributes: ["team_id", "team_name", "created_at"],
+    include: [
+      {
+        model: db.User,
+        as: "owner", // truy xuất sau bằng team.owner
+        attributes: ["user_id", "username", "full_name", "avatar_url"],
+      },
+      {
+        model: db.TeamMember,
+        as: "teamMemberships", // lưu ý: 'as' phải trùng với cách truy cập bên dưới
+        attributes: ["user_id"],
+        include: [
+          {
+            model: db.User,
+            as: "user", // truy xuất sau bằng tm.user
+            attributes: ["username", "full_name", "avatar_url"],
+          },
+        ],
+      },
+    ],
+    order: [["created_at", "DESC"]],
+  });
+
+  // chuyển thành plain object để truy xuất an toàn (tránh getter của sequelize)
+  return teams.map((team) => {
+    const t = team.get ? team.get({ plain: true }) : team;
+
+    return {
+      team_id: t.team_id,
+      team_name: t.team_name,
+      created_at: t.created_at,
+      owner_name: t.owner?.full_name || t.owner?.username || "Unknown",
+      owner_username: t.owner?.username || null,
+      owner_avatar: t.owner?.avatar_url || null,
+      member_count: t.teamMemberships?.length || 0,
+      members:
+        t.teamMemberships?.map((tm) => ({
+          user_id: tm.user_id,
+          username: tm.user?.username || null,
+          full_name: tm.user?.full_name || tm.user?.username || null,
+          avatar_url: tm.user?.avatar_url || null,
+        })) ?? [],
+    };
+  });
+};
+
 // get all teams by owner_team_id
 const getAllTeamsByOwner = async (owner_team_id) => {
   try {
@@ -315,6 +403,13 @@ const inviteMember = async ({ team_id, email, owner_team_id }) => {
         });
       }
     }
+    // 7. Gửi notification (nếu cần)
+    await NotificationService.createNotification({
+      user_id,
+      type: "invited",
+      message: `Bạn đã được mời vào nhóm "${team.team_name}"`,
+      metadata: { team_id, team_name: team.team_name },
+    });
     // log activity
     await logActivity(
       {
@@ -356,7 +451,7 @@ const removeMember = async ({ team_id, user_id, owner_team_id }) => {
       ],
     });
     if (!member) throw new Error("Thành viên không tồn tại trong nhóm");
-    if (team.owner_team_id !== owner_team_id) {
+    if (team.owner_team_id !== owner_team_id || member.role === "admin") {
       throw new Error("Bạn không có quyền xoá thành viên này");
     }
     // Xoá khỏi team_members
@@ -379,7 +474,71 @@ const removeMember = async ({ team_id, user_id, owner_team_id }) => {
   }
 };
 
+// const removeMember = async ({ team_id, user_id, requester_id }) => {
+//   try {
+//     // Kiểm tra team tồn tại
+//     const team = await Team.findByPk(team_id, {
+//       include: [{ model: User, as: "owner" }],
+//     });
+//     if (!team) throw new Error("Nhóm không tồn tại");
+
+//     // Kiểm tra thành viên có trong team không
+//     const member = await TeamMember.findOne({
+//       where: { team_id, user_id },
+//       include: [{ model: User, as: "user" }],
+//     });
+//     if (!member) throw new Error("Thành viên không tồn tại trong nhóm");
+
+//     // LẤY ROLE HỆ THỐNG CỦA NGƯỜI YÊU CẦU (requester)
+//     const requester = await User.findByPk(requester_id, {
+//       include: [
+//         {
+//           model: Role,
+//           as: "roles",
+//           through: { attributes: [] }, // ← BẮT BUỘC PHẢI CÓ DÒNG NÀY!!!
+//           attributes: ["name"],
+//         },
+//       ],
+//     });
+//     if (!requester) throw new Error("Người yêu cầu không tồn tại");
+
+//     const requesterRoles = requester.roles.map((r) => r.name);
+//     const isSystemAdmin =
+//       requesterRoles.includes("admin")
+
+//     // === QUYỀN XÓA ===
+//     if (isSystemAdmin) {
+//       // ADMIN HỆ THỐNG → XÓA ĐƯỢC TẤT CẢ, KỂ CẢ OWNER
+//     }
+//     // Nếu không phải admin hệ thống → phải là owner team
+//     else if (team.owner_team_id !== requester_id) {
+//       throw new Error("Bạn không phải owner của team");
+//     }
+//     // Không cho xóa owner team (trừ admin hệ thống)
+//     else if (member.role === "owner" && !isSystemAdmin) {
+//       throw new Error("Không thể xóa owner của team");
+//     }
+
+//     // XÓA THÀNH VIÊN
+//     await member.destroy();
+
+//     // XÓA KHỎI CONVERSATION
+//     const conversation = await Conversation.findOne({ where: { team_id } });
+//     if (conversation) {
+//       await ConversationParticipant.destroy({
+//         where: { conve_id: conversation.conve_id, user_id },
+//       });
+//     }
+
+//     return { message: "Xóa thành viên thành công", team_id, user_id };
+//   } catch (error) {
+//     console.error("Lỗi khi xoá thành viên:", error.message);
+//     throw error;
+//   }
+// };
+
 // change role member in team
+
 const changeMemberRole = async ({
   team_id,
   user_id,
@@ -420,8 +579,10 @@ const changeMemberRole = async ({
 
 module.exports = {
   createTeam,
+  createTeamAdmin,
   updateTeam,
   deleteTeam,
+  getAllTeams,
   getAllTeamsByOwner,
   getTeamMembers,
   getTeamOverview,

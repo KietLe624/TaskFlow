@@ -1,5 +1,6 @@
 const { where } = require("sequelize");
 const db = require("../models/index.model");
+const bcryptjs = require("bcryptjs");
 const {
   User,
   Role,
@@ -94,6 +95,55 @@ const getUserById = async (user_id) => {
     throw error;
   }
 };
+// create user
+const createUser = async ({
+  username,
+  email,
+  full_name = null,
+  role = "member",
+}) => {
+  // Kiểm tra trùng username/email
+  const existUser = await db.User.findOne({
+    where: {
+      [db.Sequelize.Op.or]: [{ username }, { email }],
+    },
+  });
+
+  if (existUser) {
+    throw new Error("Username hoặc email đã tồn tại");
+  }
+
+  // Mật khẩu mặc định
+  const defaultPassword = "123456";
+  const hashedPassword = await bcryptjs.hash(defaultPassword, 10);
+
+  // Tạo user
+  const newUser = await db.User.create({
+    username,
+    email,
+    full_name,
+    password: hashedPassword,
+  });
+
+  // Gán role
+  const roleRecord = await db.Role.findOne({ where: { name: role } });
+  if (!roleRecord) {
+    throw new Error("Role không tồn tại");
+  }
+
+  await db.UserRole.create({
+    user_id: newUser.user_id,
+    role_id: roleRecord.role_id,
+  });
+
+  return {
+    message: "Tạo người dùng thành công",
+    user_id: newUser.user_id,
+    username: newUser.username,
+    email: newUser.email,
+    defaultPassword, // chỉ trả về ở dev
+  };
+};
 
 // update user
 const updateUser = async (user_id, userData) => {
@@ -158,7 +208,8 @@ const changeUserRole = async (user_id, roleName) => {
 module.exports = {
   getAllUsers,
   getUserById,
-  deleteUser,
+  createUser,
   updateUser,
+  deleteUser,
   changeUserRole,
 };

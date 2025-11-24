@@ -29,11 +29,19 @@ export class LoginComponent {
     }).subscribe({
       next: (res) => {
         localStorage.setItem('token', res.token);
+        this.authService.setToken(res.token);
+
+
         console.log('Đăng nhập thành công', res.user);
         console.log('Token đã lưu vào localStorage', res.token);
-        this.router.navigate(['app/dashboard']).then(() => {
-          console.log('Chuyển hướng đến trang dashboard');
-        });
+
+        if (this.authService.isAdmin()) {
+          this.router.navigate(['/admin/dashboard']); // hoặc ['/admin/dashboard']
+          console.log('Bạn là Admin → chuyển đến trang Admin');
+        } else {
+          this.router.navigate(['app/dashboard']);
+          console.log('Bạn là User → chuyển đến dashboard user');
+        }
       },
       error: (err) => {
         this.errorMessage = err.error.message || 'Đăng nhập thất bại. Vui lòng thử lại.';

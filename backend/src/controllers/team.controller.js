@@ -25,6 +25,34 @@ const createTeam = async (req, res) => {
   }
 };
 
+// create team admin
+const createTeamAdmin = async (req, res) => {
+  try {
+    const { team_name, owner_team_id } = req.body;
+
+    // KIỂM TRA CẢ 2 TRƯỜNG – BẮT BUỘC!
+    if (!team_name || team_name.trim() === "") {
+      return res.status(400).json({ message: "Tên nhóm không được để trống" });
+    }
+    if (!owner_team_id || isNaN(owner_team_id)) {
+      return res.status(400).json({ message: "Vui lòng chọn owner cho team" });
+    }
+
+    const newTeam = await teamService.createTeamAdmin({ 
+      team_name: team_name.trim(), 
+      owner_team_id: Number(owner_team_id) 
+    });
+
+    res.status(201).json({
+      message: "Tạo nhóm thành công",
+      team: newTeam,
+    });
+  } catch (error) {
+    console.error("Lỗi khi tạo team (Controller):", error.message);
+    res.status(400).json({ message: error.message });
+  }
+};
+
 // update team
 const updateTeam = async (req, res) => {
   try {
@@ -67,6 +95,15 @@ const deleteTeam = async (req, res) => {
   } catch (error) {
     console.error("Lỗi khi xóa team (Controller):", error.message);
     res.status(400).json({ message: error.message });
+  }
+};
+//get all teams admin
+const getAllTeams = async (req, res) => {
+  try {
+    const teams = await teamService.getAllTeams();
+    res.json({ teams });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -208,10 +245,12 @@ const changeMemberRole = async (req, res) => {
 
 module.exports = {
   createTeam,
+  createTeamAdmin,
   updateTeam,
   deleteTeam,
   inviteMember,
   removeMember,
+  getAllTeams,
   getAllTeamsByOwner,
   getTeamMembers,
   getTeamOverview,

@@ -5,7 +5,6 @@ import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
 import { ThemeToggle } from "../../shared/theme-toggle/theme-toggle";
 
-
 @Component({
   selector: 'app-header',
   imports: [ThemeToggle],

@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { ProfileData, ProfileResponse } from '../../../models/profile';
 import { map } from 'rxjs/internal/operators/map';
 import { Observable } from 'rxjs/internal/Observable';
+import { User } from '../../../models/users';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,13 @@ export class UserService {
       Authorization: token ? `Bearer ${token}` : '',
       'Content-Type': 'application/json',
     });
+  }
+
+  getAllUsers(params?: any): Observable<User[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<{ users: User[] }>(`${this.apiUsers}/getAllUsers`, { headers, params }).pipe(
+      map(res => res.users)
+    );
   }
 
   getUserById(user_id: number): Observable<ProfileData> {

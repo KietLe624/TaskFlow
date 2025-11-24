@@ -1,0 +1,94 @@
+@if (isOpen) {
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black bg-opacity-50">
+
+  <div class="fixed inset-0 bg-gray-900/20 dark:bg-black/60 backdrop-blur-[2px] transition-opacity" (click)="onClose()">
+  </div>
+
+  <div
+    class="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-xl shadow-2xl ring-1 ring-gray-200 dark:ring-gray-800 flex flex-col overflow-hidden transform transition-all scale-100">
+
+    <div
+      class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-gray-900">
+      <div>
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">Thêm thành viên mới</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Điền thông tin để tạo tài khoản truy cập hệ thống.</p>
+      </div>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="p-6 space-y-5">
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+          Username <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-at text-gray-400 text-xs"></i>
+          </div>
+          <input [(ngModel)]="form.username" name="username" required placeholder="VD: user123"
+            class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+          Email <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-envelope text-gray-400 text-xs"></i>
+          </div>
+          <input [(ngModel)]="form.email" name="email" type="email" required placeholder="user@taskflow.com"
+            class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Họ và tên</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-user text-gray-400 text-xs"></i>
+            </div>
+            <input [(ngModel)]="form.full_name" name="full_name" placeholder="Nguyễn Văn A"
+              class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Vai trò</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-shield-alt text-gray-400 text-xs"></i>
+            </div>
+            <select [(ngModel)]="form.role" name="role"
+              class="w-full pl-9 pr-8 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+              <option value="member">Member</option>
+              <option value="admin">Admin</option>
+              ư
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-500">
+              <i class="fas fa-chevron-down text-xs"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="pt-2 mt-4 flex items-center justify-end gap-3 border-t border-transparent sm:border-gray-100 sm:dark:border-gray-800 sm:pt-4">
+        <button type="button" (click)="onClose()"
+          class="px-4 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          Hủy bỏ
+        </button>
+        <button type="submit"
+          class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-lg shadow-blue-500/30 hover:shadow-blue-600/40 transition-all flex items-center gap-2 active:scale-95">
+          <i class="fas fa-check"></i>
+          Tạo tài khoản
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+}

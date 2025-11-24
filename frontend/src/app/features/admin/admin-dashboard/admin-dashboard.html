@@ -1,0 +1,195 @@
+<div class="p-6 md:p-8 bg-gray-50 dark:bg-gray-900 min-h-screen font-sans">
+
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white tracking-tight">
+        Dashboard Tổng Quan
+      </h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        Cập nhật lần cuối: {{ today | date:'HH:mm • dd/MM/yyyy' }}
+      </p>
+    </div>
+    <div class="flex gap-3">
+      <button
+        class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+        <i class="fas fa-download mr-2"></i> Xuất báo cáo
+      </button>
+    </div>
+  </div>
+
+  @if (loading) {
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    @for (i of [1,2,3,4]; track i) {
+    <div
+      class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm animate-pulse">
+      <div class="flex justify-between items-start">
+        <div class="space-y-3">
+          <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+          <div class="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+        </div>
+        <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  @else {
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
+    <div
+      class="group bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tổng người dùng</p>
+          <h3 class="text-3xl font-bold text-gray-800 dark:text-white mt-2">{{ stats.totalUsers }}</h3>
+          <div
+            class="flex items-center mt-2 text-xs font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 w-fit px-2 py-1 rounded-lg">
+            <i class="fas fa-arrow-up mr-1"></i> Active
+          </div>
+        </div>
+        <div
+          class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform">
+          <i class="fas fa-users text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="group bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Dự án</p>
+          <h3 class="text-3xl font-bold text-gray-800 dark:text-white mt-2">{{ stats.totalProjects }}</h3>
+          <p class="text-xs text-gray-400 mt-2">Đang tiến hành</p>
+        </div>
+        <div
+          class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+          <i class="fas fa-folder-open text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="group bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Teams</p>
+          <h3 class="text-3xl font-bold text-gray-800 dark:text-white mt-2">{{ stats.totalTeams }}</h3>
+          <p class="text-xs text-gray-400 mt-2">Nhóm làm việc</p>
+        </div>
+        <div
+          class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+          <i class="fa-solid fa-people-group text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="group bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Task quá hạn</p>
+          <h3 class="text-3xl font-bold text-gray-800 dark:text-white mt-2">{{ stats.overdueTasks }}</h3>
+
+          @if (stats.overdueTasks > 0) {
+          <div
+            class="flex items-center mt-2 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 w-fit px-2 py-1 rounded-lg">
+            <i class="fas fa-exclamation-circle mr-1"></i> Cần xử lý
+          </div>
+          } @else {
+          <div
+            class="flex items-center mt-2 text-xs font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 w-fit px-2 py-1 rounded-lg">
+            <i class="fas fa-check mr-1"></i> Tốt
+          </div>
+          }
+        </div>
+        <div
+          class="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform">
+          <i class="fas fa-clock text-xl"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <div
+      class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+
+      <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+        <div>
+          <h2 class="text-lg font-bold text-gray-800 dark:text-white">Hoạt động gần đây</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Nhật ký thao tác của người dùng trên hệ thống</p>
+        </div>
+        <button class="text-sm text-blue-600 font-medium hover:underline">Xem tất cả</button>
+      </div>
+
+      <div class="p-6">
+        @if (!stats.recentActivities || stats.recentActivities.length === 0) {
+        <div class="flex flex-col items-center justify-center py-12 text-gray-400">
+          <i class="far fa-clipboard text-4xl mb-3 opacity-50"></i>
+          <p>Chưa có hoạt động nào ghi nhận.</p>
+        </div>
+        } @else {
+        <div class="space-y-6 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+          @for (act of stats.recentActivities; track act.activity_id) {
+          <div class="flex gap-4 group">
+
+            <div class="flex-shrink-0">
+              <img
+                [src]="'https://ui-avatars.com/api/?name=' + (act.username || act.full_name || 'Unknown') + '&background=random&color=fff'"
+                class="w-10 h-10 rounded-full border-2 border-white dark:border-gray-800 shadow-sm">
+            </div>
+
+            <div class="flex-1 pb-6 border-b border-gray-50 dark:border-gray-700 group-last:border-0 group-last:pb-0">
+              <div class="flex justify-between items-start">
+                <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                  <span
+                    class="font-semibold text-gray-900 dark:text-white hover:text-blue-600 transition-colors cursor-pointer">
+                    {{ act.username || act.full_name || 'Unknown' }}
+                  </span>
+                  <span class="mx-1 text-gray-400">•</span>
+                  {{ act.action }}
+                </p>
+                <span class="text-xs text-gray-400 whitespace-nowrap ml-2">
+                  {{ act.created_at | date:'HH:mm' }}
+                </span>
+              </div>
+              <p class="text-xs text-gray-400 mt-1">
+                {{ act.created_at | date:'dd tháng MM, yyyy' }}
+              </p>
+            </div>
+          </div>
+          }
+        </div>
+        }
+      </div>
+    </div>
+
+    <div class="lg:col-span-1 space-y-6">
+      <div
+        class="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-white shadow-lg shadow-indigo-500/30">
+        <h3 class="font-bold text-lg mb-2">System Status</h3>
+        <p class="text-indigo-100 text-sm mb-4">Chức năng đang được phát triển</p>
+        <div
+          class="flex items-center gap-2 text-sm font-medium bg-white/20 w-fit px-3 py-1.5 rounded-lg backdrop-blur-sm">
+          <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+          All Systems Operational
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm">
+        <h3 class="font-bold text-gray-800 dark:text-white mb-4">Thành viên tích cực</h3>
+        <div class="space-y-4">
+
+          <div class="flex items-center gap-3">
+            <p class="text-gray-400"> Chức năng đang được phát triển </p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

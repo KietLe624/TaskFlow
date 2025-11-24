@@ -1,0 +1,17 @@
+<div class="p-6 bg-white dark:bg-gray-900 min-h-screen">
+
+  <div class="mb-6 flex justify-between items-center">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Lịch Công Việc</h1>
+    </div>
+
+    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+      <i class="fas fa-plus mr-2"></i> Tạo công việc
+    </button>
+  </div>
+
+  <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+    <full-calendar [options]="calendarOptions"></full-calendar>
+  </div>
+
+</div>
