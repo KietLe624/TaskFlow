@@ -20,6 +20,8 @@ export interface Project {
   activityCount?: number;
   tasks?: Tasks[];
   conversation?: Conversation;
+  updated_at?: string;
+  created_at?: string;
 }
 
 export interface ProjectMember {

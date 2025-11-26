@@ -474,71 +474,32 @@ const removeMember = async ({ team_id, user_id, owner_team_id }) => {
   }
 };
 
-// const removeMember = async ({ team_id, user_id, requester_id }) => {
-//   try {
-//     // Kiểm tra team tồn tại
-//     const team = await Team.findByPk(team_id, {
-//       include: [{ model: User, as: "owner" }],
-//     });
-//     if (!team) throw new Error("Nhóm không tồn tại");
+// remove member by admin
+const removeMemberWithAdmin = async ({ team_id, user_id }) => {
+  try {
+    const team = await Team.findByPk(team_id);
+    if (!team) throw new Error("Nhóm không tồn tại");
 
-//     // Kiểm tra thành viên có trong team không
-//     const member = await TeamMember.findOne({
-//       where: { team_id, user_id },
-//       include: [{ model: User, as: "user" }],
-//     });
-//     if (!member) throw new Error("Thành viên không tồn tại trong nhóm");
+    await TeamMember.destroy({
+      where: { team_id, user_id },
+    });
 
-//     // LẤY ROLE HỆ THỐNG CỦA NGƯỜI YÊU CẦU (requester)
-//     const requester = await User.findByPk(requester_id, {
-//       include: [
-//         {
-//           model: Role,
-//           as: "roles",
-//           through: { attributes: [] }, // ← BẮT BUỘC PHẢI CÓ DÒNG NÀY!!!
-//           attributes: ["name"],
-//         },
-//       ],
-//     });
-//     if (!requester) throw new Error("Người yêu cầu không tồn tại");
+    // Xóa khỏi conversation nếu cần
+    const conversation = await Conversation.findOne({ where: { team_id } });
+    if (conversation) {
+      await ConversationParticipant.destroy({
+        where: { conve_id: conversation.conve_id, user_id },
+      });
+    }
 
-//     const requesterRoles = requester.roles.map((r) => r.name);
-//     const isSystemAdmin =
-//       requesterRoles.includes("admin")
-
-//     // === QUYỀN XÓA ===
-//     if (isSystemAdmin) {
-//       // ADMIN HỆ THỐNG → XÓA ĐƯỢC TẤT CẢ, KỂ CẢ OWNER
-//     }
-//     // Nếu không phải admin hệ thống → phải là owner team
-//     else if (team.owner_team_id !== requester_id) {
-//       throw new Error("Bạn không phải owner của team");
-//     }
-//     // Không cho xóa owner team (trừ admin hệ thống)
-//     else if (member.role === "owner" && !isSystemAdmin) {
-//       throw new Error("Không thể xóa owner của team");
-//     }
-
-//     // XÓA THÀNH VIÊN
-//     await member.destroy();
-
-//     // XÓA KHỎI CONVERSATION
-//     const conversation = await Conversation.findOne({ where: { team_id } });
-//     if (conversation) {
-//       await ConversationParticipant.destroy({
-//         where: { conve_id: conversation.conve_id, user_id },
-//       });
-//     }
-
-//     return { message: "Xóa thành viên thành công", team_id, user_id };
-//   } catch (error) {
-//     console.error("Lỗi khi xoá thành viên:", error.message);
-//     throw error;
-//   }
-// };
+    return { team_id, user_id };
+  } catch (error) {
+    console.error("Lỗi xóa thành viên:", error.message);
+    throw error;
+  }
+};
 
 // change role member in team
-
 const changeMemberRole = async ({
   team_id,
   user_id,
@@ -590,4 +551,5 @@ module.exports = {
   inviteMember,
   removeMember,
   changeMemberRole,
+  removeMemberWithAdmin,
 };

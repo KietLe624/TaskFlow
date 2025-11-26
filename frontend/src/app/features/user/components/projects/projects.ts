@@ -174,10 +174,10 @@ export class ProjectsComponent implements OnInit {
 
   openDropdownId: number | null = null;
 
-  toggleDropdown(id: number, event: MouseEvent) {
-    event.stopPropagation();
-    this.openDropdownId = this.openDropdownId === id ? null : id;
-  }
+  // toggleDropdown(id: number, event: MouseEvent) {
+  //   event.stopPropagation();
+  //   this.openDropdownId = this.openDropdownId === id ? null : id;
+  // }
 
   @HostListener('document:click')
 
@@ -269,6 +269,43 @@ export class ProjectsComponent implements OnInit {
         this.cancelChangeStatus();
       },
     });
+  }
+
+  // dropdown
+  // Trong AdminProjectsComponent
+
+  // 1. Thêm biến lưu toạ độ
+  dropdownPosition = { top: 0, left: 0 };
+
+  // 2. Sửa hàm toggleDropdown
+  toggleDropdown(projectId: number, event: MouseEvent) {
+    event.stopPropagation();
+
+    if (this.openDropdownId === projectId) {
+      this.openDropdownId = null; // Đang mở thì đóng lại
+    } else {
+      this.openDropdownId = projectId;
+
+      // --- TÍNH TOÁN VỊ TRÍ ---
+      const button = event.currentTarget as HTMLElement;
+      const rect = button.getBoundingClientRect();
+
+      // rect.bottom: mép dưới của nút
+      // rect.right: mép phải của nút
+      // Trừ đi chiều rộng dropdown (ví dụ w-52 ~ 208px) để căn lề phải
+      this.dropdownPosition = {
+        top: rect.bottom + 5, // Cách nút 5px
+        left: rect.right - 208 // 208px là chiều rộng của w-52 (hoặc điều chỉnh số này cho chuẩn)
+      };
+    }
+  }
+
+  // 3. Thêm HostListener để đóng menu khi cuộn chuột (Vì fixed không trôi theo bảng)
+  @HostListener('window:scroll', ['$event'])
+  onScroll(event: Event) {
+    if (this.openDropdownId !== null) {
+      this.openDropdownId = null; // Đóng dropdown khi cuộn để tránh nó lơ lửng sai chỗ
+    }
   }
 
   // ========== Lấy class màu theo status ==========

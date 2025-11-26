@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const db = require("../models/index.model");
 const User = db.User;
+const Role = db.Role;
 const SECRET_KEY = process.env.JWT_SECRET;
 
 const authenticateToken = async (req, res, next) => {
@@ -58,56 +59,41 @@ const loadUserWithRoles = async (req, res, next) => {
       ],
     });
 
-    if (!user) {
-      return res.status(404).json({ message: "User không tồn tại" });
-    }
+    if (!user) return res.status(404).json({ message: "User không tồn tại" });
 
-    req.user = user.toJSON(); // gán lại, có roles
+    req.user = user; // GIỮ LẠI SEQUELIZE INSTANCE để req.user.roles khả dụng
     next();
   } catch (error) {
+    console.error("Lỗi loadUserWithRoles:", error);
     res.status(500).json({ message: "Lỗi load user roles" });
   }
 };
 
 const authorize = (allowedRoles) => {
-  // chuyển thành mảng
   const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
-  return async (req, res, next) => {
+
+  return (req, res, next) => {
     try {
       if (!req.user) {
-        return res.status(401).send({
-          message:
-            "Chưa xác thực người dùng (cần chạy authenticateToken trước).",
-        });
+        return res.status(401).send({ message: "Chưa xác thực." });
       }
 
-      const userRoles = await req.user.getRoles();
-      const userRoleNames = userRoles.map((role) => role.name);
+      // nếu req.user là Sequelize instance và chưa include roles, bạn có thể await req.user.getRoles()
+      const userRoles = req.user.roles ? req.user.roles.map((r) => r.name) : [];
 
-      // Kiểm tra phân quyền
-      const hasPermission = userRoleNames.some((name) => roles.includes(name));
+      const hasPermission = userRoles.some((name) => roles.includes(name));
 
-      if (hasPermission) {
-        next();
-      } else {
-        // không có quyền truy cập
-        console.warn(
-          `Từ chối truy cập cho user: ${
-            req.user.email
-          }. Yêu cầu quyền: [${roles.join(
-            ", "
-          )}]. Người dùng có quyền: [${userRoleNames.join(", ")}]`
-        );
+      if (!hasPermission) {
         return res.status(403).send({
           message: `Yêu cầu quyền: ${roles.join(" hoặc ")}!`,
         });
       }
+      next();
     } catch (error) {
       console.error("Lỗi xác thực quyền:", error);
-      return res.status(500).send({
-        message: "Không thể xác thực quyền.",
-        error: error.message,
-      });
+      return res
+        .status(500)
+        .send({ message: "Không thể xác thực quyền.", error: error.message });
     }
   };
 };

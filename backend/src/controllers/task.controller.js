@@ -22,6 +22,26 @@ const createTask = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+// create task admin
+const createTaskAdmin = async (req, res) => {
+  try {
+    const user_id = req.user?.user_id;
+    if (!user_id) return res.status(401).json({ message: "Chưa đăng nhập" });
+    const { task_name, status, priority, start_date, due_date } = req.body;
+    //  Validation cơ bản tại Controller (input validation)
+    if (!task_name || !status || !priority || !start_date || !due_date) {
+      return res.status(400).json({ message: "Thiếu thông tin bắt buộc" });
+    }
+    const task = await taskService.createTask(req.body, user_id);
+    res.status(201).json({
+      message: "Tạo task thành công",
+      task,
+    });
+  }catch (error) {
+    console.error("Lỗi khi tạo task:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // Get all task
 const getAllTasks = async (req, res) => {
@@ -194,6 +214,7 @@ const getComments = async (req, res) => {
 
 module.exports = {
   createTask,
+  createTaskAdmin,
   getAllTasks,
   getTaskById,
   updateTask,

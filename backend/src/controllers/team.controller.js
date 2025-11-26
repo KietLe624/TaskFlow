@@ -222,6 +222,29 @@ const removeMember = async (req, res) => {
   }
 };
 
+// remove member by admin
+const removeMemberWithAdmin = async (req, res) => {
+  try {
+    const team_id = Number(req.params.team_id);
+    const user_id = Number(req.params.user_id);
+
+    if (isNaN(team_id) || isNaN(user_id)) {
+      return res.status(400).json({ message: "ID không hợp lệ" });
+    }
+    const result = await teamService.removeMemberWithAdmin({
+      team_id,
+      user_id,
+    });
+
+    res
+      .status(200)
+      .json({ message: "Xoá thành viên thành công", data: result }); // Biến result được dùng ở đây
+  } catch (error) {
+    console.error("Lỗi khi xoá thành viên bởi admin:", error.message);
+    res.status(400).json({ message: error.message });
+  }
+};
+
 // change member role in team
 const changeMemberRole = async (req, res) => {
   try {
@@ -256,4 +279,5 @@ module.exports = {
   getTeamOverview,
   getTeamProjects,
   changeMemberRole,
+  removeMemberWithAdmin,
 };

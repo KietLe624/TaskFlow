@@ -59,7 +59,7 @@ export class AdminService {
       headers: this.getAuthHeaders()
     });
   }
-
+  // ===============================================================================
   // team
   getAllTeams(): Observable<any> {
     return this.http.get<any>(`${this.adminUrl}/team/getAllTeams`, {
@@ -74,19 +74,54 @@ export class AdminService {
   }
 
   removeMember(team_id: number, user_id: number): Observable<any> {
-    const owner_id = this.authService.getUserIdFromToken();
-    const roles = this.authService.getUserRoles().includes('admin') ? 'admin' : 'user';
-    const payload = {
-      team_id,
-      user_id,
-      owner_team_id: owner_id,
-      roles
-    };
-    return this.http.request<any>('delete', `${this.adminUrl}/removeMember`, {
+    return this.http.request<any>('delete', `${this.adminUrl}/team/removeMemberWithAdmin/${team_id}/member/${user_id}`, {
       headers: this.getAuthHeaders(),
-      body: payload
     });
   }
+  // ===============================================================================
+
+  getAllProjects(): Observable<any> {
+    return this.http.get<any>(`${this.adminUrl}/project/getAllProjects`, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
+  createProject(data: any): Observable<any> {
+    return this.http.post(`${this.adminUrl}/project/createProject`, data, {
+      headers: this.getAuthHeaders()
+    });
+  }
+  // services/admin.service.ts
+  deleteProject(projectId: number): Observable<any> {
+    return this.http.delete(`${this.adminUrl}/project/adminDeleteProject/${projectId}`, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
+  // create task by admin
+  createTaskAdmin(data: any): Observable<any> {
+    return this.http.post(`${this.adminUrl}/task/createTaskAdmin`, data, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
+  // invite member to project
+  inviteMemberToProject(projectId: number, data: { email: string }): Observable<any> {
+    return this.http.post(`${this.adminUrl}/project/inviteMember/${projectId}`, data, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
+  // activity
+  getActivities(params?: any): Observable<any> {
+    return this.http.get<any>(`${this.adminUrl}/activity/getActivities`, {
+      headers: this.getAuthHeaders(),
+      params: params
+    });
+  }
+
+
+
 }
 
 

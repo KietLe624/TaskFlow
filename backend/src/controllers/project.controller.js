@@ -112,6 +112,33 @@ const deleteProject = async (req, res) => {
   }
 };
 
+// delete project by admin
+const adminDeleteProject = async (req, res) => {
+  try {
+    const { project_id } = req.params;
+
+    if (!project_id) {
+      return res.status(400).json({ error: "Thiếu project_id" });
+    }
+
+    const result = await projectService.deleteProjectByAdmin(project_id);
+
+    return res.status(200).json({
+      message: result.message,
+      data: result.deletedProject,
+    });
+  } catch (error) {
+    console.error("Admin delete project error:", error.message);
+
+    if (error.message.includes("không tồn tại")) {
+      return res.status(404).json({ error: error.message });
+    }
+    return res.status(500).json({
+      error: "Lỗi server khi xóa dự án. Vui lòng thử lại sau.",
+    });
+  }
+};
+
 // Get all projects
 const getAllProjects = async (req, res) => {
   try {
@@ -256,32 +283,62 @@ const getProjectMembers = async (req, res) => {
   }
 };
 
+// const inviteMemberToProject = async (req, res) => {
+//   try {
+//     const userId = req.user?.user_id;
+//     if (!userId) {
+//       return res.status(401).json({ error: "Chưa đăng nhập" });
+//     }
+
+//     const projectId = req.params.project_id;
+//     const { memberEmail } = req.body;
+//     if (!projectId || !memberEmail) {
+//       return res
+//         .status(400)
+//         .json({ error: "Thiếu project_id hoặc memberEmail" });
+//     }
+//     const result = await projectService.inviteMemberToProject(
+//       projectId,
+//       userId,
+//       memberEmail
+//     );
+//     return res.status(200).json({
+//       message: "Mời thành viên vào dự án thành công",
+//       result,
+//     });
+//   } catch (error) {
+//     console.error("Lỗi mời thành viên vào dự án:", error);
+//     return res.status(500).json({ error: "Lỗi server" });
+//   }
+// };
 const inviteMemberToProject = async (req, res) => {
   try {
-    const userId = req.user?.user_id;
-    if (!userId) {
-      return res.status(401).json({ error: "Chưa đăng nhập" });
-    }
+    // 1. Lấy ID dự án (thường là từ URL params hoặc Body)
+    const { project_id } = req.params; // Ví dụ: /projects/:project_id/invite
 
-    const projectId = req.params.project_id;
-    const { memberEmail } = req.body;
-    if (!projectId || !memberEmail) {
-      return res
-        .status(400)
-        .json({ error: "Thiếu project_id hoặc memberEmail" });
-    }
+    // 2. Lấy Email người được mời (từ Body)
+    const { email } = req.body;
+
+    // 3. Lấy ID người đang thực hiện hành động (Admin hoặc Owner)
+    // Đảm bảo middleware auth đã gán user vào req.user
+    const requestingUserId = req.user.user_id;
+
+    // --- GỌI SERVICE ---
+    // Service tự lo việc check ông requestingUserId này là Admin hay Owner
     const result = await projectService.inviteMemberToProject(
-      projectId,
-      userId,
-      memberEmail
+      project_id,
+      requestingUserId,
+      email
     );
+
     return res.status(200).json({
-      message: "Mời thành viên vào dự án thành công",
-      result,
+      message: "Mời thành viên thành công",
+      data: result,
     });
   } catch (error) {
-    console.error("Lỗi mời thành viên vào dự án:", error);
-    return res.status(500).json({ error: "Lỗi server" });
+    console.error("Controller Error:", error);
+    // Trả về lỗi (400, 403, 404...) tùy vào error.message hoặc setup chung
+    return res.status(400).json({ message: error.message });
   }
 };
 
@@ -293,14 +350,6 @@ const changeMemberRole = async (req, res) => {
 
     project_id = parseInt(project_id, 10);
     user_id = parseInt(user_id, 10);
-
-    console.log("---------------------------------------------");
-    console.log("📌 [DEBUG] Bắt đầu đổi role:");
-    console.log(" - Project ID:", project_id);
-    console.log(" - Target User ID:", user_id);
-    console.log(" - New Role:", role);
-    console.log(" - Current User ID (Requester):", currentUserId);
-    console.log("---------------------------------------------");
 
     const result = await projectMemberService.changeRole(
       project_id,
@@ -343,6 +392,7 @@ module.exports = {
   createProject,
   updateProject,
   deleteProject,
+  adminDeleteProject,
   getStatus,
   getPriorities,
   getAllProjects,

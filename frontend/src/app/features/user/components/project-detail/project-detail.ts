@@ -82,7 +82,7 @@ export class ProjectDetailModalComponent {
         return 'bg-gray-400'; // Mặc định
     }
   }
-  
+
   getTaskStatusColor(status: string): string {
     switch (status) {
       case 'completed':

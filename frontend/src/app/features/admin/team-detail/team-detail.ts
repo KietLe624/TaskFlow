@@ -26,7 +26,6 @@ export class TeamDetailComponent {
   // Mở modal thêm thành viên
   openAddMember() {
     this.showAddMember = true;
-    // Gọi API lấy danh sách user chưa trong team (sẽ làm sau)
   }
 
   // Thêm thành viên
@@ -51,10 +50,13 @@ export class TeamDetailComponent {
   }
 
   // Xóa thành viên
-  removeMember(userId: number) {
+  removeMember(teamId: number, userId: number) {
     if (!confirm('Xóa thành viên này khỏi team?')) return;
 
-    this.adminService.removeMember(this.team.team_id, userId).subscribe({
+    const team_id = teamId;
+    const user_id = userId;
+
+    this.adminService.removeMember(team_id, user_id).subscribe({
       next: () => {
         this.refresh.emit();
         alert('Đã xóa thành viên khỏi team');

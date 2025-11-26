@@ -1,0 +1,181 @@
+@if (isOpen) {
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+
+  <div class="fixed inset-0 bg-gray-900/20 dark:bg-black/60 backdrop-blur-[2px] transition-opacity" (click)="onClose()">
+  </div>
+
+  <div
+    class="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-xl shadow-2xl ring-1 ring-gray-200 dark:ring-gray-800 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+
+    <div
+      class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-gray-900">
+      <div class="flex items-center gap-4">
+        <div
+          class="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg flex items-center justify-center text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800">
+          <i class="fas fa-folder-plus text-lg"></i>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white">Tạo Project mới</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Khởi tạo không gian làm việc cho dự án.</p>
+        </div>
+      </div>
+      <button (click)="onClose()"
+        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1">
+        <i class="fas fa-times text-lg"></i>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto max-h-[calc(100vh-200px)]">
+      <form (ngSubmit)="onSubmit()" class="p-6 space-y-6">
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+            Tên Project <span class="text-red-500">*</span>
+          </label>
+          <div class="relative group">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-heading text-gray-400 text-xs group-focus-within:text-indigo-500 transition-colors"></i>
+            </div>
+            <input [(ngModel)]="form.project_name" name="project_name" required
+              placeholder="VD: Website Redesign, Mobile App v2..."
+              class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Mô tả</label>
+          <textarea [(ngModel)]="form.description" name="description" rows="3"
+            placeholder="Mô tả ngắn gọn về mục tiêu, phạm vi project..."
+            class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm resize-none"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+              Thuộc về Team <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-users text-gray-400 text-xs"></i>
+              </div>
+              <select [(ngModel)]="form.team_id" name="team_id"
+                class="w-full pl-9 pr-8 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm">
+                <option [ngValue]="null" disabled selected>Chọn team...</option>
+                @for (team of teams; track team.team_id) {
+                <option [ngValue]="team.team_id">{{ team.team_name }}</option>
+                }
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500">
+                <i class="fas fa-chevron-down text-xs"></i>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+              Người quản lý (Owner)
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-user-tie text-gray-400 text-xs"></i>
+              </div>
+              <select [(ngModel)]="form.owner_id" name="owner_id"
+                class="w-full pl-9 pr-8 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm">
+                <option [ngValue]="null" disabled selected>Chọn Owner...</option>
+                @for (user of users; track user.user_id) {
+                <option [ngValue]="user.user_id">{{ user.full_name || user.username }}</option>
+                }
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500">
+                <i class="fas fa-chevron-down text-xs"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+              Trạng thái ban đầu
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-tasks text-gray-400 text-xs"></i>
+              </div>
+              <select [(ngModel)]="form.status" name="status"
+                class="w-full pl-9 pr-8 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm">
+                <option value="to_do">To Do (Cần làm)</option>
+                <option value="in_progress">In Progress (Đang làm)</option>
+                <option value="completed">Completed (Hoàn thành)</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500">
+                <i class="fas fa-chevron-down text-xs"></i>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+              Độ ưu tiên
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-flag text-gray-400 text-xs"></i>
+              </div>
+              <select [(ngModel)]="form.priority" name="priority"
+                class="w-full pl-9 pr-8 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm">
+                <option value="low">Low (Thấp)</option>
+                <option value="medium">Medium (Trung bình)</option>
+                <option value="high">High (Cao)</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500">
+                <i class="fas fa-chevron-down text-xs"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Ngày bắt đầu</label>
+            <div class="relative group">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i
+                  class="far fa-calendar-alt text-gray-400 text-xs group-focus-within:text-indigo-500 transition-colors"></i>
+              </div>
+              <input [(ngModel)]="form.start_date" name="start_date" type="date"
+                class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm dark:[color-scheme:dark]">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Ngày kết thúc</label>
+            <div class="relative group">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i
+                  class="far fa-calendar-check text-gray-400 text-xs group-focus-within:text-indigo-500 transition-colors"></i>
+              </div>
+              <input [(ngModel)]="form.due_date" name="due_date" type="date"
+                class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm dark:[color-scheme:dark]">
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div
+      class="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700 flex items-center justify-end gap-3">
+      <button type="button" (click)="onClose()"
+        class="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
+        Hủy bỏ
+      </button>
+      <button (click)="onSubmit()" [disabled]="loading || !form.project_name.trim() || !form.team_id"
+        class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-2 active:scale-95">
+        @if (loading) { <i class="fas fa-spinner fa-spin"></i> } @else { <i class="fas fa-check"></i> Tạo Project }
+      </button>
+    </div>
+
+  </div>
+</div>
+}

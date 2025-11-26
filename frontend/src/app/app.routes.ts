@@ -18,6 +18,9 @@ import { adminGuard } from './core/guards/admin-guard';
 import { AdminDashboardComponent } from './features/admin/admin-dashboard/admin-dashboard';
 import { AdminUsersComponent } from './features/admin/admin-users/admin-users';
 import { AdminTeamComponent } from './features/admin/admin-team/admin-team';
+import { AdminProjectComponent } from './features/admin/admin-project/admin-project';
+import { NotificationsComponent } from './features/user/components/notifications/notifications';
+import { AdminActivityComponent } from './features/admin/admin-activity/admin-activity';
 
 export const routes: Routes = [
   { path: '', component: PublicPageComponent },
@@ -38,7 +41,7 @@ export const routes: Routes = [
       { path: 'tasks/:id', component: TaskComponent, data: { title: 'Task Detail' } },
       { path: 'profile', component: ProfileComponent, data: { title: 'Profile' } },
       { path: 'team/:id', component: TeamDetailComponent, data: { title: 'Team Detail' } },
-      { path: 'calendar', component: CalendarComponent, data: { title: 'Calendar' } }
+      { path: 'calendar', component: CalendarComponent, data: { title: 'Calendar' } },
     ]
   },
   {
@@ -47,7 +50,9 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: AdminDashboardComponent, data: { title: 'Admin Dashboard' } },
       { path: 'users', component: AdminUsersComponent, data: { title: 'Admin Users' } },
-      { path: 'teams', component: AdminTeamComponent, data: { title: 'Admin Teams' } }
+      { path: 'teams', component: AdminTeamComponent, data: { title: 'Admin Teams' } },
+      { path: 'projects', component: AdminProjectComponent, data: { title: 'Admin Projects' } },
+      { path: 'activities', component: AdminActivityComponent, data: { title: 'Admin Activities' } }
     ]
   },
   { path: '', redirectTo: '/app', pathMatch: 'full' }

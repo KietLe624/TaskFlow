@@ -6,6 +6,77 @@ const { logActivity } = require("./activity.service");
 const { Op } = require("sequelize");
 
 //  CREATE TASK
+// const createTask = async (taskData, user_id) => {
+//   const t = await sequelize.transaction();
+//   try {
+//     const {
+//       task_name,
+//       project_id,
+//       parent_id,
+//       description,
+//       status,
+//       priority,
+//       start_date,
+//       due_date,
+//       assignee_ids = [], // ← frontend gửi mảng [3,7,12]
+//     } = taskData;
+
+//     // Tạo task trước
+//     const task = await Task.create(
+//       {
+//         task_name,
+//         project_id: project_id || null,
+//         parent_id: parent_id || null,
+//         description: description || "",
+//         status: status || "to_do",
+//         priority: priority || "medium",
+//         start_date,
+//         due_date,
+//         created_by: user_id,
+//       },
+//       { transaction: t }
+//     );
+
+//     if (assignee_ids.length > 0) {
+//       const records = assignee_ids.map((user_id) => ({
+//         task_id: task.task_id,
+//         user_id: user_id,
+//         assigned_by: user_id, // người tạo task giao việc
+//         assigned_at: new Date(),
+//       }));
+//       await sequelize.models.TaskAssignees.bulkCreate(records, {
+//         transaction: t,
+//       });
+//       for (const assigneeId of assignee_ids) {
+//         await NotificationService.notifyTaskAssignment(
+//           user_id, // Người gán (Actor)
+//           assigneeId, // Người nhận (Target)
+//           task, // Thông tin Task
+//           t // Transaction
+//         );
+//       }
+//     }
+
+//     await logActivity(
+//       {
+//         user_id: user_id,
+//         entity_type: "task",
+//         entity_id: task.task_id,
+//         action: "created",
+//         description: `Tạo công việc: ${task.task_name}`,
+//       },
+//       t
+//     );
+
+//     await t.commit();
+//     return task;
+//   } catch (err) {
+//     await t.rollback();
+//     throw err;
+//   }
+// };
+// task.service.js
+
 const createTask = async (taskData, user_id) => {
   const t = await sequelize.transaction();
   try {
@@ -18,10 +89,15 @@ const createTask = async (taskData, user_id) => {
       priority,
       start_date,
       due_date,
-      assignee_ids = [], // ← frontend gửi mảng [3,7,12]
+      assignee_ids = [],
+      created_by: overrideCreatorId, // 👇 Lấy thêm cái này từ data gửi lên
     } = taskData;
 
-    // Tạo task trước
+    // --- LOGIC CHỌN NGƯỜI TẠO ---
+    // Nếu có overrideCreatorId (do Admin gửi) thì dùng, không thì dùng người đang login (user_id)
+    const finalCreatorId = overrideCreatorId || user_id;
+
+    // Tạo task
     const task = await Task.create(
       {
         task_name,
@@ -30,36 +106,44 @@ const createTask = async (taskData, user_id) => {
         description: description || "",
         status: status || "to_do",
         priority: priority || "medium",
-        start_date,
+        start_date: start_date || new Date(), // Mặc định là hôm nay nếu thiếu
         due_date,
-        created_by: user_id,
+        created_by: finalCreatorId, // Dùng ID đã chốt
       },
       { transaction: t }
     );
 
+    // Xử lý người được giao việc (Assignees)
     if (assignee_ids.length > 0) {
-      const records = assignee_ids.map((user_id) => ({
+      const records = assignee_ids.map((assigneeId) => ({
         task_id: task.task_id,
-        user_id: user_id,
-        assigned_by: user_id, // người tạo task giao việc
+        user_id: assigneeId,
+        assigned_by: user_id, // Người thực hiện hành động gán vẫn là người đang login (Admin)
         assigned_at: new Date(),
       }));
+
       await sequelize.models.TaskAssignees.bulkCreate(records, {
         transaction: t,
       });
+
+      // Bắn thông báo
       for (const assigneeId of assignee_ids) {
-        await NotificationService.notifyTaskAssignment(
-          user_id, // Người gán (Actor)
-          assigneeId, // Người nhận (Target)
-          task, // Thông tin Task
-          t // Transaction
-        );
+        // Không thông báo nếu tự giao cho chính mình
+        if (Number(assigneeId) !== Number(user_id)) {
+          await NotificationService.notifyTaskAssignment(
+            user_id, // Actor: Người thực hiện (Admin)
+            assigneeId, // Target: Người được giao
+            task,
+            t
+          );
+        }
       }
     }
 
+    // Log hoạt động
     await logActivity(
       {
-        user_id: user_id,
+        user_id: user_id, // Người thực hiện thao tác là người đang login
         entity_type: "task",
         entity_id: task.task_id,
         action: "created",

@@ -34,13 +34,12 @@ const getDashboardStats = async () => {
     totalTeams,
     activeTasks,
     overdueTasks,
-    // services/admin.service.js – SỬA CHỈ 1 ĐOẠN MAP
     recentActivities: recentActivities.map((a) => ({
       activity_id: a.activity_id,
       user_id: a.user?.user_id,
       username: a.user?.username,
-      full_name: a.user?.full_name || a.user?.username || "Unknown User", // ĐÚNG
-      avatar_url: a.user?.avatar_url, // ĐÚNG
+      full_name: a.user?.full_name || a.user?.username || "Unknown User",
+      avatar_url: a.user?.avatar_url,
       action: a.description || `${a.action} ${a.entity_type}`,
       created_at: a.created_at,
     })),

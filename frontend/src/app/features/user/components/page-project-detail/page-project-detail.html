@@ -29,7 +29,7 @@
     </div>
 
     <!-- dates block -->
-    <div class="text-sm text-gray-700/90 dark:text-gray-300 space-y-2">
+    <div class="text-sm text-gray-700 dark:text-gray-300 space-y-2">
       <div class="flex items-center gap-2">
         <i class="fa-regular fa-calendar"></i>
         <span class="text-gray-500">Đến hạn:</span>
@@ -165,7 +165,9 @@
   </div>
   <!-- Tab Content -->
   <div class="mt-6">
-    @switch (activeTab) { @case ('overview') {
+    @switch (activeTab)
+    {
+    @case ('overview') {
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <section
         class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
@@ -243,7 +245,8 @@
         </div>
       </aside>
     </div>
-    } @case ('tasks') {
+    }
+    @case ('tasks') {
     <div class="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
       @for (col of taskColumns(); track col.key) {
       <section

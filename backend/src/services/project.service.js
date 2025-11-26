@@ -1,7 +1,18 @@
 const e = require("express");
 const db = require("../models/index.model");
 const { Op } = require("sequelize");
-const { User, Project, Task, ProjectMember, sequelize } = db;
+const { Sequelize } = require("sequelize");
+const {
+  User,
+  Project,
+  Task,
+  ProjectMember,
+  sequelize,
+  Team,
+  Conversation,
+  ConversationParticipant,
+  Activity,
+} = db;
 const { logActivity } = require("./activity.service");
 const chatService = require("./chat.service");
 const NotificationService = require("./notification.service");
@@ -67,8 +78,9 @@ const syncTeamMembersToProject = async (projectId, teamId, transaction) => {
 };
 
 // create a new project
-const createProject = async (projectData, user) => {
+const createProject = async (projectData, requester) => {
   const t = await db.sequelize.transaction();
+
   try {
     const {
       project_name,
@@ -80,25 +92,27 @@ const createProject = async (projectData, user) => {
       client,
       budget,
       priority,
+      owner_id: formOwnerId, // Lấy ID owner từ form (nếu có)
     } = projectData;
 
-    //  validate input
+    // 1. Validate cơ bản
     if (!project_name || !start_date || !due_date) {
       throw new Error(
-        "Thiếu thông tin bắt buộc: project_name, start_date hoặc due_date"
+        "Thiếu thông tin bắt buộc: Tên dự án, Ngày bắt đầu hoặc Ngày kết thúc"
       );
     }
 
-    const owner_id = user?.user_id;
-    if (!owner_id) {
-      throw new Error("Không tìm thấy thông tin người tạo (owner_id)");
+    const finalOwnerId = formOwnerId || requester?.user_id;
+
+    if (!finalOwnerId) {
+      throw new Error("Không xác định được người quản lý dự án");
     }
 
-    //  tạo dự án mới
+    // 3. Tạo Project
     const newProject = await Project.create(
       {
         project_name,
-        owner_id, // Vẫn lưu owner_id gốc để biết ai tạo
+        owner_id: finalOwnerId, // Người được gán làm chủ
         team_id: team_id || null,
         description: description || "",
         status: status || "to_do",
@@ -107,19 +121,22 @@ const createProject = async (projectData, user) => {
         due_date,
         client: client || null,
         budget: budget || 0,
+        created_by: requester?.user_id, // Lưu vết người bấm nút tạo (Admin)
       },
       { transaction: t }
     );
 
+    // 4. Thêm Owner vào bảng ProjectMember
     await ProjectMember.create(
       {
         project_id: newProject.project_id,
-        user_id: owner_id,
+        user_id: finalOwnerId,
         role: "owner",
       },
       { transaction: t }
     );
 
+    // 5. Sync thành viên từ Team (nếu chọn Team)
     if (newProject.team_id) {
       await syncTeamMembersToProject(
         newProject.project_id,
@@ -128,14 +145,15 @@ const createProject = async (projectData, user) => {
       );
     }
 
+    // 6. Tạo nhóm Chat cho dự án
     const newConversation = await chatService.createProjectChat(
       newProject.project_id,
       newProject.project_name,
-      owner_id,
+      finalOwnerId,
       t
     );
 
-    // Lấy danh sách project members (đã sync nếu team) và add vào conversation
+    // 7. Add thành viên dự án vào nhóm Chat
     const projectMembers = await ProjectMember.findAll({
       where: { project_id: newProject.project_id },
       attributes: ["user_id"],
@@ -144,23 +162,23 @@ const createProject = async (projectData, user) => {
 
     const participantRows = projectMembers
       .map((pm) => pm.user_id)
-      .filter((user_id) => user_id != null)
-      .map((user_id) => ({ conve_id: newConversation.conve_id, user_id }));
+      .filter((uid) => uid != null)
+      .map((uid) => ({ conve_id: newConversation.conve_id, user_id: uid }));
 
     if (participantRows.length) {
-      await db.ConversationParticipant.bulkCreate(participantRows, {
+      await ConversationParticipant.bulkCreate(participantRows, {
         transaction: t,
         ignoreDuplicates: true,
       });
     }
 
-    // log hoạt động
+    // 8. Log hoạt động
     await logActivity({
-      user_id: owner_id,
+      user_id: requester?.user_id,
       entity_type: "project",
       entity_id: newProject.project_id,
       action: "created",
-      description: `Tạo dự án: ${newProject.project_name}`,
+      description: `Tạo dự án: ${newProject.project_name} (Owner: ${finalOwnerId})`,
       tx: t,
     });
 
@@ -168,7 +186,7 @@ const createProject = async (projectData, user) => {
     return newProject;
   } catch (error) {
     await t.rollback();
-    console.error(" Lỗi tạo dự án (Service):", error.message);
+    console.error("Lỗi tạo dự án (Service):", error.message);
     throw error;
   }
 };
@@ -254,8 +272,6 @@ const deleteProject = async (project_id, user_id) => {
       transaction: t,
     });
 
-    console.log("DEBUG deleteProject - userPermission:", userPermission);
-
     if (!userPermission || userPermission.role !== "owner") {
       // rollback and throw — không commit
       await t.rollback();
@@ -293,16 +309,99 @@ const deleteProject = async (project_id, user_id) => {
   }
 };
 
+// delete by admin
+const deleteProjectByAdmin = async (project_id) => {
+  const t = await sequelize.transaction();
+
+  try {
+    // 1. Kiểm tra dự án có tồn tại không
+    const project = await Project.findByPk(project_id, {
+      transaction: t,
+      attributes: ["project_id", "project_name", "owner_id"],
+    });
+
+    if (!project) {
+      await t.rollback();
+      throw new Error("Dự án không tồn tại hoặc đã bị xóa trước đó");
+    }
+    // xoá các dữ liệu liên quan trong cùng transaction
+    // // Xóa comment của task
+    // await TaskComment.destroy({
+    //   where: { task_id },
+    //   transaction: t,
+    //   force: true,
+    // });
+
+    // Xóa task
+    await Task.destroy({
+      where: { project_id },
+      transaction: t,
+      force: true,
+    });
+
+    // Xóa thành viên dự án
+    await ProjectMember.destroy({
+      where: { project_id },
+      transaction: t,
+    });
+
+    // Xóa activity log
+    await Activity.destroy({
+      where: { entity_type: "project", entity_id: project_id },
+      transaction: t,
+    });
+
+    // Xóa nhóm chat + participant (nếu bạn dùng bảng Conversation & ConversationParticipant)
+    const conversation = await Conversation.findOne({
+      where: { project_id },
+      transaction: t,
+    });
+
+    if (conversation) {
+      await ConversationParticipant.destroy({
+        where: { conve_id: conversation.conve_id },
+        transaction: t,
+      });
+      await conversation.destroy({ transaction: t });
+    }
+
+    await project.destroy({ transaction: t });
+    await t.commit();
+    return {
+      success: true,
+      message: "Xóa dự án và toàn bộ dữ liệu liên quan thành công (Admin)",
+      deletedProject: {
+        project_id: project.project_id,
+        project_name: project.project_name,
+        deletedAt: new Date(),
+      },
+    };
+  } catch (error) {
+    if (!t.finished) await t.rollback().catch(() => {});
+    console.error("Lỗi xóa dự án bởi Admin (Service):", error.message || error);
+    throw error;
+  }
+};
+
 // Get all projects (role: admin)
 const getAllProjects = async () => {
   try {
-    const projects = await Project.findAll({
+    const projects = await db.Project.findAll({
       include: [
+        // 1. Lấy thông tin Owner (Người tạo)
         {
           model: db.User,
           as: "owner",
-          attributes: ["user_id", "username", "email", "full_name"],
+          attributes: [
+            "user_id",
+            "username",
+            "email",
+            "full_name",
+            "avatar_url",
+          ], // Nên lấy thêm avatar
         },
+
+        // 2. Lấy thông tin Team (Nhóm)
         {
           model: db.Team,
           as: "team",
@@ -320,11 +419,56 @@ const getAllProjects = async () => {
             "due_date",
           ],
         },
+        {
+          model: db.User,
+          as: "members",
+          attributes: [
+            "user_id",
+            "username",
+            "full_name",
+            "avatar_url",
+            "email",
+          ],
+          through: {
+            attributes: ["role", "joined_at"],
+          },
+        },
       ],
+
       order: [["created_at", "DESC"]],
     });
+    const stats = await db.Project.findAll({
+      attributes: [
+        [Sequelize.fn("COUNT", Sequelize.col("project_id")), "total"],
+        [
+          Sequelize.fn(
+            "SUM",
+            Sequelize.literal(
+              `CASE WHEN status = 'completed' THEN 1 ELSE 0 END`
+            )
+          ),
+          "completed",
+        ],
+        [
+          Sequelize.fn(
+            "SUM",
+            Sequelize.literal(`CASE WHEN status = 'over_due' THEN 1 ELSE 0 END`)
+          ),
+          "over_due",
+        ],
+        [
+          Sequelize.fn(
+            "SUM",
+            Sequelize.literal(
+              `CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END`
+            )
+          ),
+          "in_progress",
+        ],
+      ],
+    });
 
-    return projects;
+    return { projects, stats: stats[0] };
   } catch (error) {
     console.error("Lỗi lấy danh sách dự án (Service):", error);
     throw error;
@@ -492,6 +636,14 @@ const getProjectById = async (projectId, userId) => {
               attributes: ["attach_id", "file_name", "file_url"],
             },
           ],
+          include: [
+            {
+              model: db.User,
+              as: "assignees",
+              attributes: ["user_id", "username", "avatar_url"],
+              through: { attributes: [] },
+            },
+          ],
         },
         {
           model: db.Activity,
@@ -605,6 +757,108 @@ const getProjectMembers = async (projectId) => {
   }
 };
 
+// invite member to project
+// const inviteMemberToProject = async (
+//   projectId,
+//   requestingUserId,
+//   memberEmail
+// ) => {
+//   const t = await sequelize.transaction();
+//   try {
+//     // 1. Kiểm tra email đầu vào
+//     if (!memberEmail) {
+//       throw new Error("Vui lòng cung cấp email thành viên.");
+//     }
+
+//     // 2. Kiểm tra quyền: Người mời phải là Owner (hoặc Admin tùy logic bro)
+//     const inviterPermission = await ProjectMember.findOne({
+//       where: { project_id: projectId, user_id: requestingUserId },
+//       attributes: ["role"],
+//       transaction: t,
+//     });
+
+//     // Check null trước khi check role để tránh crash
+//     if (!inviterPermission || inviterPermission.role !== "owner") {
+//       throw new Error("Bạn không có quyền mời thành viên vào dự án này.");
+//     }
+
+//     // 3. Tìm người dùng cần mời qua Email
+//     const userToInvite = await User.findOne({
+//       where: { email: memberEmail },
+//       attributes: ["user_id", "username", "full_name", "email"],
+//       transaction: t,
+//     });
+
+//     if (!userToInvite) {
+//       throw new Error("Không tìm thấy người dùng với email này trên hệ thống.");
+//     }
+
+//     // 4. Kiểm tra xem người đó đã trong dự án chưa
+//     const existingMember = await ProjectMember.findOne({
+//       where: {
+//         project_id: projectId,
+//         user_id: userToInvite.user_id,
+//       },
+//       transaction: t,
+//     });
+
+//     if (existingMember) {
+//       throw new Error("Người dùng này đã là thành viên của dự án.");
+//     }
+
+//     // 5. Thêm vào dự án (mặc định role là member)
+//     const newProjectMember = await ProjectMember.create(
+//       {
+//         project_id: projectId,
+//         user_id: userToInvite.user_id,
+//         role: "member",
+//         joined_at: new Date(), // Thêm thời gian join cho chuẩn
+//       },
+//       { transaction: t }
+//     );
+
+//     // --- UPDATE: Lấy thông tin Project để bắn thông báo ---
+//     const project = await Project.findByPk(projectId, {
+//       attributes: ["project_id", "project_name"],
+//       transaction: t,
+//     });
+
+//     // 6. BẮN THÔNG BÁO (Notification)
+//     if (project) {
+//       await NotificationService.notifyProjectInvite(
+//         requestingUserId, // Người mời
+//         userToInvite.user_id, // Người được mời
+//         project, // Info dự án (để lấy tên hiển thị)
+//         t
+//       );
+//     }
+
+//     // 7. LOG HOẠT ĐỘNG (Activity)
+//     // Sửa lại cách truyền transaction 't' cho đúng với activity.service.js
+//     await logActivity(
+//       {
+//         user_id: requestingUserId,
+//         entity_type: "project",
+//         entity_id: projectId,
+//         action: "invited",
+//         description: `Đã mời thành viên ${userToInvite.email} vào dự án.`,
+//       },
+//       t
+//     ); // <--- 't' là tham số thứ 2
+
+//     await t.commit();
+
+//     return {
+//       ...userToInvite.toJSON(),
+//       role: newProjectMember.role,
+//     };
+//   } catch (error) {
+//     await t.rollback();
+//     console.error("Lỗi mời thành viên (Service):", error.message);
+//     throw error;
+//   }
+// };
+
 const inviteMemberToProject = async (
   projectId,
   requestingUserId,
@@ -612,35 +866,65 @@ const inviteMemberToProject = async (
 ) => {
   const t = await sequelize.transaction();
   try {
-    // 1. Kiểm tra email đầu vào
+    // 1. Validate email
     if (!memberEmail) {
       throw new Error("Vui lòng cung cấp email thành viên.");
     }
 
-    // 2. Kiểm tra quyền: Người mời phải là Owner (hoặc Admin tùy logic bro)
-    const inviterPermission = await ProjectMember.findOne({
-      where: { project_id: projectId, user_id: requestingUserId },
-      attributes: ["role"],
+    // --- BẮT ĐẦU LOGIC CHECK QUYỀN (ADMIN HOẶC OWNER) ---
+
+    // Bước A: Kiểm tra xem requester có phải là Admin hệ thống không?
+    const requesterUser = await User.findByPk(requestingUserId, {
+      include: [
+        {
+          model: db.Role,
+          as: "roles", // Khớp với alias trong User.model.js: User.belongsToMany(..., { as: "roles" })
+          attributes: ["name"],
+          through: { attributes: [] },
+        },
+      ],
       transaction: t,
     });
 
-    // Check null trước khi check role để tránh crash
-    if (!inviterPermission || inviterPermission.role !== "owner") {
-      throw new Error("Bạn không có quyền mời thành viên vào dự án này.");
-    }
+    // Kiểm tra trong mảng roles có 'admin' hoặc 'super_admin' không
+    const isAdmin =
+      requesterUser &&
+      requesterUser.roles &&
+      requesterUser.roles.some(
+        (r) => r.name === "admin" || r.name === "super_admin"
+      );
 
-    // 3. Tìm người dùng cần mời qua Email
+    // Bước B: Nếu KHÔNG PHẢI Admin, thì bắt buộc phải là Owner của dự án đó
+    if (!isAdmin) {
+      const projectPermission = await ProjectMember.findOne({
+        where: {
+          project_id: projectId,
+          user_id: requestingUserId,
+          role: "owner",
+        },
+        transaction: t,
+      });
+
+      if (!projectPermission) {
+        throw new Error(
+          "Bạn không có quyền mời thành viên (Chỉ Admin hoặc Owner dự án mới được mời)."
+        );
+      }
+    }
+    // --- KẾT THÚC LOGIC CHECK QUYỀN ---
+
+    // 2. Tìm người dùng cần mời qua Email
     const userToInvite = await User.findOne({
       where: { email: memberEmail },
-      attributes: ["user_id", "username", "full_name", "email"],
+      attributes: ["user_id", "username", "full_name", "email", "avatar_url"],
       transaction: t,
     });
 
     if (!userToInvite) {
-      throw new Error("Không tìm thấy người dùng với email này trên hệ thống.");
+      throw new Error(`Không tìm thấy người dùng với email: ${memberEmail}`);
     }
 
-    // 4. Kiểm tra xem người đó đã trong dự án chưa
+    // 3. Kiểm tra xem người đó đã trong dự án chưa
     const existingMember = await ProjectMember.findOne({
       where: {
         project_id: projectId,
@@ -653,51 +937,54 @@ const inviteMemberToProject = async (
       throw new Error("Người dùng này đã là thành viên của dự án.");
     }
 
-    // 5. Thêm vào dự án (mặc định role là member)
+    // 4. Thêm vào ProjectMember (Mặc định role là 'member')
     const newProjectMember = await ProjectMember.create(
       {
         project_id: projectId,
         user_id: userToInvite.user_id,
         role: "member",
-        joined_at: new Date(), // Thêm thời gian join cho chuẩn
+        joined_at: new Date(),
       },
       { transaction: t }
     );
 
-    // --- UPDATE: Lấy thông tin Project để bắn thông báo ---
+    // 5. Lấy thông tin Project để bắn thông báo
     const project = await Project.findByPk(projectId, {
       attributes: ["project_id", "project_name"],
       transaction: t,
     });
 
-    // 6. BẮN THÔNG BÁO (Notification)
+    // 6. Bắn thông báo (Notification)
     if (project) {
       await NotificationService.notifyProjectInvite(
-        requestingUserId, // Người mời
+        requestingUserId, // Người mời (Có thể là Admin hoặc Owner)
         userToInvite.user_id, // Người được mời
-        project, // Info dự án (để lấy tên hiển thị)
+        project,
         t
       );
     }
 
-    // 7. LOG HOẠT ĐỘNG (Activity)
-    // Sửa lại cách truyền transaction 't' cho đúng với activity.service.js
+    // 7. Log hoạt động
     await logActivity(
       {
         user_id: requestingUserId,
         entity_type: "project",
         entity_id: projectId,
         action: "invited",
-        description: `Đã mời thành viên ${userToInvite.email} vào dự án.`,
+        description: `Đã mời thành viên ${userToInvite.email} vào dự án ${
+          project ? project.project_name : ""
+        }.`,
       },
       t
-    ); // <--- 't' là tham số thứ 2
+    );
 
     await t.commit();
 
+    // Trả về data user để frontend hiển thị ngay lập tức
     return {
       ...userToInvite.toJSON(),
       role: newProjectMember.role,
+      joined_at: newProjectMember.joined_at,
     };
   } catch (error) {
     await t.rollback();
@@ -710,6 +997,7 @@ module.exports = {
   createProject,
   updateProject,
   deleteProject,
+  deleteProjectByAdmin,
   getStatus,
   getPriorities,
   getAllProjects,
