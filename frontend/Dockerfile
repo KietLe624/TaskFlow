@@ -1,47 +1,34 @@
 # ========================
-# GIAI ĐOẠN 1: BUILD ANGULAR (Node.js Build Environment)
+# GIAI ĐOẠN 1: BUILD (Node.js)
 # ========================
-FROM node:20 AS build
+FROM node:20-alpine AS build
 
-# Thiết lập thư mục làm việc
 WORKDIR /app
 
-# Sao chép và cài đặt dependencies
+# Copy package trước để tận dụng cache
 COPY package.json package-lock.json ./
 RUN npm install
 
-# Sao chép toàn bộ source code
+# Copy source code và build
 COPY . .
-
-# Chạy build. Đảm bảo bạn đã tắt Prerendering trong angular.json để tránh lỗi NG0401
 RUN npx ng build --configuration=production
 
-
 # ========================
-# GIAI ĐOẠN 2: RUNTIME (Node.js Production Environment)
+# GIAI ĐOẠN 2: SERVE (Nginx)
 # ========================
-FROM node:20-slim
+FROM nginx:alpine
 
-# Thiết lập thư mục làm việc chính
-WORKDIR /usr/src/app
+# Xóa config mặc định của Nginx
+RUN rm -rf /usr/share/nginx/html/*
 
-# Sao chép các tệp cần thiết từ giai đoạn build
-# CHÚ Ý: ĐÃ SỬA ĐƯỜNG DẪN TỪ ${NG_APP_NAME} THÀNH "frontend"
+# Copy file build tĩnh từ giai đoạn 1 sang thư mục html của Nginx
+# Lưu ý: Kiểm tra kỹ đường dẫn này. Với Angular mới, nó thường là dist/frontend/browser
+COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
 
-# 1. Sao chép tệp server và runtime dependencies
-# Đường dẫn: /app/dist/<tên_dự_án>/server
-COPY --from=build /app/dist/frontend/server /usr/src/app/server
+# Copy file cấu hình Nginx tùy chỉnh (Để xử lý Routing Angular)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# 2. Sao chép các tệp tĩnh (Browser bundles)
-# Đường dẫn: /app/dist/<tên_dự_án>/browser
-COPY --from=build /app/dist/frontend/browser /usr/src/app/browser
+# Nginx chạy cổng 80
+EXPOSE 80
 
-# 3. Sao chép package.json để cài đặt các Production dependencies
-COPY package.json .
-RUN npm install --only=production
-
-# Mở cổng mặc định của Angular SSR server (thường là 4000)
-EXPOSE 4000
-
-# Lệnh khởi chạy server Node.js đã build
-CMD ["node", "server/server.mjs"]
+CMD ["nginx", "-g", "daemon off;"]

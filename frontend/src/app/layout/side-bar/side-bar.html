@@ -1,10 +1,12 @@
 <div [ngClass]="{
-    'w-68 p-6 space-y-8': !isCollapsed,
+    'w-full p-6 space-y-8': !isCollapsed,
     'w-24 p-4 space-y-6': isCollapsed
-  }" class="h-screen overflow-y-auto border-r border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-800
-         hidden md:flex md:flex-col transition-all duration-300 ease-in-out scrollbar-hide">
+  }"
+  class="h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
+         flex flex-col transition-all duration-300 ease-in-out scrollbar-hide">
 
-  <header [ngClass]="{'justify-between': isCollapsed}" class="flex items-center space-x-3">
+  <header [ngClass]="{'justify-between': isCollapsed}" class="flex items-center justify-between space-x-3">
+
     <a routerLink="/app/dashboard" class="flex items-center space-x-3 overflow-hidden flex-1">
       <img src="/check.png" alt="TaskFlow Logo" class="h-8 w-8 flex-shrink-0" />
       <h2 [ngClass]="{'hidden': isCollapsed}"
@@ -14,44 +16,54 @@
     </a>
 
     <button (click)="toggleSidebar()" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
-           hidden md:block"> <i [ngClass]="{
+           hidden md:block">
+      <i [ngClass]="{
         'fa-arrow-left': !isCollapsed,
         'fa-arrow-right': isCollapsed
       }" class="fa-solid fa-lg"></i>
     </button>
+
+    <button (click)="close()" class="md:hidden text-gray-500 hover:text-red-500 transition-colors p-2">
+      <i class="fa-solid fa-xmark fa-xl"></i>
+    </button>
   </header>
 
-  <nav class="flex flex-col space-y-2">
+  <nav class="flex flex-col space-y-2 mt-4">
     <a routerLink="/app/dashboard" routerLinkActive="text-primary-600 border-r-2 border-primary-500 dark:bg-gray-800"
       [routerLinkActiveOptions]="{ exact: true }"
-      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
+      (click)="close()"
+      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out cursor-pointer">
       <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-house w-5 text-center flex-shrink-0"></i>
       <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Tổng quan</span>
     </a>
 
     <a routerLink="/app/projects" routerLinkActive="text-primary-600 border-r-2 border-primary-500 dark:bg-gray-800"
-      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
+      (click)="close()"
+      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out cursor-pointer">
       <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-folder-open w-5 text-center flex-shrink-0"></i>
       <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Dự án</span>
     </a>
 
     <a routerLink="/app/tasks"
       routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800"
-      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
+      (click)="close()"
+      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out cursor-pointer">
       <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-list w-5 text-center flex-shrink-0"></i>
       <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Công việc</span>
     </a>
 
     <a routerLink="/app/calendar"
       routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800"
-      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
+      (click)="close()"
+      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out cursor-pointer">
       <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-calendar w-5 text-center flex-shrink-0"></i>
       <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Lịch</span>
     </a>
 
     <a routerLink="/app/search"
       routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800"
-      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
+      (click)="close()"
+      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out cursor-pointer">
       <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-search w-5 text-center flex-shrink-0"></i>
       <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Tìm kiếm</span>
     </a>
@@ -64,8 +76,8 @@
 
     <div class="flex flex-col w-full border-b border-gray-200 dark:border-gray-700 pb-2 space-y-3">
       @for (project of recentProjects; track project.project_id) {
-      <a [routerLink]="['/app/projects', project.project_id]"
-        class="flex items-center justify-between group hover:bg-gray-50 dark:hover:bg-gray-800/50 p-2 rounded transition-colors">
+      <a [routerLink]="['/app/projects', project.project_id]" (click)="close()"
+        class="flex items-center justify-between group hover:bg-gray-50 dark:hover:bg-gray-800/50 p-2 rounded transition-colors cursor-pointer">
         <div class="flex items-center overflow-hidden">
           <i class="fa-regular fa-folder text-gray-400 mr-2 text-xs"></i>
           <span class="text-[15px] text-gray-700 dark:text-gray-300 truncate group-hover:text-primary-600">{{
@@ -82,7 +94,7 @@
       }
     </div>
 
-    <a routerLink="/app/projects"
+    <a routerLink="/app/projects" (click)="close()"
       class="group flex items-center space-x-2 text-xs text-gray-500 hover:text-blue-500 transition-colors cursor-pointer pt-1">
       <span>Xem tất cả</span>
       <i class="fa-solid fa-chevron-down w-3 transition-transform group-hover:translate-y-0.5"></i>
@@ -94,37 +106,7 @@
       Tin nhắn gần đây
     </h3>
 
-    <!-- <div class="flex flex-col space-y-4 border-b border-gray-200 dark:border-gray-700 pb-2">
-      @for (msg of recentMessages; track msg.id) {
-      <a [routerLink]="['/app/messages', msg.id]"
-        class="flex items-start space-x-3 group p-1 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded transition-colors">
-        <app-user-avatar [src]="msg.avatarUrl" [username]="msg.senderName" size="w-8 h-8"
-          status="online"></app-user-avatar>
-
-        <div class="flex-1 min-w-0">
-          <div class="flex items-baseline justify-between">
-            <span class="text-sm font-bold text-gray-900 dark:text-gray-200 truncate group-hover:text-primary-600">
-              {{ msg.senderName }}
-            </span>
-            <span class="text-[10px] text-gray-400 flex-shrink-0 ml-1">{{ msg.time }}</span>
-          </div>
-          <p class="truncate text-xs text-gray-500 dark:text-gray-400 mt-0.5"
-            [ngClass]="{'font-semibold text-gray-800 dark:text-gray-300': msg.isUnread}">
-            {{ msg.content }}
-          </p>
-        </div>
-
-        @if (msg.isUnread) {
-        <span class="h-2 w-2 flex-shrink-0 rounded-full bg-blue-500 mt-1.5 ring-2 ring-white dark:ring-gray-900"></span>
-        }
-      </a>
-      }
-      @empty {
-      <p class="text-xs text-gray-400 italic">Không có tin nhắn mới.</p>
-      }
-    </div> -->
-
-    <a routerLink="/app/messages"
+    <a routerLink="/app/messages" (click)="close()"
       class="group flex items-center space-x-2 text-xs text-gray-500 hover:text-blue-500 transition-colors cursor-pointer pt-1">
       <span>Xem tất cả</span>
       <i class="fa-solid fa-chevron-down w-3 transition-transform group-hover:translate-y-0.5"></i>

@@ -10,5 +10,15 @@ import { MainHeaderComponent } from "../main-header/main-header";
   styleUrls: ['./main-layout.css']
 })
 export class MainLayout {
-  
+  isMobileSidebarOpen = false;
+
+  // Hàm nhận sự kiện từ Header
+  toggleMobileSidebar() {
+    this.isMobileSidebarOpen = !this.isMobileSidebarOpen;
+  }
+
+  // Hàm đóng sidebar (dùng khi click vào overlay hoặc chọn menu)
+  closeMobileSidebar() {
+    this.isMobileSidebarOpen = false;
+  }
 }

@@ -11,15 +11,7 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "127.0.0.1",
-          "-p${MYSQL_ROOT_PASSWORD}",
-        ]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -31,34 +23,45 @@ services:
     container_name: taskflow_backend
     restart: always
     environment:
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
+      DB_HOST: db # Dùng tên service làm host
+      DB_PORT: 3306
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
       DB_DIALECT: ${DB_DIALECT}
-      PORT: ${PORT}
-      CORS_ORIGIN: http://localhost
+      PORT: 3000
+      CORS_ORIGIN: http://localhost:4200
     depends_on:
       db:
         condition: service_healthy
     ports:
       - "3000:3000"
+    # --- THÊM PHẦN NÀY ĐỂ BACKEND TỰ CẬP NHẬT ---
+    volumes:
+      - ./backend:/app             # 1. Map code máy thật vào container
+      - /app/node_modules          # 2. Giữ node_modules riêng của container
+    command: npm run dev           # 3. Chạy lệnh dev (thường dùng nodemon) thay vì node app.js
 
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
+      # Lưu ý: Dockerfile của dev nên là loại chỉ cài Node, chưa build sang Nginx
     container_name: taskflow_frontend
     restart: always
     ports:
-      # Ánh xạ cổng 4000 bên trong container ra cổng 4200 trên máy host (hoặc cổng bạn muốn)
-      - "4200:4000"
+      - "4200:4200" # Đổi về 4200 vì ng serve chạy port này
     environment:
-      # Bạn có thể thêm các biến môi trường nếu server.mjs của bạn cần chúng
-      NODE_ENV: production
+      NODE_ENV: development
     depends_on:
-      - backend # Đảm bảo backend chạy trước (nếu frontend cần API ngay)
+      - backend
+    # --- THÊM PHẦN NÀY ĐỂ FRONTEND TỰ CẬP NHẬT ---
+    volumes:
+      - ./frontend:/app            # 1. Map code máy thật vào container
+      - /app/node_modules          # 2. Giữ node_modules riêng
+    # 3. Ghi đè lệnh chạy mặc định bằng ng serve
+    # command: npm start -- --host 0.0.0.0 --poll 2000 --allowed-hosts all
 
 volumes:
   db_data:

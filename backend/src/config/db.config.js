@@ -8,7 +8,7 @@ require("dotenv").config({ path: path.resolve(__dirname, "../../../.env") });
 
 // Tạo kết nối MySQL
 const connection = mysql.createConnection({
-  host: process.env.DB_HOST_LOCAL || "localhost",
+  host: process.env.DB_HOST,
   port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,

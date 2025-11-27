@@ -1,0 +1,52 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    # EC2 production không cần map port 3306 ra ngoài Internet (tránh bị hack)
+    # ports:
+    #   - "3306:3306" 
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: taskflow_backend
+    restart: always
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      # QUAN TRỌNG: Thay localhost bằng IP Public của EC2 hoặc Domain thật
+      CORS_ORIGIN: http://47.128.74.10
+      PORT: 3000
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+    # XÓA volumes (code map từ máy) và command (npm run dev)
+    # Backend sẽ chạy lệnh mặc định trong Dockerfile (thường là node index.js)
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile  # Dùng file prod mới tạo
+    container_name: taskflow_frontend
+    restart: always
+    ports:
+      - "80:80"  # Production chạy cổng 80 (HTTP) thay vì 4200
+    depends_on:
+      - backend
+    # XÓA volumes và command
+
+volumes:
+  db_data:

@@ -7,7 +7,7 @@ const { Server } = require("socket.io"); // Import socket.io để xử lý WebS
 const { setupSocket } = require("./src/socket");
 
 app.use(express.json());
-app.use(cors({ origin: process.env.CORS_ORIGIN || "*" })); // localhost:4200 --> Angular
+app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:4200" })); // localhost:4200 --> Angular
 
 const API_PREFIX = process.env.API_PREFIX || "/api";
 const ADMIN_PREFIX = process.env.ADMIN_PREFIX || "/admin";
