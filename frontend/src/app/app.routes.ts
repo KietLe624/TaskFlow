@@ -19,8 +19,8 @@ import { AdminDashboardComponent } from './features/admin/admin-dashboard/admin-
 import { AdminUsersComponent } from './features/admin/admin-users/admin-users';
 import { AdminTeamComponent } from './features/admin/admin-team/admin-team';
 import { AdminProjectComponent } from './features/admin/admin-project/admin-project';
-import { NotificationsComponent } from './features/user/components/notifications/notifications';
 import { AdminActivityComponent } from './features/admin/admin-activity/admin-activity';
+import { PageNotificationComponent } from './features/user/components/page-notification/page-notification';
 
 export const routes: Routes = [
   { path: '', component: PublicPageComponent },
@@ -41,6 +41,7 @@ export const routes: Routes = [
       { path: 'tasks/:id', component: TaskComponent, data: { title: 'Task Detail' } },
       { path: 'profile', component: ProfileComponent, data: { title: 'Profile' } },
       { path: 'team/:id', component: TeamDetailComponent, data: { title: 'Team Detail' } },
+      { path: 'notifications', component: PageNotificationComponent, data: { title: 'Notifications' } },
       { path: 'calendar', component: CalendarComponent, data: { title: 'Calendar' } },
     ]
   },

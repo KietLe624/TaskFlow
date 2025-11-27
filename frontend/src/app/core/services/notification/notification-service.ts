@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { NotificationResponse } from '../../../models/notifications';
+import { NotificationResponse, NotificationDetail } from '../../../models/notifications';
 
 @Injectable({
   providedIn: 'root',
@@ -47,6 +47,18 @@ export class NotificationService {
   markAllAsRead(): Observable<any> {
     // Thêm headers
     return this.http.patch(`${this.apiNoti}/readAll`, {}, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
+  getDetail(id: string): Observable<NotificationDetail> {
+    return this.http.get<NotificationDetail>(`${this.apiNoti}/${id}`, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
+  deleteNotification(id: string): Observable<any> {
+    return this.http.delete(`${this.apiNoti}/${id}`, {
       headers: this.getAuthHeaders()
     });
   }

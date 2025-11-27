@@ -157,3 +157,36 @@ body {
   background-color: #ef4444 !important;
   opacity: 0.2;
 }
+
+/* 1. Tùy chỉnh thanh cuộn Webkit (Chrome, Edge, Safari) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px; /* Mảnh lại cho đẹp */
+}
+
+/* TRACK (Rãnh trượt): Đây là thủ phạm gây trắng góc! */
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: transparent; /* Để trong suốt */
+  margin-block: 4px; /* Cách 2 đầu ra 1 xíu để không đè vào bo góc trên/dưới */
+}
+
+/* THUMB (Cục trượt) */
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #e5e7eb; /* Light mode: gray-200 */
+  border-radius: 20px;
+}
+
+/* Thumb Hover */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #d1d5db;
+}
+
+/* --- DARK MODE --- */
+/* Khi vào dark mode, đổi màu cục trượt sang màu tối */
+:host-context(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #374151; /* Dark mode: gray-700 */
+}
+
+/* Quan trọng: Fix nền track trong dark mode nếu trình duyệt không nhận transparent */
+:host-context(.dark) .custom-scrollbar::-webkit-scrollbar-track {
+  background-color: #111827; /* Trùng màu bg-gray-900 */
+}

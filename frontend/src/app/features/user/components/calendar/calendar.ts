@@ -17,7 +17,10 @@ export class CalendarComponent {
 
   // Cấu hình lịch
   calendarOptions: CalendarOptions = {
-    initialView: 'dayGridMonth', // Xem theo tháng
+    initialView: 'dayGridMonth',
+    height: 'auto',
+    aspectRatio: 2,
+    expandRows: true,
     plugins: [dayGridPlugin, interactionPlugin],
     headerToolbar: {
       left: 'prev,next today',

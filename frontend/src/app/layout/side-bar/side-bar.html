@@ -2,7 +2,7 @@
     'w-68 p-6 space-y-8': !isCollapsed,
     'w-24 p-4 space-y-6': isCollapsed
   }" class="h-screen overflow-y-auto border-r border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-800
-         hidden md:flex md:flex-col transition-all duration-300 ease-in-out">
+         hidden md:flex md:flex-col transition-all duration-300 ease-in-out scrollbar-hide">
 
   <header [ngClass]="{'justify-between': isCollapsed}" class="flex items-center space-x-3">
     <a routerLink="/app/dashboard" class="flex items-center space-x-3 overflow-hidden flex-1">
@@ -26,94 +26,109 @@
       [routerLinkActiveOptions]="{ exact: true }"
       class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
       <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-house w-5 text-center flex-shrink-0"></i>
-      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Dashboard</span>
+      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Tổng quan</span>
     </a>
 
     <a routerLink="/app/projects" routerLinkActive="text-primary-600 border-r-2 border-primary-500 dark:bg-gray-800"
       class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
       <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-folder-open w-5 text-center flex-shrink-0"></i>
-      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Projects</span>
+      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Dự án</span>
     </a>
 
     <a routerLink="/app/tasks"
       routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800"
       class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
       <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-list w-5 text-center flex-shrink-0"></i>
-      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">My Tasks</span>
-    </a>
-
-    <a routerLink="/app/kanban"
-      routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800"
-      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
-      <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-grip w-5 text-center flex-shrink-0"></i>
-      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Kanban desk</span>
+      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Công việc</span>
     </a>
 
     <a routerLink="/app/calendar"
       routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800"
       class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
       <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-calendar w-5 text-center flex-shrink-0"></i>
-      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Calendar</span>
-    </a>
-
-    <a routerLink="/app/contacts"
-      routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800"
-      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
-      <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-user-group w-5 text-center flex-shrink-0"></i>
-      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Contacts</span>
+      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Lịch</span>
     </a>
 
     <a routerLink="/app/search"
       routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800"
       class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out">
       <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-search w-5 text-center flex-shrink-0"></i>
-      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Search</span>
+      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Tìm kiếm</span>
     </a>
   </nav>
 
-  <div [ngClass]="{'hidden': isCollapsed}" class="flex flex-col space-y-3 mt-auto">
-    <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-200">
+  <div [ngClass]="{'hidden': isCollapsed}" class="flex flex-col space-y-3 mt-auto animate-fade-in">
+    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400">
       Dự án gần đây
     </h3>
-    <div class="flex flex-col space-y-3 w-full border-b border-gray-200 dark:border-gray-700 pb-2">
-      <a routerLink="#" class="flex items-center justify-between">
-        <div class="flex items-center">
-          <span class="text-sm text-gray-800 dark:text-gray-200">Figma Design System</span>
+
+    <div class="flex flex-col w-full border-b border-gray-200 dark:border-gray-700 pb-2 space-y-3">
+      @for (project of recentProjects; track project.project_id) {
+      <a [routerLink]="['/app/projects', project.project_id]"
+        class="flex items-center justify-between group hover:bg-gray-50 dark:hover:bg-gray-800/50 p-2 rounded transition-colors">
+        <div class="flex items-center overflow-hidden">
+          <i class="fa-regular fa-folder text-gray-400 mr-2 text-xs"></i>
+          <span class="text-[15px] text-gray-700 dark:text-gray-300 truncate group-hover:text-primary-600">{{
+            project.project_name
+            }}</span>
         </div>
-        <span class="rounded bg-yellow-200 px-2 py-0.5 text-xs font-medium text-yellow-800">
-          Progress
+        <span [class]="'rounded px-1.5 py-0.5 text-[10px] font-bold ' + getStatusColor(project.status)">
+          {{ project.status | projectStatus }}
         </span>
       </a>
+      }
+      @empty {
+      <p class="text-xs text-gray-400 italic">Chưa có dự án nào.</p>
+      }
     </div>
-    <a routerLink="#" class="group flex items-center space-x-2 text-xs text-gray-500 hover:text-blue-400">
+
+    <a routerLink="/app/projects"
+      class="group flex items-center space-x-2 text-xs text-gray-500 hover:text-blue-500 transition-colors cursor-pointer pt-1">
       <span>Xem tất cả</span>
-      <i class="fa-solid fa-chevron-down w-3 text-gray-500 group-hover:text-blue-500"></i>
+      <i class="fa-solid fa-chevron-down w-3 transition-transform group-hover:translate-y-0.5"></i>
     </a>
   </div>
 
-  <div [ngClass]="{'hidden': isCollapsed}" class="flex flex-col space-y-4">
-    <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-200">
+  <div [ngClass]="{'hidden': isCollapsed}" class="flex flex-col space-y-4 pb-4">
+    <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400">
       Tin nhắn gần đây
     </h3>
-    <div class="flex flex-col space-y-4 border-b border-gray-200 dark:border-gray-700 pb-1">
-      <a routerLink="#" class="flex items-start space-x-3">
-        <img src="https://images.unsplash.com/photo-1570295999919-56cebsecca61?w=40&h=40&fit=crop&crop=faces"
-          alt="Alex Morgan" class="h-10 w-10 flex-shrink-0 rounded-full object-cover" />
-        <div class="flex-1">
+
+    <!-- <div class="flex flex-col space-y-4 border-b border-gray-200 dark:border-gray-700 pb-2">
+      @for (msg of recentMessages; track msg.id) {
+      <a [routerLink]="['/app/messages', msg.id]"
+        class="flex items-start space-x-3 group p-1 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded transition-colors">
+        <app-user-avatar [src]="msg.avatarUrl" [username]="msg.senderName" size="w-8 h-8"
+          status="online"></app-user-avatar>
+
+        <div class="flex-1 min-w-0">
           <div class="flex items-baseline justify-between">
-            <span class="text-sm font-bold text-gray-900 dark:text-gray-200">Alex Morgan</span>
-            <span class="text-xs text-gray-500">2m</span>
+            <span class="text-sm font-bold text-gray-900 dark:text-gray-200 truncate group-hover:text-primary-600">
+              {{ msg.senderName }}
+            </span>
+            <span class="text-[10px] text-gray-400 flex-shrink-0 ml-1">{{ msg.time }}</span>
           </div>
-          <p class="truncate text-sm text-gray-600 dark:text-gray-400">
-            Hey, can you review the...
+          <p class="truncate text-xs text-gray-500 dark:text-gray-400 mt-0.5"
+            [ngClass]="{'font-semibold text-gray-800 dark:text-gray-300': msg.isUnread}">
+            {{ msg.content }}
           </p>
         </div>
-        <span class="h-2 w-2 flex-shrink-0 rounded-full bg-blue-500 mt-1.5"></span>
+
+        @if (msg.isUnread) {
+        <span class="h-2 w-2 flex-shrink-0 rounded-full bg-blue-500 mt-1.5 ring-2 ring-white dark:ring-gray-900"></span>
+        }
       </a>
-    </div>
-    <a routerLink="#" class="group flex items-center space-x-2 text-xs text-gray-600 hover:text-blue-400">
+      }
+      @empty {
+      <p class="text-xs text-gray-400 italic">Không có tin nhắn mới.</p>
+      }
+    </div> -->
+
+    <a routerLink="/app/messages"
+      class="group flex items-center space-x-2 text-xs text-gray-500 hover:text-blue-500 transition-colors cursor-pointer pt-1">
       <span>Xem tất cả</span>
-      <i class="fa-solid fa-chevron-down w-3 text-gray-500 group-hover:text-blue-500"></i>
+      <i class="fa-solid fa-chevron-down w-3 transition-transform group-hover:translate-y-0.5"></i>
     </a>
   </div>
+
 </div>

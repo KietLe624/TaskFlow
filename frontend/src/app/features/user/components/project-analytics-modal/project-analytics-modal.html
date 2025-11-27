@@ -1,0 +1,30 @@
+<div class="space-y-6 animate-fade-in">
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <div
+      class="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col">
+      <h4 class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-4">Phân bổ trạng thái</h4>
+      <div class="flex-grow flex items-center justify-center min-h-[250px]">
+        @if (kpiData.totalTasks > 0) {
+        <canvas baseChart [data]="statusChartData" [type]="statusChartType" [options]="statusChartOptions"></canvas>
+        } @else {
+        <p class="text-sm text-gray-400 italic">Chưa có dữ liệu task.</p>
+        }
+      </div>
+    </div>
+
+    <div
+      class="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col">
+      <h4 class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-4">Khối lượng công việc</h4>
+      <div class="flex-grow flex items-center justify-center min-h-[250px]">
+        @if (kpiData.totalTasks > 0) {
+        <canvas baseChart [data]="memberChartData" [type]="memberChartType" [options]="memberChartOptions"></canvas>
+        } @else {
+        <p class="text-sm text-gray-400 italic">Chưa có dữ liệu task.</p>
+        }
+      </div>
+    </div>
+
+  </div>
+</div>

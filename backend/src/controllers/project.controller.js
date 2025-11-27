@@ -388,6 +388,21 @@ const removeMemberFromProject = async (req, res) => {
   }
 };
 
+// lấy danh sách dự án gần
+const getRecentProjects = async (req, res) => {
+  try {
+    const userId = req.user.user_id; // Lấy từ middleware verifyToken
+    const projects = await projectService.getRecentProjects(userId);
+
+    return res.status(200).json({
+      recentProjects: projects,
+    });
+  } catch (error) {
+    console.error("Sidebar init error:", error);
+    return res.status(500).json({ message: "Lỗi Server" });
+  }
+};
+
 module.exports = {
   createProject,
   updateProject,
@@ -402,4 +417,5 @@ module.exports = {
   inviteMemberToProject,
   changeMemberRole,
   removeMemberFromProject,
+  getRecentProjects,
 };

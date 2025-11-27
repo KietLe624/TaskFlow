@@ -80,6 +80,12 @@ export class ProjectService {
   inviteMember(projectId: number, email: string): Observable<any> {
     return this.http.post(`${this.apiProjects}/inviteMemberToProject/${projectId}`, { memberEmail: email }, { headers: this.getAuthHeaders() });
   }
+
+  getRecentProjects(): Observable<Project[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<{ recentProjects: Project[] }>(`${this.apiProjects}/getRecentProjects`, { headers })
+      .pipe(map(res => res.recentProjects));
+  }
 }
 
 

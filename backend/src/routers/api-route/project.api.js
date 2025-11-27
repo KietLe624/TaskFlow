@@ -16,6 +16,7 @@ const {
   inviteMemberToProject,
   changeMemberRole,
   removeMemberFromProject,
+  getRecentProjects,
 } = require("../../controllers/project.controller");
 
 router.get("/getAllProjects", authenticateToken, getAllProjects);
@@ -51,5 +52,7 @@ router.delete(
   authenticateToken,
   removeMemberFromProject
 );
+
+router.get("/getRecentProjects", authenticateToken, getRecentProjects);
 
 module.exports = router;

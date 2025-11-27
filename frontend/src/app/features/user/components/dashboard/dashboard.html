@@ -1,88 +1,128 @@
 @if (dashboardData$ | async; as data) {
 <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 p-2">
 
-  <div class="lg:col-span-3 space-y-4 ">
-    <!-- Tổng quan công việc -->
-    <section>
-      <div class="flex items-center justify-between mb-4  dark:bg-gray-900 ">
-        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Tổng quan công việc</h2>
-        <a routerLink="#" class="text-sm font-medium text-gray-400 dark:hover:text-primary-200 hover:underline">Xem tất
-          cả
-          ></a>
+  <div class="lg:col-span-3 space-y-4">
+    <!-- summary -->
+    <section class="animate-fade-in-up">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Tổng quan công việc</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Theo dõi hiệu suất làm việc của bạn</p>
+        </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 ">
-        <!-- col 1 -->
-        <div class="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
-          <div class="flex items-start justify-between">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+
+        <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700
+                transition-all duration-300
+                hover:shadow-xl hover:-translate-y-1
+                dark:hover:shadow-[0_10px_30px_-10px_rgba(59,130,246,0.4)] group">
+          <div class="flex justify-between items-start z-10 relative">
             <div>
-              <span class="text-5xl font-bold text-gray-900 dark:text-gray-200">{{ data.taskSummary.newTasks }}</span>
-              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Công việc mới</p>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Công việc mới</p>
+              <h3 class="text-3xl font-bold text-gray-800 dark:text-white">
+                {{ data.taskSummary.newTasks }}
+              </h3>
             </div>
-            <div class="w-24 h-12 text-blue-500 dark:text-blue-400">
-              <i class="fas fa-chart-line fa-2x"></i>
+            <div
+              class="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-900 dark:bg-opacity-30 dark:text-blue-400 transition-transform group-hover:scale-110 group-hover:rotate-3">
+              <i class="fas fa-folder-plus text-xl"></i>
             </div>
           </div>
-        </div>
-        <!-- col 2 -->
-        <div class="rounded-lg bg-white p-6 shadow dark:text-gray-200 dark:bg-gray-800 ">
-          <div class="flex items-start justify-between">
-            <div>
-              <span class="text-5xl font-bold text-gray-900 dark:text-gray-200">{{ data.taskSummary.tasksDone }}</span>
-              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Công việc đã hoàn thành</p>
-            </div>
-            <div class="w-24 h-12 text-green-500">
-              <i class="fas fa-chart-line fa-2x"></i>
-            </div>
+          <div
+            class="absolute bottom-0 left-0 w-full h-1 bg-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left">
           </div>
         </div>
-        <!-- col 3 -->
-        <div class="rounded-lg bg-white p-6 shadow dark:text-gray-200 dark:bg-gray-800 ">
-          <div class="flex items-start justify-between">
+
+        <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700
+                transition-all duration-300
+                hover:shadow-xl hover:-translate-y-1
+                dark:hover:shadow-[0_10px_30px_-10px_rgba(16,185,129,0.4)]
+                delay-100 animate-fade-in-up group">
+          <div class="flex justify-between items-start z-10 relative">
             <div>
-              <span class="text-5xl font-bold text-gray-900 dark:text-gray-200">{{ data.taskSummary.nearDueTasks
-                }}</span>
-              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Công việc gần đến hạn</p>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Đã hoàn thành</p>
+              <h3 class="text-3xl font-bold text-gray-800 dark:text-white">
+                {{ data.taskSummary.tasksDone }}
+              </h3>
             </div>
-            <div class="w-24 h-12 text-yellow-400">
-              <i class="fas fa-chart-line fa-2x"></i>
+            <div
+              class="flex items-center justify-center w-12 h-12 rounded-xl bg-green-50 text-green-600 dark:bg-green-900 dark:bg-opacity-30 dark:text-green-400 transition-transform group-hover:scale-110 group-hover:rotate-3">
+              <i class="fas fa-check-circle text-xl"></i>
             </div>
           </div>
-        </div>
-        <!-- col 4 -->
-        <div class="rounded-lg bg-white p-6 shadow dark:text-gray-200 dark:bg-gray-800 ">
-          <div class="flex items-start justify-between">
-            <div>
-              <span class="text-5xl font-bold text-gray-900 dark:text-gray-200">{{ data.taskSummary.overdueTasks
-                }}</span>
-              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Công việc quá hạn</p>
-            </div>
-            <div class="w-24 h-12 text-red-500">
-              <i class="fas fa-chart-line fa-2x"></i>
-            </div>
+          <div
+            class="absolute bottom-0 left-0 w-full h-1 bg-green-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left">
           </div>
         </div>
+
+        <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700
+                transition-all duration-300
+                hover:shadow-xl hover:-translate-y-1
+                dark:hover:shadow-[0_10px_30px_-10px_rgba(245,158,11,0.4)]
+                delay-200 animate-fade-in-up group">
+          <div class="flex justify-between items-start z-10 relative">
+            <div>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Gần đến hạn</p>
+              <h3 class="text-3xl font-bold text-gray-800 dark:text-white">
+                {{ data.taskSummary.nearDueTasks }}
+              </h3>
+            </div>
+            <div
+              class="flex items-center justify-center w-12 h-12 rounded-xl bg-yellow-50 text-yellow-600 dark:bg-yellow-900 dark:bg-opacity-30 dark:text-yellow-400 transition-transform group-hover:scale-110 group-hover:rotate-3">
+              <i class="fas fa-hourglass-half text-xl"></i>
+            </div>
+          </div>
+          <div
+            class="absolute bottom-0 left-0 w-full h-1 bg-yellow-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left">
+          </div>
+        </div>
+
+        <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700
+                transition-all duration-300
+                hover:shadow-xl hover:-translate-y-1
+                dark:hover:shadow-[0_10px_30px_-10px_rgba(239,68,68,0.4)]
+                delay-300 animate-fade-in-up group">
+          <div class="flex justify-between items-start z-10 relative">
+            <div>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Đã quá hạn</p>
+              <h3 class="text-3xl font-bold text-gray-800 dark:text-white">
+                {{ data.taskSummary.overdueTasks }}
+              </h3>
+            </div>
+            <div
+              class="flex items-center justify-center w-12 h-12 rounded-xl bg-red-50 text-red-600 dark:bg-red-900 dark:bg-opacity-30 dark:text-red-400 transition-transform group-hover:scale-110 group-hover:rotate-3">
+              <i class="fas fa-exclamation-triangle text-xl"></i>
+            </div>
+          </div>
+          <div
+            class="absolute bottom-0 left-0 w-full h-1 bg-red-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left">
+          </div>
+        </div>
+
       </div>
     </section>
-    <!-- kết thúc Tổng quan công việc -->
-    <!-- Dự án đang thực hiện -->
-    <section>
-      <div class="flex items-center justify-between mb-4 ">
-        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Dự án đang thực hiện</h2>
+    <!-- end summary -->
+    <!-- project -->
+    <section class="animate-fade-in-up delay-200">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Dự án đang thực hiện </h2>
         <a routerLink="/app/projects"
-          class="text-sm font-medium text-gray-400 dark:hover:text-primary-500 hover:underline">Xem tất cả dự
-          án ></a>
+          class="text-sm font-medium text-gray-400 dark:hover:text-primary-500 hover:underline transition-colors">Xem
+          tất cả</a>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 dark:text-gray-200">
         @for (project of data.pendingProjects.slice(0, 4); track project.project_id; ) {
         <div
-          class="group flex flex-col rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-sm transition hover:shadow-lg hover:-translate-y-1">
+          class="group flex flex-col rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-sm transition-all duration-300 ease-out hover:shadow-xl hover:border-blue-200 dark:hover:border-blue-800">
           <div class="flex-grow">
             <div class="flex justify-between items-start">
               <div class="flex items-start">
-                <div [ngClass]="getStatusBarColor(project.status)" class="w-1 h-14 rounded-full mr-2"></div>
+                <div [ngClass]="getStatusBarColor(project.status)" class="w-1 h-14 rounded-full mr-2 transition-all">
+                </div>
                 <div>
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+                  <h3
+                    class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400">
                     {{ project.project_name }}
                   </h3>
                   <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-1" [title]="project.description">
@@ -91,7 +131,7 @@
                 </div>
               </div>
               <span [ngClass]="getStatusColor(project.status)"
-                class="px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap">
+                class="px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap shadow-sm">
                 {{ project.status | projectStatus }}
               </span>
             </div>
@@ -102,43 +142,40 @@
 
               <div class="relative ml-auto">
                 <button (click)="toggleDropdown(project.project_id, $event)"
-                  class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer focus:outline-none">
+                  class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer focus:outline-none w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                   <i class="fa-solid fa-ellipsis text-lg"></i>
                 </button>
                 @if (openDropdownId === project.project_id) {
                 <div (click)="$event.stopPropagation()"
-                  class="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 shadow-lg rounded-md border border-gray-200 dark:border-gray-700 z-20">
+                  class="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 shadow-xl rounded-md border border-gray-200 dark:border-gray-700 z-20 animate-scale-in origin-top-right">
                   <ul class="py-1 text-sm text-gray-700 dark:text-gray-200">
                     <li>
                       <button (click)="viewProjectDetails(project.project_id, $event)"
-                        class="w-full flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <i class="fa-regular fa-eye w-5 mr-2 text-blue-500"></i> Xem chi
-                        tiết
+                        class="w-full flex items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-blue-600 transition-colors">
+                        <i class="fa-regular fa-eye w-5 mr-2 text-blue-500"></i> Xem chi tiết
                       </button>
                     </li>
                     <li>
                       <button (click)="markAsCompleted(project.project_id, $event)"
-                        class="w-full flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <i class="fa-solid fa-check w-5 mr-2 text-green-500"></i> Đánh
-                        dấu hoàn thành
+                        class="w-full flex items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600 transition-colors">
+                        <i class="fa-solid fa-check w-5 mr-2 text-green-500"></i> Đánh dấu hoàn thành
                       </button>
                     </li>
                     <li>
                       <button (click)="changeStatus(project.project_id, $event)"
-                        class="w-full flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <i class="fa-solid fa-arrows-rotate w-5 mr-2 text-yellow-500"></i>
-                        Thay đổi trạng thái
+                        class="w-full flex items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-yellow-600 transition-colors">
+                        <i class="fa-solid fa-arrows-rotate w-5 mr-2 text-yellow-500"></i> Thay đổi trạng thái
                       </button>
                     </li>
                     <li>
                       <button (click)="openEditProjectModal(project.project_id, $event)"
-                        class="w-full flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        class="w-full flex items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-blue-600 transition-colors">
                         <i class="fa-solid fa-pen w-5 mr-2 text-blue-500"></i> Sửa dự án
                       </button>
                     </li>
                     <li>
                       <button (click)="deleteProject(project.project_id, $event)"
-                        class="w-full flex items-center px-4 py-2 text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        class="w-full flex items-center px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                         <i class="fa-solid fa-trash w-5 mr-2"></i> Xoá dự án
                       </button>
                     </li>
@@ -153,9 +190,9 @@
               <span class="text-sm text-gray-700 dark:text-gray-300">Tiến độ</span>
               <span class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ project.progressPercent }}%</span>
             </div>
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full">
-              <div class="h-2 rounded-full transition-all" [style.width]="project.progressPercent + '%'"
-                [ngClass]="getStatusColor(project.status)"></div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div class="h-2 rounded-full transition-all duration-1000 ease-out"
+                [style.width]="project.progressPercent + '%'" [ngClass]="getStatusColor(project.status)"></div>
             </div>
             } @else {
             <div class="flex items-center justify-between mb-4">
@@ -169,10 +206,10 @@
           </div>
 
           <div class="flex justify-between items-center my-4">
-            <div class="flex -space-x-2">
+            <div class="flex -space-x-2 overflow-hidden py-1 pl-1">
               @for (m of project.members; track m.user_id) {
               <app-user-avatar [src]="m.avatar_url" [username]="m.username" size="w-8 h-8" [title]="m.username"
-                class="cursor-pointer ring-2 ring-white dark:ring-gray-900">
+                class="cursor-pointer ring-2 ring-white dark:ring-gray-900 transition-transform duration-200 hover:scale-110 hover:z-10 hover:ring-blue-400 relative">
               </app-user-avatar>
               }
             </div>
@@ -216,91 +253,121 @@
         }
       </div>
     </section>
-    <!-- Kết thúc Dự án đang thực hiện -->
-    <!-- Danh sách công việc -->
-    <section>
+    <!-- end project -->
+    <!-- task -->
+    <section class="animate-fade-in-up delay-300">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Danh sách công việc</h2>
-        <a href="#" class="text-sm font-medium text-gray-400 dark:hover:text-primary-200 hover:underline">
+        <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">Danh sách công việc</h2>
+        <a href="/app/tasks"
+          class="text-xs font-medium text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors">
           Xem tất cả
         </a>
       </div>
 
-      <div class="rounded-lg bg-white shadow-md dark:bg-gray-800">
-        @for (event of data.overviewTasks; track event.id) {
-        <div
-          class="flex flex-col sm:flex-row sm:justify-between sm:items-start p-4 rounded-lg border-b border-gray-200 dark:border-gray-700">
-          <div class="flex-grow ">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-200 line-clamp-1 sm:line-clamp-2">
-              <a routerLink="/app/task,(event.id)">{{ event.title }}</a>
-            </h3>
-            <div class="flex items-center flex-wrap space-x-4 text-sm text-gray-500 dark:text-gray-400 mt-1">
-              <div class="flex -space-x-2">
-                @for (assignee of event.assignees; track $index) {
-                <app-user-avatar [src]="assignee.avatarUrl" [username]="assignee.username" size="h-6 w-6"
-                  [title]="assignee.username" textSize="text-xs"
-                  class="inline-block ring-2 ring-white dark:ring-gray-800 rounded-full cursor-pointer">
-                </app-user-avatar>
-                }
-              </div>
+      <div
+        class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
 
-              <div class="flex items-center space-x-1.5">
-                <i class="fa-regular fa-calendar-alt"></i>
-                <span>{{ event.date }}</span>
-              </div>
+        <div
+          class="hidden sm:grid grid-cols-12 gap-4 p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm font-semibold text-gray-500 dark:text-gray-200 capitalize tracking-wider">
+          <div class="col-span-5">Công việc</div>
+          <div class="col-span-4">Thời hạn & Người thực hiện</div>
+          <div class="col-span-3 text-right">Trạng thái</div>
+        </div>
+
+        @for (event of data.overviewTasks; track event.id; let last = $last) {
+        <div
+          class="group grid grid-cols-1 sm:grid-cols-12 gap-4 p-4 items-center transition-colors duration-200 hover:bg-blue-50/50 dark:hover:bg-gray-700/50 cursor-pointer border-gray-100 dark:border-gray-700"
+          [class.border-b]="!last">
+
+          <div class="sm:col-span-5 flex items-center gap-4 min-w-0">
+            <div
+              class="flex-shrink-0 w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-500 dark:text-indigo-400 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm">
+              <i class="fa-solid fa-layer-group"></i>
+            </div>
+
+            <div class="flex flex-col min-w-0">
+              <h3
+                class="text-sm font-bold text-gray-700 dark:text-gray-200 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                <a routerLink="/app/task,(event.id)" class="focus:outline-none">
+                  <span class="absolute inset-0 sm:static"></span>
+                  {{ event.title }}
+                </a>
+              </h3>
             </div>
           </div>
-          <div class="flex-shrink-0 flex flex-col items-end space-y-1 sm:ml-4 mt-2 sm:mt-0">
+
+          <div class="sm:col-span-4 flex items-center justify-start sm:justify-start gap-4">
+            <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 px-2 py-1 rounded">
+              <i class="fa-regular fa-calendar text-[10px] mr-1.5"></i>
+              <span>{{ event.date }}</span>
+            </div>
+
+            <div class="flex -space-x-2">
+              @for (assignee of event.assignees; track $index) {
+              <app-user-avatar [src]="assignee.avatarUrl" [username]="assignee.username" size="h-6 w-6"
+                [title]="assignee.username" textSize="text-[10px]"
+                class="ring-2 ring-white dark:ring-gray-800 rounded-full transition-transform hover:scale-110 hover:z-10">
+              </app-user-avatar>
+              }
+            </div>
+          </div>
+
+          <div class="sm:col-span-3 flex items-center sm:justify-end justify-between w-full">
+            <span class="sm:hidden text-xs text-gray-400">Trạng thái:</span>
+
             <span [ngClass]="getStatusColor(event.status)"
-              class="inline-block text-xs font-semibold px-4 py-1 rounded-lg whitespace-nowrap">
+              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium justify-center text-center">
               {{ event.status | projectStatus }}
             </span>
-            @if(event.description) {
-            <p class="flex-1 min-w-0 line-clamp-1 sm:line-clamp-2 text-sm ">
-              {{ event.description }}
-            </p>
-            }
           </div>
+
         </div>
         }
-
         @empty {
-        <p class="p-4 text-gray-500 dark:text-gray-400">Không có công việc nào sắp tới.</p>
+        <div class="p-8 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
+          <i class="fa-regular fa-folder-open text-3xl mb-2 opacity-20"></i>
+          <span class="text-sm">Không có công việc nào sắp tới.</span>
+        </div>
         }
-
       </div>
     </section>
-    <!-- Kết thúc Danh sách công việc -->
+    <!-- end task -->
   </div>
-  <!-- hoạt động gần đây -->
-  <div class="lg:col-span-1 space-y-2">
+  <!-- activity -->
+  <div class="lg:col-span-1 space-y-2 animate-fade-in-up delay-400">
     <div class="flex items-center justify-between mb-4">
       <h2 class="section-title">Hoạt động gần đây</h2>
       <a routerLink="#" class="text-sm text-gray-400 dark:hover:text-primary-200 hover:underline">Xem tất cả</a>
     </div>
-    <section class="rounded-lg bg-white p-6 shadow h-full dark:text-gray-200 dark:bg-gray-800">
+    <section
+      class="rounded-lg bg-white p-6 shadow h-full dark:text-gray-200 dark:bg-gray-800 animate-fade-in-up delay-400">
       @for (group of data.latestActivities | slice:0:5; track $index) {
       <div class="mb-6">
-        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-4 ml-2">
           {{ group.date }}
         </h3>
-        <ul class="relative border-l border-gray-300 dark:border-gray-600 pl-6">
+
+        <ul class="relative border-l-2 border-gray-200 dark:border-gray-700 pl-8 space-y-6 ml-2">
           @for (act of group.items | slice:0:10; track act.id) {
-          <li class="relative pb-2 last:pb-0">
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-y-1">
+          <li class="relative">
+
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-y-1 group">
               <div class="flex items-start space-x-3">
                 <app-user-avatar [src]="act.userAvatar" [username]="act.userName" [title]="act.userName" size="h-8 w-8"
-                  textSize="text-sm" class="flex-shrink-0 mt-0.5"> </app-user-avatar>
-                <div class="text-sm">
-                  <span class="font-semibold text-gray-900 dark:text-white mr-1">
+                  textSize="text-sm" class="flex-shrink-0 relative z-10 transition-transform hover:scale-110">
+                </app-user-avatar>
+
+                <div class="text-sm pt-0.5">
+                  <p class="font-medium text-gray-900 dark:text-white">
                     {{ act.userName }}
-                  </span>
-                  <span class="text-gray-600 dark:text-gray-400">
-                    {{ act.entity_type === 'created_task' ? 'đã tạo task' : 'đã cập nhật task' }}
-                  </span>
+                    <span class="font-normal text-gray-500 dark:text-gray-400">
+                      {{ act.entity_type | activityTypePipe }}
+                    </span>
+                  </p>
                 </div>
               </div>
-              <span class="text-xs text-gray-500 dark:text-gray-500 whitespace-nowrap sm:ml-auto pl-11 sm:pl-0">
+
+              <span class="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap sm:ml-auto pl-11 sm:pl-0 pt-1">
                 {{ act.time }}
               </span>
             </div>
@@ -311,39 +378,39 @@
       }
     </section>
   </div>
+  <!-- end activity -->
 </div>
 }
 
 @if (isModalOpen) {
-<div class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-  <div class="w-full max-w-3xl">
+<div class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50 animate-fade-in">
+  <div class="w-full max-w-3xl animate-scale-in">
     <app-create-project [isEditMode]="isEditMode" [selectedProject]="selectedProject" (closeModal)="closeModal()"
       (projectSaved)="onProjectSaved($event)">
     </app-create-project>
   </div>
 </div>
 }
-<!-- modal details -->
+
 @if (isDetailsModalOpen && selectedProjectForDetails) {
-<div class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-  <div class="w-full max-w-4xl">
-    <app-project-detail [project]="selectedProjectForDetails" (close)="closeDetailsModal()">
+<div class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50 animate-fade-in">
+  <div class="w-full max-w-4xl animate-scale-in">
+    <app-project-detail [project]="selectedProjectForDetails" (closed)="closeDetailsModal()">
     </app-project-detail>
   </div>
 </div>
 }
-<!-- modal confirm complete -->
-@if (isCompleteModalOpen && projectToComplete) {
-<div class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50" (click)="cancelComplete()">
 
-  <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-xl" (click)="$event.stopPropagation()">
+@if (isCompleteModalOpen && projectToComplete) {
+<div class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50 animate-fade-in"
+  (click)="cancelComplete()">
+  <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-xl animate-scale-in"
+    (click)="$event.stopPropagation()">
     <div class="p-4 border-b dark:border-gray-700">
       <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-        <i class="fa-solid fa-check-circle text-green-500"></i>
-        Xác nhận hoàn thành
+        <i class="fa-solid fa-check-circle text-green-500 animate-bounce"></i> Xác nhận hoàn thành
       </h3>
     </div>
-
     <div class="p-4">
       <p class="text-gray-700 dark:text-gray-300">
         Bạn có chắc chắn muốn đánh dấu dự án:
@@ -354,47 +421,41 @@
         Hành động này sẽ cập nhật trạng thái và tiến độ của dự án thành 100%.
       </p>
     </div>
-
     <div class="flex justify-end space-x-3 p-4 bg-gray-50 dark:bg-gray-800 border-t dark:border-gray-700 rounded-b-lg">
       <button type="button" (click)="cancelComplete()" class="px-5 py-2 rounded-lg font-medium text-gray-600 dark:text-gray-300
                        hover:bg-gray-100 dark:hover:bg-gray-700
                        transition-colors duration-150 ease-in-out
-                       focus:outline-none focus:ring-2 focus:ring-gray-400">
+                       focus:outline-none focus:ring-2 focus:ring-gray-400 active:scale-95">
         Thoát
       </button>
 
       <button type="button" (click)="confirmComplete()" class="px-5 py-2 text-white bg-green-600 rounded-lg
                        font-semibold text-center transition-all duration-200 ease-in-out
-                       hover:bg-green-700
+                       hover:bg-green-700 hover:shadow-lg
                        focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50
                        active:scale-95">
         Xác nhận
       </button>
     </div>
-
   </div>
 </div>
 }
-<!-- modal change status -->
+
 @if (isChangeStatusModalOpen && projectToChangeStatus) {
-<div class="fixed inset-0 flex justify-center items-center z-50">
-
-  <!-- Modal -->
+<div class="fixed inset-0 flex justify-center items-center z-50 animate-fade-in bg-black bg-opacity-40">
   <div
-    class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700">
-
-    <!-- Header -->
+    class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 animate-scale-in">
     <div class="p-5 border-b dark:border-gray-700 flex items-center justify-between">
       <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
         <i class="fa-solid fa-arrows-rotate text-yellow-500"></i>
         Thay đổi trạng thái
       </h3>
-      <button (click)="cancelChangeStatus()" class="text-gray-400 hover:text-red-500 transition-colors duration-150">
+      <button (click)="cancelChangeStatus()"
+        class="text-gray-400 hover:text-red-500 transition-colors duration-150 transform hover:rotate-90">
         <i class="fa-solid fa-xmark text-lg"></i>
       </button>
     </div>
 
-    <!-- Nội dung -->
     <div class="p-6 space-y-4">
       <p class="text-sm text-gray-600 dark:text-gray-300">
         Dự án: <strong class="dark:text-gray-100">{{ projectToChangeStatus.project_name }}</strong>
@@ -404,45 +465,37 @@
         Chọn trạng thái mới:
       </p>
 
-      <!-- Radio group -->
       <div class="grid grid-cols-1 sm:grid-cols-1 gap-3">
         @for (status of availableStatuses; track status) {
         <label class="flex items-start justify-start gap-2 border rounded-xl py-2 px-3 cursor-pointer select-none text-sm font-medium transition-all duration-200
-                     hover:scale-[1.02]" [ngClass]="{
-                'bg-green-100 border-green-500 text-green-700 dark:bg-green-900/30': newSelectedStatus === 'completed' && newSelectedStatus === status,
-                'bg-blue-100 border-blue-500 text-blue-700 dark:bg-blue-900/30': newSelectedStatus === 'in_progress' && newSelectedStatus === status,
-                'bg-yellow-100 border-yellow-500 text-yellow-700 dark:bg-yellow-900/30': newSelectedStatus === 'on_hold' && newSelectedStatus === status,
-                'bg-gray-100 border-gray-400 text-gray-700 dark:bg-gray-700/40': newSelectedStatus === 'to_do' && newSelectedStatus === status,
-                'bg-red-100 border-red-500 text-red-700 dark:bg-red-900/30': newSelectedStatus === 'over_due' && newSelectedStatus === status,
-                'border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700':
-                  newSelectedStatus !== status
-              }">
-
+                     hover:scale-[1.02] active:scale-[0.98]" [ngClass]="{
+                     'bg-green-100 border-green-500 text-green-700 dark:bg-green-900': newSelectedStatus === 'completed' && newSelectedStatus === status,
+                     'bg-blue-100 border-blue-500 text-blue-700 dark:bg-blue-900': newSelectedStatus === 'in_progress' && newSelectedStatus === status,
+                     'bg-yellow-100 border-yellow-500 text-yellow-700 dark:bg-yellow-900/30': newSelectedStatus === 'on_hold' && newSelectedStatus === status,
+                     'bg-gray-100 border-gray-400 text-gray-700 dark:bg-gray-700/40': newSelectedStatus === 'to_do' && newSelectedStatus === status,
+                     'bg-red-100 border-red-500 text-red-700 dark:bg-red-900/30': newSelectedStatus === 'over_due' && newSelectedStatus === status,
+                     'border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700':
+                       newSelectedStatus !== status
+                   }">
           <input type="radio" name="statusSelect" class="hidden" [value]="status" [(ngModel)]="newSelectedStatus">
-
           <span>{{ status | projectStatus }}</span>
-
-          @if (newSelectedStatus === status) {
-          <i class="fa-solid fa-check text-sm"></i>
-          }
+          @if (newSelectedStatus === status) { <i class="fa-solid fa-check text-sm animate-scale-in"></i> }
         </label>
         }
       </div>
     </div>
 
-    <!-- Footer -->
     <div class="flex justify-end gap-3 p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-2xl">
       <button type="button" (click)="cancelChangeStatus()" class="px-5 py-2 rounded-lg text-gray-600 dark:text-gray-300
-                       hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                       hover:bg-gray-100 dark:hover:bg-gray-700 transition active:scale-95">
         Thoát
       </button>
 
-      <button type="button" (click)="confirmChangeStatus()" class="px-5 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700
+      <button type="button" (click)="confirmChangeStatus()" class="px-5 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 hover:shadow-lg
                        active:scale-95 font-semibold transition-all">
         Cập nhật
       </button>
     </div>
-
   </div>
 </div>
 }

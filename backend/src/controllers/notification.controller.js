@@ -1,7 +1,6 @@
 const notificationService = require("../services/notification.service");
 
 // 1. Lấy danh sách thông báo (GET /api/notifications)
-// Có phân trang & sắp xếp mới nhất
 const getMyNotifications = async (req, res) => {
   try {
     const userId = req.user.user_id; // Lấy từ middleware xác thực
@@ -86,7 +85,6 @@ const markAllRead = async (req, res) => {
 };
 
 // 5. (Optional) Tạo thông báo thủ công (POST /api/notifications)
-// Hàm này thường chỉ dùng cho Admin test hoặc bắn thông báo hệ thống chung
 const createManual = async (req, res) => {
   try {
     // Dữ liệu từ body: { user_id, title, content, type... }
@@ -105,10 +103,59 @@ const createManual = async (req, res) => {
   }
 };
 
+// chi tiết notification
+const getNotificationDetail = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const notiId = req.params.id;
+
+    const noti = await notificationService.getNotificationById(notiId, userId);
+
+    if (!noti) {
+      return res.status(404).json({
+        message: "Thông báo không tồn tại hoặc bạn không có quyền xem",
+      });
+    }
+
+    return res.status(200).json(noti);
+  } catch (error) {
+    console.error("Get notification detail error:", error);
+    return res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+// xoá notification
+const deleteNotification = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const notiId = req.params.id;
+
+    const isDeleted = await notificationService.deleteNotification(
+      notiId,
+      userId
+    );
+
+    if (!isDeleted) {
+      return res.status(404).json({
+        message: "Không tìm thấy thông báo để xóa",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Đã xóa thông báo thành công",
+    });
+  } catch (error) {
+    console.error("Delete notification error:", error);
+    return res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
 module.exports = {
   getMyNotifications,
   getUnreadCount,
   markOneAsRead,
   markAllRead,
   createManual,
+  getNotificationDetail,
+  deleteNotification,
 };

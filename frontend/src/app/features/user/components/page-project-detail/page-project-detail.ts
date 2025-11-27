@@ -13,6 +13,7 @@ import { ToastrService } from 'ngx-toastr';
 import { UserAvatarComponent } from '../user-avatar/user-avatar';
 import { ChatboxComponent } from '../chatbox/chatbox';
 import { InviteMemberComponent } from '../invite-member/invite-member';
+import { ProjectAnalyticsModal } from '../project-analytics-modal/project-analytics-modal';
 
 @Component({
   selector: 'app-page-project-detail',
@@ -24,6 +25,7 @@ import { InviteMemberComponent } from '../invite-member/invite-member';
     UserAvatarComponent,
     ChatboxComponent,
     InviteMemberComponent,
+    ProjectAnalyticsModal
   ],
   templateUrl: './page-project-detail.html',
   styleUrls: ['./page-project-detail.css'],

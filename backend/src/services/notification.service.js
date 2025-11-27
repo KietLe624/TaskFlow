@@ -195,6 +195,38 @@ const notifyTaskComment = async (
   );
 };
 
+// lấy chi tiết thông báo theo id
+const getNotificationById = async (notiId, userId) => {
+  const notification = await Notification.findOne({
+    where: {
+      noti_id: notiId,
+      user_id: userId,
+    },
+  });
+
+  if (!notification) {
+    return null;
+  }
+  if (!notification.is_read) {
+    notification.is_read = true;
+    notification.read_at = new Date();
+    await notification.save(); // Lưu lại thay đổi
+  }
+
+  return notification;
+};
+
+// xoá
+const deleteNotification = async (notiId, userId) => {
+  const result = await Notification.destroy({
+    where: {
+      noti_id: notiId,
+      user_id: userId,
+    },
+  });
+  return result > 0; // Trả về true nếu xóa thành công
+};
+
 module.exports = {
   createNotification,
   getNotificationsByUserId,
@@ -205,4 +237,6 @@ module.exports = {
   notifyTaskCompletion,
   notifyProjectInvite,
   notifyTaskComment,
+  getNotificationById,
+  deleteNotification,
 };

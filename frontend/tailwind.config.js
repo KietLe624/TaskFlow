@@ -1,4 +1,5 @@
 module.exports = {
+  mode: "jit",
   purge: ["./src/**/*.{html,ts}"],
   darkMode: "class", // or 'media' or 'class'
   theme: {
@@ -21,8 +22,8 @@ module.exports = {
         },
       },
       spacing: {
-        68: "17rem", // = 272px (đẹp nhất luôn bro)
-        70: "17.5rem", // = 280px (rất rộng rãi)
+        68: "17rem", // = 272px
+        70: "17.5rem", // = 280px
         sidebar: "272px",
         "sidebar-collapsed": "80px",
       },

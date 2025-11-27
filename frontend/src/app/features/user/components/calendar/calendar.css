@@ -1,0 +1,176 @@
+/* === 1. CONTAINER CHUNG === */
+::ng-deep .custom-calendar {
+  font-family: "Inter", sans-serif; /* Hoặc font bro đang dùng */
+  --fc-border-color: #f3f4f6; /* Gray-100 */
+  --fc-button-text-color: #6b7280;
+  --fc-button-bg-color: #ffffff;
+  --fc-button-border-color: #e5e7eb;
+  --fc-button-hover-bg-color: #f9fafb;
+  --fc-button-active-bg-color: #2563eb;
+  --fc-button-active-border-color: #2563eb;
+}
+
+/* === 2. TOOLBAR (HEADER) === */
+::ng-deep .fc-header-toolbar {
+  margin-bottom: 1.5rem !important;
+  padding: 0.5rem;
+}
+
+/* Title: To, Đậm, Sang */
+::ng-deep .fc-toolbar-title {
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.025em; /* Tracking tight */
+  color: #111827; /* Gray-900 */
+}
+
+/* === 3. NAVIGATION BUTTONS (< > Today) === */
+/* Biến nút < > thành hình tròn */
+::ng-deep .fc-prev-button,
+::ng-deep .fc-next-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50% !important; /* Tròn xoe */
+  background-color: white !important;
+  border: 1px solid #e5e7eb !important;
+  color: #374151 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5rem !important;
+  transition: all 0.2s ease;
+}
+
+::ng-deep .fc-prev-button:hover,
+::ng-deep .fc-next-button:hover {
+  transform: scale(1.1); /* Phóng to nhẹ khi hover */
+  border-color: #3b82f6 !important;
+  color: #3b82f6 !important;
+}
+
+/* Nút Today: Bo tròn nhẹ, font nhỏ */
+::ng-deep .fc-today-button {
+  border-radius: 10px !important; /* Pill shape */
+  padding: 0.4rem 1.2rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  background-color: white !important;
+  border: 1px solid #e5e7eb !important;
+  color: #374151 !important;
+  opacity: 1 !important; /* Mặc định nó hay bị mờ */
+}
+
+/* === 4. SEGMENTED CONTROL (Month/Week) - PHẦN ĂN TIỀN === */
+/* Container của nhóm nút */
+::ng-deep .fc-button-group {
+  background-color: #f3f4f6; /* Nền xám nhạt */
+  padding: 4px;
+  border-radius: 12px; /* Bo góc container */
+  border: 1px solid #e5e7eb;
+}
+
+/* Các nút bên trong */
+::ng-deep .fc-button-group > .fc-button {
+  background-color: transparent !important;
+  border: none !important;
+  color: #6b7280 !important; /* Gray-500 */
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  border-radius: 8px !important; /* Bo góc nút con */
+  margin: 0 !important;
+  box-shadow: none !important;
+  padding: 0.35rem 1rem !important;
+  transition: all 0.2s ease;
+}
+
+/* Hiệu ứng Active: Nổi lên thành màu trắng + Bóng đổ */
+::ng-deep .fc-button-group > .fc-button.fc-button-active {
+  background-color: white !important;
+  color: #111827 !important; /* Chữ đen đậm */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+::ng-deep .fc-button-group > .fc-button:hover:not(.fc-button-active) {
+  color: #111827 !important;
+}
+
+/* === 5. GRID & EVENTS (Lưới & Sự kiện) === */
+/* Làm sạch đường kẻ */
+::ng-deep .fc-theme-standard td,
+::ng-deep .fc-theme-standard th {
+  border-color: #f3f4f6 !important;
+}
+
+/* Header ngày (CN, T2...) */
+::ng-deep .fc-col-header-cell-cushion {
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #9ca3af;
+}
+
+/* Sự kiện (Task) */
+::ng-deep .fc-daygrid-event {
+  border-radius: 6px !important;
+  margin-top: 2px !important;
+  padding: 2px 4px !important;
+  border: none !important;
+  font-weight: 500;
+  font-size: 0.75rem;
+  transition: transform 0.2s;
+}
+
+::ng-deep .fc-daygrid-event:hover {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+}
+
+/* === 6. DARK MODE (SIÊU QUAN TRỌNG) === */
+:host-context(.dark) ::ng-deep .custom-calendar {
+  --fc-border-color: #374151; /* Gray-700 */
+}
+
+:host-context(.dark) ::ng-deep .fc-toolbar-title {
+  color: #f3f4f6; /* White text */
+}
+
+/* Nav Buttons Dark */
+:host-context(.dark) ::ng-deep .fc-prev-button,
+:host-context(.dark) ::ng-deep .fc-next-button,
+:host-context(.dark) ::ng-deep .fc-today-button {
+  background-color: #1f2937 !important; /* Gray-800 */
+  border-color: #374151 !important;
+  color: #e5e7eb !important;
+}
+
+:host-context(.dark) ::ng-deep .fc-prev-button:hover,
+:host-context(.dark) ::ng-deep .fc-next-button:hover {
+  border-color: #60a5fa !important; /* Blue-400 */
+  color: #60a5fa !important;
+}
+
+/* Segmented Control Dark */
+:host-context(.dark) ::ng-deep .fc-button-group {
+  background-color: #1f2937; /* Gray-800 background track */
+  border-color: #374151;
+}
+
+:host-context(.dark) ::ng-deep .fc-button-group > .fc-button {
+  color: #9ca3af !important;
+}
+
+:host-context(.dark) ::ng-deep .fc-button-group > .fc-button.fc-button-active {
+  background-color: #374151 !important; /* Gray-700 pill */
+  color: white !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Grid Dark */
+:host-context(.dark) ::ng-deep .fc-theme-standard td,
+:host-context(.dark) ::ng-deep .fc-theme-standard th {
+  border-color: #374151 !important;
+}

@@ -79,7 +79,14 @@ const loginUser = async (loginInput, password) => {
 
   // Tạo JWT token
   const token = jwt.sign(
-    { user_id: user.user_id, email: user.email, roles: roles },
+    {
+      user_id: user.user_id,
+      email: user.email,
+      roles: roles,
+      username: user.username,
+      full_name: user.full_name,
+      avatar_url: user.avatar_url,
+    },
     process.env.JWT_SECRET,
     { expiresIn: "1h", algorithm: "HS256" }
   );

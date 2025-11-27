@@ -1,7 +1,7 @@
 @if(projectDetail){
 <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 mb-6">
   <!-- Top header -->
-  <div class="flex items-start justify-between">
+  <div class="flex items-start justify-between ">
     <div>
       <div class="flex items-center gap-2">
         <h1 class="text-4xl font-bold text-gray-900 dark:text-white">
@@ -386,12 +386,12 @@
         </p>
       </div>
       } @else {
-      <div class=" rounded-lg overflow-x-auto custom-scrollbar">
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div class=" rounded-lg overflow-x-auto custom-scrollbar min-h-[300px] p-2">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 ">
           @for (member of members; track member.user_id) {
           <div
             class="group relative bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300">
-            <div class="p-5 flex justify-between items-start">
+            <div class="p-5 flex justify-between items-start z-40">
               <div class="flex gap-4 items-center">
                 <div class="relative">
                   <app-user-avatar [src]="member.avatar_url" [username]="member.username" size="w-12 h-12"
@@ -463,7 +463,7 @@
                 </span>
               </div>
 
-              <div
+              <!-- <div
                 class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-gray-100 dark:border-gray-700">
                 <div class="flex flex-col">
                   <span class="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Assigned</span>
@@ -474,7 +474,7 @@
                   <span class="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Completed</span>
                   <span class="text-lg font-bold text-green-600 dark:text-green-400">8</span>
                 </div>
-              </div>
+              </div> -->
             </div>
 
             @if (member.user_id !== projectOwnerId) {
@@ -507,6 +507,9 @@
       }
 
     </div>
+    }
+    @case ('analytics') {
+    <app-project-analytics-modal [project]="projectDetail"></app-project-analytics-modal>
     }
     }
   </div>

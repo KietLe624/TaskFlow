@@ -6,27 +6,33 @@ import { Subscription } from 'rxjs/internal/Subscription';
 import { filter, map, mergeMap } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth/auth';
 import { NotificationsComponent } from '../../features/user/components/notifications/notifications';
+import { UserAvatarComponent } from '../../features/user/components/user-avatar/user-avatar';
+import { MyJwtPayload } from '../../models/users';
 
 @Component({
   selector: 'app-main-header',
   standalone: true,
-  imports: [ThemeToggle, CommonModule, RouterModule, NotificationsComponent],
+  imports: [ThemeToggle, CommonModule, RouterModule, NotificationsComponent, UserAvatarComponent],
   templateUrl: './main-header.html',
   styleUrls: ['./main-header.css']
 })
 export class MainHeaderComponent implements OnInit {
   pageTitle: string = 'Dashboard';
+
   private routerSubscription: Subscription | undefined;
   constructor(
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private cdr: ChangeDetectorRef
   ) { }
+
   authService = inject(AuthService);
   elementRef = inject(ElementRef);
   isDropdownOpen = false; // trạng thái nút dropdown
   isCollapsed: boolean = false;
   isOpenNoti: boolean = false;
+
+  currentUser: MyJwtPayload | null = null;
 
   @Output() toggleSidebar = new EventEmitter<void>();
 
@@ -67,6 +73,13 @@ export class MainHeaderComponent implements OnInit {
     ).subscribe(data => {
       this.pageTitle = data['title'] || 'Dashboard';
     });
+    this.authService.currentUser$.subscribe(userPayload => {
+      this.currentUser = userPayload;
+
+      // Log kiểm tra xem trong token có avatar/name không
+      console.log('Current User Payload:', this.currentUser);
+    });
+
   }
   ngOnDestroy(): void {
     // 9. Hủy subscription khi component bị hủy
@@ -81,7 +94,10 @@ export class MainHeaderComponent implements OnInit {
     this.isOpenNoti = true;
     this.isDropdownOpen = false;
   }
+
   closeNotifications() {
     this.isOpenNoti = false;
+    this.cdr.detectChanges();
   }
+
 }

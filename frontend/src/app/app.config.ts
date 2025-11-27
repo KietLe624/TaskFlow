@@ -6,6 +6,7 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideToastr } from 'ngx-toastr';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 // 2. Cấu hình kết nối đến backend
 const config: SocketIoConfig = {
@@ -34,7 +35,8 @@ export const appConfig: ApplicationConfig = {
       tapToDismiss: false,            // Click vào không tự tắt (để người dùng đọc kỹ nếu muốn), hoặc để true tùy thích
       toastClass: 'ngx-toastr custom-toast', // Thêm lớp CSS tùy chỉnh
     }),
-    importProvidersFrom(SocketIoModule.forRoot(config))
+    importProvidersFrom(SocketIoModule.forRoot(config)),
+    provideCharts(withDefaultRegisterables())
   ]
 };
 

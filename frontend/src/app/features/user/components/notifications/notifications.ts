@@ -74,7 +74,6 @@ export class NotificationsComponent implements OnInit {// Inject Service
     return NotificationConfig[type] || NotificationConfig['system'];
   }
 
-  // 5. XỬ LÝ CLICK ITEM (QUAN TRỌNG)
   onItemClick(noti: Notification) {
     // A. Đánh dấu đã đọc (UI trước)
     if (!noti.is_read) {
@@ -89,7 +88,7 @@ export class NotificationsComponent implements OnInit {// Inject Service
     // C. Điều hướng
     this.navigateByEntity(noti);
   }
-  // 6. Đánh dấu tất cả đã đọc
+  // Đánh dấu tất cả đã đọc
   markAllRead() {
     if (this.unreadCount === 0) return;
     this.notifications.forEach(n => n.is_read = true);
@@ -99,10 +98,9 @@ export class NotificationsComponent implements OnInit {// Inject Service
 
   // 7. Xem trang full
   viewAllPage() {
+    this.router.navigate(['/app/notifications']);
     this.closeDropdown.emit();
-    this.router.navigate(['/notifications']);
   }
-
   private navigateByEntity(noti: Notification) {
     const config = this.getConfig(noti.entity_type);
     const id = noti.entity_id;

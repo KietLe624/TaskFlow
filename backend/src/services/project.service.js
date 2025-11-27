@@ -993,6 +993,31 @@ const inviteMemberToProject = async (
   }
 };
 
+// lấy project gần đây
+const getRecentProjects = async (userId) => {
+  try {
+    const projects = await Project.findAll({
+      // Chỉ lấy các trường cần thiết
+      attributes: ["project_id", "project_name", "status", "updated_at"],
+      include: [
+        {
+          model: User,
+          as: "members",
+          where: { user_id: userId }, // Điều kiện: User phải là thành viên
+          attributes: [], // Không cần lấy thông tin user trong bảng join
+        },
+      ],
+      order: [["updated_at", "DESC"]], // Sắp xếp theo thời gian cập nhật mới nhất
+      limit: 3, // Lấy 3 cái thôi
+    });
+
+    return projects;
+  } catch (error) {
+    console.error("Error fetching recent projects:", error);
+    return [];
+  }
+};
+
 module.exports = {
   createProject,
   updateProject,
@@ -1005,4 +1030,5 @@ module.exports = {
   getProjectById,
   getProjectMembers,
   inviteMemberToProject,
+  getRecentProjects,
 };

@@ -12,10 +12,12 @@ import { FormCreateProject } from '../form-create-project/form-create-project';
 import { ProjectDetailModalComponent } from '../project-detail/project-detail';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { ActivityTypePipe } from '../../../../pipes/activity-type-pipe-pipe';
+
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, ProjectStatusPipe, RouterLink, UserAvatarComponent, FormCreateProject, ProjectDetailModalComponent, FormsModule],
+  imports: [CommonModule, ProjectStatusPipe, RouterLink, UserAvatarComponent, FormCreateProject, ProjectDetailModalComponent, FormsModule, ActivityTypePipe],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
@@ -169,7 +171,7 @@ export class DashboardComponent implements OnInit {
         return 'gray';
     }
   }
-  
+
   isChangeStatusModalOpen = false;
   projectToChangeStatus: any | null = null;
   newSelectedStatus: string = '';

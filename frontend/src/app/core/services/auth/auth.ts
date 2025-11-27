@@ -102,6 +102,7 @@ export class AuthService {
     if (this.isBrowser) {
       localStorage.removeItem('token');
       console.log('Đã đăng xuất, xóa token.');
+      this.currentUserSubject.next(null);
       this.router.navigate(['/login']);
     }
   }

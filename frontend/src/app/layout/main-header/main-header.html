@@ -15,15 +15,6 @@
     <button class="md:hidden text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">
       <i class="fas fa-search fa-lg"></i>
     </button>
-
-    <div class="relative hidden md:block">
-      <input type="text" placeholder="Search for task and etc."
-        class="w-72 rounded-lg border-1 border-gray-400 bg-gray-200 py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700" />
-      <span class="absolute inset-y-0 left-0 grid place-content-center pl-3">
-        <i class="fas fa-search text-gray-400"></i>
-      </span>
-    </div>
-
     <div class="flex items-center space-x-4">
       <div class="relative">
         <button (click)="openNotifications()"
@@ -32,10 +23,10 @@
         </button>
 
         @if (isOpenNoti) {
-        <div class="fixed inset-0 z-40 cursor-default" (click)="closeNotifications()"></div>
+        <div class="fixed inset-0 z-40 cursor-default"></div>
         <div
           class="absolute right-0 mt-3 w-80 sm:w-96 z-50 origin-top-right bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-          <app-notifications></app-notifications>
+          <app-notifications (click)="closeNotifications()"></app-notifications>
         </div>
         }
       </div>
@@ -44,62 +35,48 @@
 
     <!-- User Avatar & Dropdown Menu -->
     <div class="relative" #userMenu>
-      <!-- Avatar Button -->
       <button type="button" (click)="toggleDropdown()"
-        class="group relative flex items-center focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 rounded-full transition-all duration-200"
-        aria-expanded="false" aria-haspopup="true" id="user-menu-button">
+        class="group relative flex items-center focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 rounded-full transition-all duration-200">
 
         <span class="sr-only">Mở menu người dùng</span>
 
-        <!-- Avatar với hiệu ứng hover tinh tế -->
         <div class="relative">
-          <img [src]="'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=160&h=160&fit=crop&crop=face'"
-            alt="Avatar"
-            class="h-10 w-10 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700 transition-all duration-300 group-hover:ring-primary-400 dark:group-hover:ring-primary-600" />
-
-          <!-- Online indicator (tùy chọn) -->
+          <app-user-avatar [src]="currentUser?.avatar_url" [username]="currentUser?.username" size="w-10 h-10">
+          </app-user-avatar>
           <span
             class="absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white dark:ring-gray-950 bg-green-500"></span>
         </div>
       </button>
 
-      <!-- Dropdown Menu - Animation mượt với Angular @if + Tailwind -->
       @if (isDropdownOpen) {
-      <!-- Overlay mờ khi mở menu (đóng khi click ngoài) -->
-      <div class="fixed inset-0 z-40" (click)="isDropdownOpen = false">
-      </div>
+      <div class="fixed inset-0 z-40" (click)="isDropdownOpen = false"></div>
 
-      <!-- Menu chính -->
       <div [@slideDown]
         class="absolute right-0 mt-3 w-72 origin-top-right transform rounded-2xl bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black ring-opacity-10 dark:ring-gray-800 overflow-hidden z-50">
 
-        <!-- User Info Header -->
-        <div
-          class="px-5 py-4 bg-gradient-to-r from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-800">
-          <!-- <p class="text-sm font-semibold text-white">
-            {{ currentUser?.full_name || 'Nguyễn Văn A' }}
+        <div class="px-5 py-4 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-800">
+          <p class="text-sm font-bold text-white truncate">
+            {{ currentUser?.full_name || currentUser?.username }}
           </p>
-          <p class="text-xs text-primary-100 mt-1">
-            {{ currentUser?.email || 'user@example.com' }}
-          </p> -->
+          <p class="text-xs text-blue-100 mt-0.5 truncate">
+            {{ currentUser?.email || 'Chưa cập nhật email' }}
+          </p>
         </div>
 
-        <!-- Menu Items -->
         <div class="py-2">
-          <a routerLink="/app/profile"
-            class="flex items-center gap-3 px-5 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <a routerLink="/app/profile" (click)="isDropdownOpen = false"
+            class="flex items-center gap-3 px-5 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
             <i class="fa-regular fa-user w-5 text-center"></i>
             Hồ sơ cá nhân
           </a>
 
-          <a routerLink="/settings/account"
-            class="flex items-center gap-3 px-5 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-            <i class="fa-regular fa-cog w-5 text-center"></i>
+          <a routerLink="/settings/account" (click)="isDropdownOpen = false"
+            class="flex items-center gap-3 px-5 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+            <i class="fa-solid fa-gear w-5 text-center"></i>
             Cài đặt tài khoản
           </a>
         </div>
 
-        <!-- Logout Button -->
         <div class="border-t border-gray-200 dark:border-gray-700">
           <button (click)="onLogout()"
             class="w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors">

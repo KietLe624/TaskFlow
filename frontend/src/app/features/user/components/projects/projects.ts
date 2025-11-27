@@ -17,7 +17,6 @@ import { AuthService } from '../../../../core/services/auth/auth';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { TeamService } from '../../../../core/services/team/team-service';
-import e from 'express';
 
 @Component({
   selector: 'app-projects',
@@ -42,6 +41,13 @@ export class ProjectsComponent implements OnInit {
 
   isEditMode = false;
   selectedProject: Project | null = null;
+
+  allProjects: Project[] = [];
+
+  // Biến cho bộ lọc
+  searchText: string = '';
+  filterStatus: string = '';
+  filterPriority: string = '';
 
   constructor(
     private projectService: ProjectService,
@@ -95,7 +101,8 @@ export class ProjectsComponent implements OnInit {
 
     this.projectService.getProjectsByUserId(user_id).subscribe({
       next: (projects) => {
-        this.projects = projects;
+        this.allProjects = projects; // lưu tất cả projects
+        this.applyFilter(); // gọi lọc
         this.isLoading = false;
         console.log(' Projects từ backend:', projects);
       },
@@ -173,12 +180,6 @@ export class ProjectsComponent implements OnInit {
   }
 
   openDropdownId: number | null = null;
-
-  // toggleDropdown(id: number, event: MouseEvent) {
-  //   event.stopPropagation();
-  //   this.openDropdownId = this.openDropdownId === id ? null : id;
-  // }
-
   @HostListener('document:click')
 
   closeDropdown() {
@@ -191,11 +192,11 @@ export class ProjectsComponent implements OnInit {
   viewProjectDetails(project_id: number, event: MouseEvent) {
     event.stopPropagation();
     this.openDropdownId = null; // Đóng dropdown
-    // Gọi service để lấy data đầy đủ
+    // Gọi service để lấy data
     this.projectService.getProjectById(project_id).subscribe({
       next: (fullProjectData) => {
         this.selectedProjectForDetails = fullProjectData;
-        this.isDetailsModalOpen = true; // <-- Mở modal
+        this.isDetailsModalOpen = true;
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Lỗi khi lấy chi tiết project:', err),
@@ -271,40 +272,31 @@ export class ProjectsComponent implements OnInit {
     });
   }
 
-  // dropdown
-  // Trong AdminProjectsComponent
-
-  // 1. Thêm biến lưu toạ độ
+  // Thêm biến lưu toạ độ
   dropdownPosition = { top: 0, left: 0 };
 
-  // 2. Sửa hàm toggleDropdown
   toggleDropdown(projectId: number, event: MouseEvent) {
     event.stopPropagation();
 
     if (this.openDropdownId === projectId) {
-      this.openDropdownId = null; // Đang mở thì đóng lại
+      this.openDropdownId = null;
     } else {
       this.openDropdownId = projectId;
-
-      // --- TÍNH TOÁN VỊ TRÍ ---
       const button = event.currentTarget as HTMLElement;
       const rect = button.getBoundingClientRect();
-
-      // rect.bottom: mép dưới của nút
-      // rect.right: mép phải của nút
-      // Trừ đi chiều rộng dropdown (ví dụ w-52 ~ 208px) để căn lề phải
+      const dropdownWidth = 208;
       this.dropdownPosition = {
-        top: rect.bottom + 5, // Cách nút 5px
-        left: rect.right - 208 // 208px là chiều rộng của w-52 (hoặc điều chỉnh số này cho chuẩn)
+        top: rect.bottom + 5,
+        left: rect.right - dropdownWidth
       };
     }
   }
 
-  // 3. Thêm HostListener để đóng menu khi cuộn chuột (Vì fixed không trôi theo bảng)
+  // Thêm HostListener để đóng menu khi cuộn chuột (Vì fixed không trôi theo bảng)
   @HostListener('window:scroll', ['$event'])
   onScroll(event: Event) {
     if (this.openDropdownId !== null) {
-      this.openDropdownId = null; // Đóng dropdown khi cuộn để tránh nó lơ lửng sai chỗ
+      this.openDropdownId = null;
     }
   }
 
@@ -430,4 +422,25 @@ export class ProjectsComponent implements OnInit {
     this.projectToComplete = null;
   }
 
+  // lọc project
+  applyFilter() {
+    this.projects = this.allProjects.filter(project => {
+      // Lọc theo tên (không phân biệt hoa thường)
+      const matchesSearch = !this.searchText ||
+        project.project_name.toLowerCase().includes(this.searchText.toLowerCase()) ||
+        (project.client && project.client.toLowerCase().includes(this.searchText.toLowerCase()));
+      // Lọc theo trạng thái
+      const matchesStatus = !this.filterStatus || project.status === this.filterStatus;
+      // Lọc theo độ ưu tiên
+      const matchesPriority = !this.filterPriority || project.priority === this.filterPriority;
+      return matchesSearch && matchesStatus && matchesPriority;
+    });
+  }
+
+  resetFilter() {
+    this.searchText = '';
+    this.filterStatus = '';
+    this.filterPriority = '';
+    this.applyFilter();
+  }
 }

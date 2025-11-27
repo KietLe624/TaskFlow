@@ -20,3 +20,11 @@ export interface NotificationResponse {
     has_more: boolean;
   };
 }
+export interface NotificationDetail {
+  noti_id: string;
+  title: string;
+  noti_content: string;
+  entity_type: 'info' | 'success' | 'warning' | 'error';
+  is_read: boolean;
+  created_at: string;
+}

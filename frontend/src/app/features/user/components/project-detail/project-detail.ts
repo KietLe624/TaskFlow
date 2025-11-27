@@ -86,15 +86,15 @@ export class ProjectDetailModalComponent {
   getTaskStatusColor(status: string): string {
     switch (status) {
       case 'completed':
-        return 'bg-green-500'; // Xanh lá
+        return 'text-green-700 bg-green-200'; // Xanh lá
       case 'in_progress':
-        return 'bg-blue-500'; // Xanh dương
+        return 'text-blue-700 bg-blue-200'; // Xanh dương
       case 'on_hold':
-        return 'bg-yellow-500'; // Vàng
+        return 'text-yellow-700 bg-yellow-200'; // Vàng
       case 'over_due':
-        return 'bg-red-500'; // Đỏ
+        return 'text-red-700 bg-red-200'; // Đỏ
       case 'to_do':
-        return 'bg-gray-500'; // Xám
+        return 'text-gray-700 bg-gray-200'; // Xám
       default:
         return 'bg-gray-400'; // Mặc định
     }
