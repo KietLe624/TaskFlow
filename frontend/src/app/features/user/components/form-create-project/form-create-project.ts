@@ -34,7 +34,7 @@ import { TeamService } from '../../../../core/services/team/team-service';
 })
 export class FormCreateProject {
   @Input() isEditMode = false; // nhận từ component cha (project.component.ts)
-  @Input() selectedProject: Project | null = null; // nhận từ component cha (project.component.ts)
+  @Input() selectedProject: Project[] = []; // nhận từ component cha (project.component.ts)
   @Input() teams: Team[] = [];
   @Output() projectSaved = new EventEmitter<Project>();
   @Output() closeModal = new EventEmitter<void>();
@@ -92,7 +92,7 @@ export class FormCreateProject {
 
     if (this.isEditMode && this.selectedProject) {
       this.projectService
-        .updateProject(this.selectedProject.project_id, formValue)
+        .updateProject(this.selectedProject![0].project_id, formValue)
         .subscribe({
           next: (res) => {
             const updatedProject = res.project || res;
@@ -138,7 +138,7 @@ export class FormCreateProject {
   }
 
   closeCreateModal() {
-    this.selectedProject = null;
+    this.selectedProject = [];
     this.closeModal.emit();
     this.cdr.detectChanges();
   }

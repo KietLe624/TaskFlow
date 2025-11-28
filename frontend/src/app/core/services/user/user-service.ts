@@ -9,7 +9,9 @@ import { User } from '../../../models/users';
   providedIn: 'root'
 })
 export class UserService {
-  apiUsers = `http://localhost:3000/api/user`;
+  // private apiUsers = `http://localhost:3000/api/user`;
+  private apiUsers = (window as any).__env?.apiUrl ? `${(window as any).__env.apiUrl}/api/user` : 'http://localhost:3000/api/user';
+
   constructor(private http: HttpClient) { }
 
   private getAuthHeaders(): HttpHeaders {

@@ -11,6 +11,17 @@ const createProject = async (req, res) => {
       return res.status(401).json({ error: "Chưa đăng nhập" });
     }
 
+    const { start_date, due_date } = projectData;
+    if (start_date && due_date) {
+      const start = new Date(start_date);
+      const end = new Date(due_date);
+      if (end < start) {
+        return res.status(400).json({
+          message: "Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu!",
+        });
+      }
+    }
+
     if (
       !projectData ||
       !projectData.project_name ||
@@ -20,6 +31,7 @@ const createProject = async (req, res) => {
     ) {
       return res.status(400).json({ error: "Thiếu thông tin dự án" });
     }
+
     const newProject = await projectService.createProject(
       projectData,
       req.user

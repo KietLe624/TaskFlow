@@ -8,8 +8,8 @@ import { AuthService } from '../auth/auth';
   providedIn: 'root'
 })
 export class AttachmentService {
-  private apiUrl = 'http://localhost:3000/api/attachment'; // ← ĐÚNG ENDPOINT
-
+  // private apiUrl = 'http://localhost:3000/api/attachment';
+  private apiUrl = (window as any).__env?.apiUrl ? `${(window as any).__env.apiUrl}/api/attachment` : 'http://localhost:3000/api/attachment';
   constructor(private http: HttpClient, private authService: AuthService) { }
 
   private getAuthHeaders(): HttpHeaders {

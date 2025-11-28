@@ -8,9 +8,14 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
-// 2. Cấu hình kết nối đến backend
+
+const getUrl = () => {
+  return (window as any).__env?.apiUrl || 'http://localhost:3000';
+};
+
 const config: SocketIoConfig = {
-  url: 'http://localhost:3000',
+  // url: 'http://localhost:3000',
+  url: getUrl(),
   options: {}
 };
 

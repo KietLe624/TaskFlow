@@ -6,6 +6,15 @@ const createTask = async (req, res) => {
     const user_id = req.user?.user_id;
     if (!user_id) return res.status(401).json({ message: "Chưa đăng nhập" });
     const { task_name, status, priority, start_date, due_date } = req.body;
+    if (start_date && due_date) {
+      const start = new Date(start_date);
+      const end = new Date(due_date);
+      if (end < start) {
+        return res.status(400).json({
+          message: "Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu!",
+        });
+      }
+    }
 
     //  Validation cơ bản tại Controller (input validation)
     if (!task_name || !status || !priority || !start_date || !due_date) {
@@ -22,6 +31,7 @@ const createTask = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 // create task admin
 const createTaskAdmin = async (req, res) => {
   try {
@@ -37,7 +47,7 @@ const createTaskAdmin = async (req, res) => {
       message: "Tạo task thành công",
       task,
     });
-  }catch (error) {
+  } catch (error) {
     console.error("Lỗi khi tạo task:", error);
     res.status(500).json({ message: error.message });
   }
@@ -212,6 +222,24 @@ const getComments = async (req, res) => {
   }
 };
 
+// search tasks
+const searchTasks = async (req, res) => {
+  try {
+    const userId = req.user?.user_id;
+    if (!userId) return res.status(401).json({ message: "Chưa đăng nhập" });
+
+    // Lấy các tham số từ URL (VD: ?keyword=abc&status=to_do)
+    const filters = req.query;
+
+    const tasks = await taskService.searchTasks(userId, filters);
+
+    res.status(200).json(tasks);
+  } catch (error) {
+    console.error("Lỗi tìm kiếm task:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createTask,
   createTaskAdmin,
@@ -225,4 +253,5 @@ module.exports = {
   getPriorities,
   addComment,
   getComments,
+  searchTasks,
 };

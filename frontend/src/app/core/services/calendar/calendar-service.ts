@@ -6,8 +6,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class CalendarService {
-  apiUrl = 'http://localhost:3000/api/calendar';
-
+  // apiUrl = 'http://localhost:3000/api/calendar';
+  apiUrl = (window as any).__env?.apiUrl ? `${(window as any).__env.apiUrl}/api/calendar` : 'http://localhost:3000/api/calendar';
   constructor(private http: HttpClient) { }
 
   private getAuthHeaders(): HttpHeaders {

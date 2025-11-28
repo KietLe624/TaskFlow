@@ -10,8 +10,9 @@ import { JwtPayload, jwtDecode } from 'jwt-decode';
 })
 export class AuthService {
 
-  private apiAuthUrl = 'http://localhost:3000/api/auth';
+  private apiAuthUrl = (window as any).__env?.apiUrl ? `${(window as any).__env.apiUrl}/api/auth` : 'http://localhost:3000/api/auth';
   private isBrowser: boolean;
+
 
   private currentUserSubject = new BehaviorSubject<MyJwtPayload | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();

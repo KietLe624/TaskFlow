@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Project } from '../../../models/projects';
+import { Project, ProjectMember } from '../../../models/projects';
 import { map } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
-  private apiProjects = `http://localhost:3000/api/project`;
+  // private apiProjects = `http://localhost:3000/api/project`;
+  private apiProjects = (window as any).__env?.apiUrl ? `${(window as any).__env.apiUrl}/api/project` : 'http://localhost:3000/api/project';
 
   constructor(private http: HttpClient) { }
 
@@ -70,10 +71,10 @@ export class ProjectService {
       .pipe(map(res => res.project));
   }
 
-  getProjectMembers(project_id: number): Observable<any[]> {
+  getProjectMembers(project_id: number): Observable<ProjectMember[]> {
     const headers = this.getAuthHeaders();
     return this.http
-      .get<{ message: string; members: any[] }>(`${this.apiProjects}/getProjectMembers/${project_id}`, { headers })
+      .get<{ message: string; members: ProjectMember[] }>(`${this.apiProjects}/getProjectMembers/${project_id}`, { headers })
       .pipe(map(res => res.members || []));
   }
 

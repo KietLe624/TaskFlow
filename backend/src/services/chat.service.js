@@ -1,5 +1,6 @@
 const db = require("../models/index.model");
-const { Conversation, Messages, User, ConversationParticipant, Attachment } = db;
+const { Conversation, Messages, User, ConversationParticipant, Attachment } =
+  db;
 
 const chatService = {
   async createConversation(team_id, team_name, owner_team_id) {
@@ -38,14 +39,14 @@ const chatService = {
       {
         conve_id: conversation.conve_id,
         user_id: owner_id,
-        role: 'owner',
+        role: "owner",
       },
       opts
     );
 
     return conversation;
   },
-  
+
   async sendMessage({ conve_id, sender_id, content }) {
     // 1. Tạo tin nhắn (Giả sử model Message đã sửa lỗi typo sned_id -> sender_id)
     const newMessage = await Messages.create({

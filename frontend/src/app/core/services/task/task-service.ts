@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Tasks } from '../../../models/tasks';
 import { map } from 'rxjs/operators';
@@ -9,7 +9,8 @@ import { map } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class TaskService {
-  private apiTasks = `http://localhost:3000/api/task`;
+  // private apiTasks = `http://localhost:3000/api/task`;
+  private apiTasks = (window as any).__env?.apiUrl ? `${(window as any).__env.apiUrl}/api/task` : 'http://localhost:3000/api/task';
 
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
@@ -82,5 +83,17 @@ export class TaskService {
   getComments(taskId: number): Observable<any[]> {
     const headers = this.getAuthHeaders();
     return this.http.get<any[]>(`${this.apiTasks}/${taskId}/comments`, { headers });
+  }
+
+  searchTasks(filters: any): Observable<any> {
+    let params = new HttpParams();
+    Object.keys(filters).forEach(key => {
+      const value = filters[key];
+      if (value !== null && value !== '' && value !== undefined) {
+        params = params.set(key, value);
+      }
+    });
+    const headers = this.getAuthHeaders();
+    return this.http.get(`${this.apiTasks}/search`, { headers, params });
   }
 }

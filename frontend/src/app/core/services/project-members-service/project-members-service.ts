@@ -7,7 +7,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ProjectMembersService {
-  private apiProjects = `http://localhost:3000/api/project`;
+  // private apiProjects = `http://localhost:3000/api/project`;
+  private apiProjects = (window as any).__env?.apiUrl ? `${(window as any).__env.apiUrl}/api/project` : 'http://localhost:3000/api/project';
 
   constructor(private http: HttpClient) { }
   private getAuthHeaders(): HttpHeaders {

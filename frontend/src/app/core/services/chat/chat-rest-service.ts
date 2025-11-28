@@ -6,8 +6,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ChatRestService {
-  private apiChat = `http://localhost:3000/api/chat`;
-
+  // private apiChat = `http://localhost:3000/api/chat`;
+  private apiChat = (window as any).__env?.apiUrl ? `${(window as any).__env.apiUrl}/api/chat` : 'http://localhost:3000/api/chat';
   constructor(private http: HttpClient) { }
 
   private getAuthHeaders(): HttpHeaders {

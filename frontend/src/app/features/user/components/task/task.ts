@@ -20,6 +20,7 @@ import { TaskDetailComponent } from '../task-detail/task-detail';
   styleUrls: ['./task.css']
 })
 export class TaskComponent implements OnInit {
+  project_id: number | null = null;
   tasks: Tasks[] = [];
   isLoadingTasks: boolean = false;
   isSavingTask = false;
@@ -52,7 +53,6 @@ export class TaskComponent implements OnInit {
     this.connectedTo = this.kanbanColumns.map(c => c.status);
 
   }
-  project_id: number = 0;
   // load tasks
   loadTasks(user_id: number) {
     this.taskService.getTaskByUserId(user_id).subscribe({
@@ -91,7 +91,7 @@ export class TaskComponent implements OnInit {
   loadProjectMembers() {
     const project_id = this.project_id;
 
-    this.projectService.getProjectMembers(project_id).subscribe({
+    this.projectService.getProjectMembers(project_id!).subscribe({
       next: (response: any) => {
         this.allUsers = response;
         console.log("Danh sách thành viên:", this.allUsers);
@@ -329,7 +329,6 @@ export class TaskComponent implements OnInit {
 
   deleteTask(task: Tasks) {
     if (confirm('Xóa task này?')) {
-      // gọi API xóa
       this.openDropdownId = null;
     }
   }

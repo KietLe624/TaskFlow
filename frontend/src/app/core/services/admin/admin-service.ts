@@ -12,7 +12,9 @@ import { map } from 'rxjs/internal/operators/map';
   providedIn: 'root'
 })
 export class AdminService {
-  private adminUrl = 'http://localhost:3000/admin';
+  // private adminUrl = 'http://localhost:3000/admin';
+  private adminUrl = (window as any).__env?.apiUrl ? `${(window as any).__env.apiUrl}/admin` : 'http://localhost:3000/admin';
+
   constructor(private http: HttpClient, private userService: UserService, private projectService: ProjectService, private authService: AuthService) { }
 
 

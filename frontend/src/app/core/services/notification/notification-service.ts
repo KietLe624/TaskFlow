@@ -7,7 +7,8 @@ import { NotificationResponse, NotificationDetail } from '../../../models/notifi
   providedIn: 'root',
 })
 export class NotificationService {
-  private apiNoti = 'http://localhost:3000/api/notifications'; // Đổi port nếu cần
+  // private apiNoti = 'http://localhost:3000/api/notifications'; // Đổi port nếu cần
+  private apiNoti = (window as any).__env?.apiUrl ? `${(window as any).__env.apiUrl}/api/notifications` : 'http://localhost:3000/api/notifications';
 
   constructor(private http: HttpClient) { }
 

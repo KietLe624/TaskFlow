@@ -15,6 +15,7 @@ const {
   getPriorities,
   addComment,
   getComments,
+  searchTasks,
 } = require("../../controllers/task.controller");
 
 // Define routes
@@ -33,5 +34,6 @@ router.get("/getStatus", authenticateToken, getStatus);
 router.get("/getPriorities", authenticateToken, getPriorities);
 router.post("/:task_id/comments", authenticateToken, addComment);
 router.get("/:task_id/comments", authenticateToken, getComments);
+router.get("/search", authenticateToken, searchTasks);
 
 module.exports = router;

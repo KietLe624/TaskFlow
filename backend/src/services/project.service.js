@@ -94,8 +94,6 @@ const createProject = async (projectData, requester) => {
       priority,
       owner_id: formOwnerId, // Lấy ID owner từ form (nếu có)
     } = projectData;
-
-    // 1. Validate cơ bản
     if (!project_name || !start_date || !due_date) {
       throw new Error(
         "Thiếu thông tin bắt buộc: Tên dự án, Ngày bắt đầu hoặc Ngày kết thúc"

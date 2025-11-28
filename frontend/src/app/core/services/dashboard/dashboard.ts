@@ -8,7 +8,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
   providedIn: 'root'
 })
 export class DashboardService {
-  private apiDashboard = 'http://localhost:3000/api/dashboard/dashboard';
+  // private apiDashboard = 'http://localhost:3000/api/dashboard/dashboard';
+  private apiDashboard = (window as any).__env?.apiUrl ? `${(window as any).__env.apiUrl}/api/dashboard/dashboard` : 'http://localhost:3000/api/dashboard/dashboard';
 
   constructor(private http: HttpClient) { }
 

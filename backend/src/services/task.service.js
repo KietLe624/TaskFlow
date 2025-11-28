@@ -113,7 +113,7 @@ const createTask = async (taskData, user_id) => {
       { transaction: t }
     );
 
-    // Xử lý người được giao việc (Assignees)
+    // Xử lý người được giao việc
     if (assignee_ids.length > 0) {
       const records = assignee_ids.map((assigneeId) => ({
         task_id: task.task_id,
@@ -439,6 +439,50 @@ const getCommentsByTaskId = async (taskId) => {
   });
 };
 
+const searchTasks = async (userId, filters) => {
+  const { keyword, projectId, status, priority, dueDateFrom } = filters;
+
+  // 1. Điều kiện cơ bản: Task của user này (hoặc được assign)
+  const whereClause = {
+    [Op.or]: [{ created_by: userId }, { "$assignees.user_id$": userId }],
+  };
+
+  // 2. Lọc theo Keyword (Tên task)
+  if (keyword) {
+    whereClause.task_name = { [Op.like]: `%${keyword}%` };
+  }
+
+  // 3. Lọc theo Project
+  if (projectId && projectId !== "null" && projectId !== 0) {
+    whereClause.project_id = projectId;
+  }
+
+  // 4. Lọc theo Status & Priority
+  if (status) whereClause.status = status;
+  if (priority) whereClause.priority = priority;
+
+  // 5. Lọc theo Ngày (Hạn chót từ ngày X trở đi)
+  if (dueDateFrom) {
+    whereClause.due_date = {
+      [Op.gte]: new Date(dueDateFrom), // gte: Lớn hơn hoặc bằng
+    };
+  }
+
+  return await Task.findAll({
+    where: whereClause,
+    include: [
+      { model: Project, as: "project", attributes: ["name"] },
+      {
+        model: User,
+        as: "assignees",
+        attributes: ["user_id", "username", "email"],
+        through: { attributes: [] }, // Bỏ bảng trung gian
+      },
+    ],
+    order: [["created_at", "DESC"]], // Mới nhất lên đầu
+  });
+};
+
 module.exports = {
   createTask,
   getAllTasks,
@@ -452,4 +496,5 @@ module.exports = {
   processTasks,
   addComment,
   getCommentsByTaskId,
+  searchTasks,
 };

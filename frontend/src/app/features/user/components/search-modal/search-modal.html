@@ -1,0 +1,68 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 animate-fade-in">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl p-6 relative">
+
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-bold text-gray-800 dark:text-white">🔍 Tìm kiếm nâng cao</h2>
+      <button (click)="close()" class="text-gray-500 hover:text-red-500">
+        <i class="fas fa-times text-xl"></i> </button>
+    </div>
+
+    <div class="space-y-4">
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Từ khoá</label>
+        <input type="text" [(ngModel)]="filters.keyword"
+          class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+          placeholder="Nhập tên công việc...">
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Dự án</label>
+          <select [(ngModel)]="filters.projectId" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
+            <option [ngValue]="null">-- Tất cả dự án --</option>
+            <option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Trạng thái</label>
+          <select [(ngModel)]="filters.status" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
+            <option value="">-- Tất cả --</option>
+            <option value="to_do">To Do</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Độ ưu tiên</label>
+          <select [(ngModel)]="filters.priority" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
+            <option value="">-- Tất cả --</option>
+            <option value="high">Cao</option>
+            <option value="medium">Trung bình</option>
+            <option value="low">Thấp</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hạn chót từ ngày</label>
+          <input type="date" [(ngModel)]="filters.dueDateFrom"
+            class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 mt-8">
+      <button (click)="resetFilters()"
+        class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+        Đặt lại
+      </button>
+      <button (click)="onSearch()"
+        class="px-6 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-lg transition">
+        Tìm kiếm
+      </button>
+    </div>
+
+  </div>
+</div>

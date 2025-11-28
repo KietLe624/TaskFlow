@@ -20,7 +20,7 @@ const transporter = nodemailer.createTransport({
 const sendEmail = async (to, subject, html) => {
   try {
     const mailOptions = {
-      from: '"TaskFlow" <no-reply@taskflow.com>',
+      from: `"TaskFlow" <${process.env.MAIL_USER}>`, // địa chỉ sender
       to: to,
       subject: subject,
       html: html,
@@ -28,9 +28,6 @@ const sendEmail = async (to, subject, html) => {
 
     // 2. Gửi mail
     const info = await transporter.sendMail(mailOptions);
-    console.log(
-      `(Mailtrap) Đã "bắt" email gửi tới ${to}. Message ID: ${info.messageId}`
-    );
     return info;
   } catch (error) {
     console.error("Lỗi khi gửi email:", error);

@@ -57,7 +57,7 @@ export class FormTask implements OnInit, OnChanges {
     this.taskForm.get('project_id')?.valueChanges.subscribe(projectId => {
       this.loadProjectMembers(projectId);
     });
-    
+
     if (this.defaultProjectId) {
       this.taskForm.patchValue({ project_id: this.defaultProjectId });
       this.loadProjectMembers(this.defaultProjectId);

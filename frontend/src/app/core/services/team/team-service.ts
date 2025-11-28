@@ -6,7 +6,10 @@ import { AuthService } from '../auth/auth';
 
 @Injectable({ providedIn: 'root' })
 export class TeamService {
-  private apiTeam = `http://localhost:3000/api/team`;
+
+  // private apiTeam = `http://localhost:3000/api/team`;
+  private apiTeam = (window as any).__env?.apiUrl ? `${(window as any).__env.apiUrl}/api/team` : 'http://localhost:3000/api/team';
+
 
   constructor(private http: HttpClient, private authService: AuthService) { }
   private getAuthHeaders(): HttpHeaders {

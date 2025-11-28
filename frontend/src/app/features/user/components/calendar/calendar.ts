@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CalendarOptions, EventInput } from '@fullcalendar/core'; // Import core
 import dayGridPlugin from '@fullcalendar/daygrid'; // Plugin xem theo tháng
+import listPlugin from '@fullcalendar/list'; // Plugin xem theo danh sách
 import interactionPlugin from '@fullcalendar/interaction'; // Plugin tương tác
 import { CalendarService } from '../../../../core/services/calendar/calendar-service';
 import { CommonModule, formatDate } from '@angular/common';
@@ -17,16 +18,16 @@ export class CalendarComponent {
 
   // Cấu hình lịch
   calendarOptions: CalendarOptions = {
-    initialView: 'dayGridMonth',
     height: 'auto',
     aspectRatio: 2,
     expandRows: true,
-    plugins: [dayGridPlugin, interactionPlugin],
+    plugins: [dayGridPlugin, listPlugin, interactionPlugin],
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
       right: 'dayGridMonth,dayGridWeek'
     },
+    initialView: window.innerWidth < 768 ? 'listWeek' : 'dayGridMonth',
     editable: false,
     events: this.calendarEvents, // Bind biến sự kiện vào đây
 
@@ -38,6 +39,14 @@ export class CalendarComponent {
     eventClick: (info) => {
       alert('Bạn vừa bấm vào task: ' + info.event.title);
       // Mở modal chi tiết task ở đây...
+    },
+    handleWindowResize: true,
+
+    // Hàm này chạy khi resize, giúp đổi view động (tuỳ chọn nâng cao)
+    windowResize: (arg) => {
+      if (arg.view.type === 'dayGridMonth' && window.innerWidth < 768) {
+        this.calendarOptions.initialView = 'listWeek'; // Gợi ý đổi view
+      }
     }
   };
 

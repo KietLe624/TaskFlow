@@ -1,9 +1,26 @@
 const authService = require("../services/auth.service");
 const emailService = require("../services/mail.service");
 
+// regex kiểm tra cấu trúc email
+const validateEmail = (email) => {
+  const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+  return regex.test(email);
+};
 // Controller Register
 const register = async (req, res) => {
   try {
+    // kiểm tra dữ liệu đầu vào
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Vui lòng nhập email." });
+    }
+
+    if (!validateEmail(email)) {
+      return res.status(400).json({
+        message:
+          "Email không hợp lệ! Vui lòng kiểm tra lại định dạng (ví dụ: abc@domain.com)",
+      });
+    }
     // Gọi service đăng ký
     const newUser = await authService.registerUser(req.body);
     res.status(201).json({
@@ -53,8 +70,7 @@ const forgotPassword = async (req, res) => {
     const resetToken = await authService.forgotPassword(email);
     // kiểm tra nếu có token thì gửi email
     if (resetToken) {
-      // 3. Tạo link và gửi mail (dùng Mailtrap/Nodemailer)
-      const resetLink = `http://localhost:4200/reset-password?token=${resetToken}`;
+      const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
       await emailService.sendResetPasswordEmail(email, resetLink);
     }
 
@@ -93,7 +109,6 @@ const resetPassword = async (req, res) => {
     return res.status(400).json({ message: error.message }); // Gửi lỗi (ví dụ: "Token hết hạn")
   }
 };
-
 
 module.exports = {
   register,
