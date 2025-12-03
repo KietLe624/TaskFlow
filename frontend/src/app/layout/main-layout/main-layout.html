@@ -5,17 +5,22 @@
   }
 
   <aside
-    class="fixed inset-y-0 left-0 z-30 w-64 bg-white dark:bg-gray-800 transition-transform duration-300 transform md:translate-x-0 md:static md:inset-0 border-r border-gray-200 dark:border-gray-700"
-    [class.-translate-x-full]="!isMobileSidebarOpen" [class.translate-x-0]="isMobileSidebarOpen">
+    class="fixed inset-y-0 left-0 z-30 bg-white dark:bg-gray-800 transition-all duration-300 transform md:translate-x-0 md:static md:inset-0 border-r border-gray-200 dark:border-gray-700"
+    [ngClass]="{
+      'w-68': !isSidebarCollapsed,
+      'w-24': isSidebarCollapsed,
+      '-translate-x-full': !isMobileSidebarOpen,
+      'translate-x-0': isMobileSidebarOpen
+    }">
 
-    <app-side-bar (closeSidebar)="closeMobileSidebar()"></app-side-bar>
+    <app-side-bar (closeSidebar)="closeMobileSidebar()" (collapsedChange)="onSidebarCollapsed($event)">
+    </app-side-bar>
   </aside>
 
-  <div class="flex-1 flex flex-col h-screen">
+  <div class="flex-1 flex flex-col h-screen overflow-hidden"> <app-main-header
+      (toggleSidebar)="toggleMobileSidebar()"></app-main-header>
 
-    <app-main-header (toggleSidebar)="toggleMobileSidebar()"></app-main-header>
-
-    <main class="flex-1 overflow-y-auto bg-gray-50 p-6 dark:text-gray-200 dark:bg-gray-900 ">
+    <main class="flex-1 overflow-y-auto bg-gray-50 p-6 dark:text-gray-200 dark:bg-gray-900">
       <router-outlet></router-outlet>
     </main>
   </div>

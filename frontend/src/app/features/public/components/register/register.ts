@@ -5,6 +5,8 @@ import { Router, RouterModule } from '@angular/router';
 import { Footer } from '../../../../layout/footer/footer';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../../core/services/auth/auth';
+import { ToastrService } from 'ngx-toastr';
+
 
 @Component({
   selector: 'app-register',
@@ -19,12 +21,12 @@ export class RegisterComponent {
   confirmPassword: string = '';
   errorMessage: string = '';
 
-  constructor(private http: HttpClient, private router: Router, private authService: AuthService) { }
+  constructor(private http: HttpClient, private router: Router, private authService: AuthService, private toastr: ToastrService) { }
 
   onRegister() {
     // Registration logic here
     this.errorMessage = '';
-    if(!this.username || !this.email) {
+    if (!this.username || !this.email) {
       this.errorMessage = 'Vui lòng điền đầy đủ thông tin';
       return;
     }
@@ -45,12 +47,13 @@ export class RegisterComponent {
       password: this.password
     }).subscribe({
       next: (res) => {
-        console.log('Đăng ký thành công', res.user);
         this.router.navigate(['/login']).then(() => {
-          console.log('Chuyển hướng đến trang đăng nhập');
+        });
+        this.toastr.success('Đăng ký thành công! Vui lòng đăng nhập.', 'Thành công', {
+          timeOut: 3000,
         });
       },
-      error: (err) => this.errorMessage = err.message
+      error: (err) => this.errorMessage = 'Đăng ký thất bại. Vui lòng thử lại.'
     });
   }
   clearError() {

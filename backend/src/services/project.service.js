@@ -202,17 +202,39 @@ const updateProject = async (projectId, userId, projectData) => {
       await t.rollback();
       return null;
     }
-    // Kiểm tra quyền: chỉ 'owner' mới có quyền cập nhật
+    const requesterUser = await User.findByPk(userId, {
+      include: [
+        {
+          model: db.Role,
+          as: "roles",
+          attributes: ["name"],
+          through: { attributes: [] },
+        },
+      ],
+      transaction: t,
+    });
+
+    const isAdmin =
+      requesterUser &&
+      requesterUser.roles &&
+      requesterUser.roles.some((r) => r.name === "admin");
+
+    // 2. Kiểm tra xem user có phải là Owner của dự án không?
     const userPermission = await ProjectMember.findOne({
       where: { project_id: projectId, user_id: userId },
       attributes: ["role"],
       transaction: t,
     });
 
-    if (!userPermission || userPermission.role !== "owner") {
-      throw new Error("Chỉ 'owner' của dự án mới có quyền xoá.");
-    }
+    const isOwner = userPermission && userPermission.role === "owner";
 
+    if (!isAdmin && !isOwner) {
+      // (Tuỳ chọn) Nếu bạn muốn cho phép thành viên bình thường cập nhật trạng thái (ví dụ: in_progress),
+      // bạn có thể mở rộng logic ở đây. Nhưng với hành động "Hoàn thành dự án", thường chỉ Owner/Admin mới được làm.
+      throw new Error(
+        "Bạn không có quyền cập nhật dự án này (Chỉ Owner hoặc Admin)."
+      );
+    }
     // Đồng bộ thành viên nếu team_id được cập nhật
     const oldTeamId = projectToUpdate.team_id;
     const newTeamId = projectData.team_id;
@@ -226,9 +248,9 @@ const updateProject = async (projectId, userId, projectData) => {
       );
     }
 
-    // Nếu người dùng muốn đổi status thành 'completed'
+    // đổi status thành 'completed'
     if (projectData.status === "completed") {
-      projectData.progressPercent = 100; // Đảm bảo tên trường progressPercent đúng với model của bạn
+      projectData.progressPercent = 100;
 
       // Tự động cập nhật tất cả tasks con thành 'completed'
       await Task.update(
@@ -240,7 +262,6 @@ const updateProject = async (projectId, userId, projectData) => {
       );
     }
 
-    // Cập nhật project với dữ liệu mới (đã bao gồm logic completed ở trên nếu có)
     const updatedProject = await projectToUpdate.update(projectData, {
       transaction: t,
     });
@@ -864,14 +885,9 @@ const inviteMemberToProject = async (
 ) => {
   const t = await sequelize.transaction();
   try {
-    // 1. Validate email
     if (!memberEmail) {
       throw new Error("Vui lòng cung cấp email thành viên.");
     }
-
-    // --- BẮT ĐẦU LOGIC CHECK QUYỀN (ADMIN HOẶC OWNER) ---
-
-    // Bước A: Kiểm tra xem requester có phải là Admin hệ thống không?
     const requesterUser = await User.findByPk(requestingUserId, {
       include: [
         {

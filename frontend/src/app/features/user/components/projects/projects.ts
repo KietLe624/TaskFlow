@@ -17,6 +17,9 @@ import { AuthService } from '../../../../core/services/auth/auth';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { TeamService } from '../../../../core/services/team/team-service';
+import Swal from 'sweetalert2';
+
+
 
 @Component({
   selector: 'app-projects',
@@ -48,6 +51,7 @@ export class ProjectsComponent implements OnInit {
   searchText: string = '';
   filterStatus: string = '';
   filterPriority: string = '';
+  availableStatuses: string[] = ['to_do', 'in_progress', 'on_hold', 'completed', 'over_due'];
 
   constructor(
     private projectService: ProjectService,
@@ -154,26 +158,6 @@ export class ProjectsComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  deleteProject(project_id: number, event: MouseEvent) {
-    event.stopPropagation();
-    console.log('Xoá project:', project_id);
-    try {
-      this.projectService.deleteProject(project_id).subscribe({
-        next: () => {
-          this.projects = this.projects.filter(
-            (p) => p.project_id !== project_id
-          );
-          this.cdr.detectChanges();
-          this.toastr.success('Xoá dự án thành công!', this.projects.find(p => p.project_id === project_id)?.project_name);
-        },
-      });
-    } catch (error) {
-      console.error(' Lỗi khi xoá project:', error);
-      this.toastr.error('Xoá dự án thất bại!');
-    }
-    this.openDropdownId = null;
-  }
-
   toggleLayout(): void {
     this.isGrid = !this.isGrid;
     this.cdr.detectChanges();
@@ -209,66 +193,243 @@ export class ProjectsComponent implements OnInit {
     console.log(' Đóng modal chi tiết project');
     this.cdr.detectChanges();
   }
-  // ========= Thay đổi trạng thái project ==========
-
-  isChangeStatusModalOpen = false;
-  projectToChangeStatus: Project | null = null;
-  newSelectedStatus: string = '';
-  availableStatuses: string[] = ['to_do', 'in_progress', 'on_hold', 'over_due'];
-
+  // thay đỏi trạng thái
   changeStatus(id: number, event: MouseEvent) {
     event.stopPropagation();
-    console.log(' Mở modal thay đổi trạng thái cho:', id);
-    this.openDropdownId = null; // Đóng dropdown
+    this.openDropdownId = null;
+
+    // Tìm project trong danh sách
     const project = this.projects.find((p) => p.project_id === id);
 
-    if (project) {
-      this.projectToChangeStatus = project;
-      // Set trạng thái đang chọn là trạng thái hiện tại
-      this.newSelectedStatus = project.status;
-      this.isChangeStatusModalOpen = true; // Mở modal
-      this.cdr.detectChanges();
-    } else {
-      console.error('Không tìm thấy project để thay đổi trạng thái!');
-    }
-  }
-
-  cancelChangeStatus() {
-    this.isChangeStatusModalOpen = false;
-    this.projectToChangeStatus = null;
-    this.newSelectedStatus = '';
-    this.cdr.detectChanges();
-  }
-
-  confirmChangeStatus() {
-    if (!this.projectToChangeStatus || !this.newSelectedStatus) return;
-    const project_id = this.projectToChangeStatus.project_id;
-    if (this.projectToChangeStatus.status === this.newSelectedStatus) {
-      this.cancelChangeStatus();
+    if (!project) {
+      this.toastr.error('Không tìm thấy dự án!');
       return;
     }
 
-    const updatedData = { status: this.newSelectedStatus };
-    console.log(`Đang cập nhật project ${project_id} thành:`, updatedData);
+    // Danh sách trạng thái
+    const statusOptions = [
+      { value: 'to_do', label: 'To Do', icon: 'fa-solid fa-list-check', color: 'text-gray-600', bg: 'bg-gray-50', border: 'peer-checked:border-gray-500 peer-checked:bg-gray-50' },
+      { value: 'in_progress', label: 'In Progress', icon: 'fa-solid fa-spinner fa-spin', color: 'text-blue-600', bg: 'bg-blue-50', border: 'peer-checked:border-blue-500 peer-checked:bg-blue-50' },
+      { value: 'on_hold', label: 'On Hold', icon: 'fa-solid fa-pause', color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'peer-checked:border-yellow-500 peer-checked:bg-yellow-50' },
+      { value: 'completed', label: 'Completed', icon: 'fa-solid fa-circle-check', color: 'text-green-600', bg: 'bg-green-50', border: 'peer-checked:border-green-500 peer-checked:bg-green-50' }
+    ];
 
-    this.projectService.updateProject(project_id, updatedData).subscribe({
-      next: (updatedProject) => {
-        const index = this.projects.findIndex(
-          (p) => p.project_id === project_id
-        );
-        if (index !== -1) {
-          this.projects[index] = { ...this.projects[index], ...updatedProject };
-          this.projects = [...this.projects];
-          this.cdr.detectChanges();
+    // Tạo HTML
+    const inputOptionsHtml = statusOptions.map(opt => `
+      <div class="relative">
+        <input type="radio" name="swal-status" id="status-${opt.value}" value="${opt.value}" class="peer hidden" ${project.status === opt.value ? 'checked' : ''}>
+        <label for="status-${opt.value}" class="flex items-center justify-between p-3 mb-2 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-all ${opt.border}">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 flex items-center justify-center rounded-full ${opt.bg} ${opt.color}">
+              <i class="${opt.icon} text-sm"></i>
+            </div>
+            <div class="text-left">
+              <div class="font-semibold text-sm text-gray-700">${opt.label}</div>
+            </div>
+          </div>
+          <div class="hidden peer-checked:block text-blue-600">
+            <i class="fa-solid fa-circle-check text-lg"></i>
+          </div>
+        </label>
+      </div>
+    `).join('');
+
+    Swal.fire({
+      title: `<span class="text-lg font-bold text-gray-800">Cập nhật trạng thái</span>`,
+      html: `
+        <p class="text-sm text-gray-500 mb-3">Dự án: <b>${project.project_name}</b></p>
+        <div class="flex flex-col gap-1 text-left">
+          ${inputOptionsHtml}
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Lưu',
+      cancelButtonText: 'Huỷ',
+      buttonsStyling: false,
+      customClass: {
+        popup: 'rounded-2xl shadow-xl w-full max-w-md',
+        confirmButton: 'px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors ml-2',
+        cancelButton: 'px-5 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors'
+      },
+      focusConfirm: false,
+      preConfirm: () => {
+        const selected = (document.querySelector('input[name="swal-status"]:checked') as HTMLInputElement)?.value;
+        if (!selected) {
+          Swal.showValidationMessage('Vui lòng chọn một trạng thái!');
+          return false;
         }
+        if (selected === project.status) {
+          Swal.showValidationMessage('Vui lòng chọn trạng thái khác!');
+          return false;
+        }
+        return selected;
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const newStatus = result.value;
+        const updatedData = { status: newStatus };
 
-        this.cancelChangeStatus();
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Lỗi khi thay đổi trạng thái:', err);
-        this.cancelChangeStatus();
-      },
+        this.projectService.updateProject(id, updatedData).subscribe({
+          next: (updatedProject) => {
+            const idxAll = this.allProjects.findIndex(p => p.project_id === id);
+            if (idxAll !== -1) {
+              this.allProjects[idxAll] = { ...this.allProjects[idxAll], ...updatedProject };
+            }
+
+            const idx = this.projects.findIndex(p => p.project_id === id);
+            if (idx !== -1) { // idx: chỉ số trong mảng đã lọc
+              this.projects[idx] = { ...this.projects[idx], ...updatedProject };
+            } else {
+              this.applyFilter();
+            }
+
+            // Tạo bản sao để kích hoạt thay đổi
+            this.allProjects = [...this.allProjects];
+            this.projects = [...this.projects];
+
+            if (this.selectedProjectForDetails?.project_id === id) {
+              this.selectedProjectForDetails = { ...this.selectedProjectForDetails, ...updatedProject };
+            }
+            // ép angular cập nhật giao diện
+            this.cdr.markForCheck();
+            this.cdr.detectChanges();
+
+            Swal.fire({
+              title: 'Thành công!',
+              text: `Đã chuyển sang: ${newStatus}`,
+              icon: 'success',
+              timer: 1500,
+              showConfirmButton: false,
+              customClass: { popup: 'rounded-2xl' }
+            });
+          },
+          error: (err) => {
+            console.error(err);
+            this.toastr.error('Lỗi cập nhật trạng thái.');
+          }
+        });
+      }
+    });
+  }
+
+  // đánh dấu hoàn thành
+  markAsCompleted(id: number, event: MouseEvent) {
+    event.stopPropagation();
+    this.openDropdownId = null;
+
+    const project = this.projects.find((p) => p.project_id === id);
+
+    if (!project) {
+      this.toastr.error('Không tìm thấy dự án!');
+      return;
+    }
+
+    Swal.fire({
+      title: `<span class="text-lg font-bold text-gray-800">Hoàn thành dự án?</span>`,
+      html: `
+        <div class="text-sm text-gray-600">
+          Bạn muốn đánh dấu <b>"${project.project_name}"</b> là hoàn thành?
+          <br><span class="text-xs text-gray-400 mt-1 block">Tiến độ sẽ được cập nhật lên 100% 🚀</span>
+        </div>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Xác nhận',
+      cancelButtonText: 'Để sau',
+      buttonsStyling: false,
+      customClass: {
+        popup: 'rounded-2xl shadow-xl w-full max-w-sm',
+        confirmButton: 'px-5 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors ml-2',
+        cancelButton: 'px-5 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const updatedData = { status: 'completed' };
+
+        this.projectService.updateProject(id, updatedData).subscribe({
+          next: (updatedProject) => {
+            const index = this.projects.findIndex(p => p.project_id === id);
+            if (index !== -1) {
+              this.projects[index] = {
+                ...this.projects[index],
+                ...updatedProject,
+                status: 'completed',
+                progressPercent: 100
+              };
+              this.projects = [...this.projects];
+            }
+
+            Swal.fire({
+              title: 'Tuyệt vời!',
+              text: 'Dự án đã về đích thành công!',
+              icon: 'success',
+              timer: 2000,
+              showConfirmButton: false,
+              customClass: { popup: 'rounded-2xl' }
+            });
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            console.error(err);
+            this.toastr.error('Có lỗi xảy ra.');
+          }
+        });
+      }
+    });
+  }
+
+  // xoá dự án
+  deleteProject(project_id: number, event: MouseEvent) {
+    event.stopPropagation();
+    this.openDropdownId = null;
+
+    const project = this.projects.find(p => p.project_id === project_id);
+    const projectName = project ? project.project_name : 'dự án này';
+
+    Swal.fire({
+      title: `<span class="text-lg font-bold text-gray-800">Xoá dự án?</span>`,
+      html: `
+        <div class="text-sm text-gray-600">
+          Bạn sắp xoá <b>"${projectName}"</b>.
+          <br><span class="text-xs text-red-500 mt-1 block">Hành động này không thể hoàn tác!</span>
+        </div>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Xoá ngay',
+      cancelButtonText: 'Huỷ',
+      buttonsStyling: false,
+      customClass: {
+        popup: 'rounded-2xl shadow-xl w-full max-w-sm',
+        confirmButton: 'px-5 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors ml-2',
+        cancelButton: 'px-5 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.projectService.deleteProject(project_id).subscribe({
+          next: () => {
+            this.projects = this.projects.filter(p => p.project_id !== project_id);
+            // Reset modal edit nếu đang mở đúng project đó
+            if (this.selectedProject && this.selectedProject.project_id === project_id) {
+              this.selectedProject = null;
+              this.isModalOpen = false;
+            }
+
+            Swal.fire({
+              title: 'Đã xoá!',
+              icon: 'success',
+              timer: 1500,
+              showConfirmButton: false,
+              customClass: { popup: 'rounded-2xl' }
+            });
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            console.error(err);
+            this.toastr.error('Lỗi khi xoá dự án.');
+          }
+        });
+      }
     });
   }
 
@@ -352,6 +513,7 @@ export class ProjectsComponent implements OnInit {
         return 'gray';
     }
   }
+
   // Màu thanh progress (gradient khi tiến độ cao)
   progressBarClass(progress?: number) {
     const p = progress ?? 0;
@@ -359,67 +521,6 @@ export class ProjectsComponent implements OnInit {
     if (p >= 60) return 'bg-gradient-to-r from-blue-500 to-indigo-500';
     if (p >= 30) return 'bg-blue-500';
     return 'bg-gray-400 dark:bg-gray-500';
-  }
-
-  // ========== Đánh dấu hoàn thành project ==========
-  isCompleteModalOpen = false;
-  projectToComplete: Project | null = null;
-
-  markAsCompleted(id: number, event: MouseEvent) {
-    event.stopPropagation();
-    this.openDropdownId = null; // Đóng dropdown
-
-    // Tìm project để hiển thị tên trong modal
-    const project = this.projects.find((p) => p.project_id === id);
-
-    if (project) {
-      this.projectToComplete = project;
-      this.isCompleteModalOpen = true; // Mở modal
-      this.cdr.detectChanges(); // Cập nhật UI
-    } else {
-      console.error('Không tìm thấy project để hoàn thành!');
-    }
-  }
-
-  confirmComplete() {
-    if (!this.projectToComplete) return; // Kiểm tra an toàn
-
-    const project_id = this.projectToComplete.project_id;
-    const updatedData = { status: 'completed' };
-
-    this.projectService.updateProject(project_id, updatedData).subscribe({
-      next: (updatedProject) => {
-        const index = this.projects.findIndex(
-          (p) => p.project_id === project_id
-        );
-
-        if (index !== -1) {
-          // Lấy project CŨ
-          const oldProject = this.projects[index];
-          // Gộp data (giữ nguyên tên, client...) và CẬP NHẬT TƯỜNG MINH
-          this.projects[index] = {
-            ...oldProject,
-            ...updatedProject,
-            status: 'completed', // Đảm bảo status là completed
-            progressPercent: 100, // Đảm bảo tiến độ là 100%
-          };
-
-          this.projects = [...this.projects];
-          this.cdr.detectChanges();
-        }
-
-        this.cancelComplete(); // Đóng modal sau khi thành công
-      },
-      error: (err) => {
-        console.error('Lỗi khi đánh dấu hoàn thành:', err);
-        this.cancelComplete(); // Đóng modal khi lỗi
-      },
-    });
-  }
-
-  cancelComplete() {
-    this.isCompleteModalOpen = false;
-    this.projectToComplete = null;
   }
 
   // lọc project

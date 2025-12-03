@@ -28,6 +28,20 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.apiAuthUrl}/login`, data);
   }
 
+  // Tự động đăng nhập nếu có token trong localStorage
+  private userSubject = new BehaviorSubject<any>(null);
+  public user$ = this.userSubject.asObservable();
+  autoLogin() {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user_info');
+
+    if (token && userStr) {
+      const user = JSON.parse(userStr);
+      this.userSubject.next(user);
+    } else {
+      this.userSubject.next(null);
+    }
+  }
   register(data: RegisterRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiAuthUrl}/register`, data);
   }

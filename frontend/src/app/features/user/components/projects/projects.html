@@ -381,7 +381,7 @@
   @if (isModalOpen) {
   <div class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
     <div class="w-full max-w-3xl">
-      <app-create-project [isEditMode]="isEditMode" [selectedProject]="selectedProject"
+      <app-create-project [isEditMode]="isEditMode" [selectedProject]="selectedProject ? [selectedProject] : null"
         (closeModal)="isModalOpen = false" (projectSaved)="onProjectSaved($event)" [teams]="teams"
         (projectSaved)="onProjectSaved($event)">
       </app-create-project>
@@ -394,121 +394,5 @@
   <div class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
     <app-project-detail [project]="selectedProjectForDetails" (closed)="closeDetailsModal()">
     </app-project-detail>
-  </div>
-  }
-
-  <!-- modal confirm complete -->
-  @if (isCompleteModalOpen && projectToComplete) {
-  <div class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50" (click)="cancelComplete()">
-
-    <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-xl" (click)="$event.stopPropagation()">
-      <div class="p-4 border-b dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-          <i class="fa-solid fa-check-circle text-green-500"></i>
-          Xác nhận hoàn thành
-        </h3>
-      </div>
-
-      <div class="p-4">
-        <p class="text-gray-700 dark:text-gray-300">
-          Bạn có chắc chắn muốn đánh dấu dự án:
-          <strong class="font-bold text-gray-900 dark:text-white">{{ projectToComplete.project_name }}</strong>
-          là đã hoàn thành?
-        </p>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-          Hành động này sẽ cập nhật trạng thái và tiến độ của dự án thành 100%.
-        </p>
-      </div>
-
-      <div
-        class="flex justify-end space-x-3 p-4 bg-gray-50 dark:bg-gray-800 border-t dark:border-gray-700 rounded-b-lg">
-        <button type="button" (click)="cancelComplete()" class="px-5 py-2 rounded-lg font-medium text-gray-600 dark:text-gray-300
-                       hover:bg-gray-100 dark:hover:bg-gray-700
-                       transition-colors duration-150 ease-in-out
-                       focus:outline-none focus:ring-2 focus:ring-gray-400">
-          Thoát
-        </button>
-
-        <button type="button" (click)="confirmComplete()" class="px-5 py-2 text-white bg-green-600 rounded-lg
-                       font-semibold text-center transition-all duration-200 ease-in-out
-                       hover:bg-green-700
-                       focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50
-                       active:scale-95">
-          Xác nhận
-        </button>
-      </div>
-
-    </div>
-  </div>
-  }
-  <!-- modal change status -->
-  @if (isChangeStatusModalOpen && projectToChangeStatus) {
-  <div class="fixed inset-0 flex justify-center items-center z-50">
-
-    <!-- Modal -->
-    <div
-      class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700">
-
-      <!-- Header -->
-      <div class="p-5 border-b dark:border-gray-700 flex items-center justify-between">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-          <i class="fa-solid fa-arrows-rotate text-yellow-500"></i>
-          Thay đổi trạng thái
-        </h3>
-        <button (click)="cancelChangeStatus()" class="text-gray-400 hover:text-red-500 transition-colors duration-150">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-
-      <!-- Nội dung -->
-      <div class="p-6 space-y-4">
-        <p class="text-sm text-gray-600 dark:text-gray-300">
-          Dự án: <strong class="dark:text-gray-100">{{ projectToChangeStatus.project_name }}</strong>
-        </p>
-
-        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Chọn trạng thái mới:
-        </p>
-
-        <!-- Radio group -->
-        <div class="grid grid-cols-1 sm:grid-cols-1 gap-3">
-          @for (status of availableStatuses; track status) {
-          <label class="flex items-start justify-start gap-2 border rounded-xl py-2 px-3 cursor-pointer select-none text-sm font-medium transition-all duration-200
-                     hover:scale-[1.02]" [ngClass]="{
-                'bg-green-100 border-green-500 text-green-700 dark:bg-green-900/30': newSelectedStatus === 'completed' && newSelectedStatus === status,
-                'bg-blue-100 border-blue-500 text-blue-700 dark:bg-blue-900/30': newSelectedStatus === 'in_progress' && newSelectedStatus === status,
-                'bg-yellow-100 border-yellow-500 text-yellow-700 dark:bg-yellow-900/30': newSelectedStatus === 'on_hold' && newSelectedStatus === status,
-                'bg-gray-100 border-gray-400 text-gray-700 dark:bg-gray-700/40': newSelectedStatus === 'to_do' && newSelectedStatus === status,
-                'bg-red-100 border-red-500 text-red-700 dark:bg-red-900/30': newSelectedStatus === 'over_due' && newSelectedStatus === status,
-                'border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700':
-                  newSelectedStatus !== status
-              }">
-
-            <input type="radio" name="statusSelect" class="hidden" [value]="status" [(ngModel)]="newSelectedStatus">
-
-            <span>{{ status | projectStatus }}</span>
-
-            @if (newSelectedStatus === status) {
-            <i class="fa-solid fa-check text-sm"></i>
-            }
-          </label>
-          }
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="flex justify-end gap-3 p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-2xl">
-        <button type="button" (click)="cancelChangeStatus()" class="px-5 py-2 rounded-lg text-gray-600 dark:text-gray-300
-                       hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-          Thoát
-        </button>
-
-        <button type="button" (click)="confirmChangeStatus()" class="px-5 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700
-                       active:scale-95 font-semibold transition-all">
-          Cập nhật
-        </button>
-      </div>
-
-    </div>
   </div>
   }

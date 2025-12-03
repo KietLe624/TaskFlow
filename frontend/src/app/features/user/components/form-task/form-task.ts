@@ -40,7 +40,7 @@ export class FormTask implements OnInit, OnChanges {
   isSubmitting = false;
 
   taskForm = this.fb.group({
-    project_id: this.fb.control<number | null>(null, Validators.required),
+    project_id: this.fb.control<number | null>(null),
     task_name: this.fb.control<string | null>(null, [Validators.required, Validators.maxLength(255)]),
     parent_id: this.fb.control<number | null>(null),
     description: [''],
@@ -115,7 +115,13 @@ export class FormTask implements OnInit, OnChanges {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
 
+  // getter cho form controls
+  get f() {
+    return this.taskForm.controls;
+  }
+
   submitTaskForm() {
+    // nếu invalid -> show lỗi ngay
     if (this.taskForm.invalid) {
       this.taskForm.markAllAsTouched();
       return;

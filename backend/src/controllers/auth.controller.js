@@ -76,14 +76,14 @@ const forgotPassword = async (req, res) => {
 
     return res.status(200).json({
       message:
-        "Nếu email của bạn tồn tại, một liên kết đặt lại mật khẩu đã được gửi.",
+        "Liên kết đặt lại mật khẩu đã được gửi.",
     });
   } catch (error) {
     console.error("Lỗi yêu cầu đặt lại mật khẩu:", error);
     // Vẫn trả về 200 OK
     return res.status(200).json({
       message:
-        "Nếu email của bạn tồn tại, một liên kết đặt lại mật khẩu đã được gửi.",
+        "Liên kết đặt lại mật khẩu đã được gửi.",
     });
   }
 };

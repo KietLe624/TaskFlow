@@ -47,26 +47,20 @@ const createProject = async (req, res) => {
 // Update project
 const updateProject = async (req, res) => {
   try {
-    //kiểm tra thông tin
-    const userId = req.user?.user_id; // Lấy userId từ token
-    const projectData = req.body;
-    if (!userId) {
-      return res.status(401).json({ error: "Chưa đăng nhập" });
-    }
+    const userId = req.user?.user_id;
+    if (!userId) return res.status(401).json({ message: "Chưa đăng nhập" });
 
     const projectId = req.params.project_id;
-    if (!projectId) {
-      return res.status(400).json({ error: "Thiếu project_id" });
-    }
+    const projectData = req.body;
 
-    //gọi service
     const updatedProject = await projectService.updateProject(
       projectId,
       userId,
       projectData
     );
+
     if (!updatedProject) {
-      return res.status(404).json({ error: "Dự án không tồn tại" });
+      return res.status(404).json({ message: "Không tìm thấy dự án" });
     }
 
     res.status(200).json({
@@ -75,10 +69,7 @@ const updateProject = async (req, res) => {
     });
   } catch (error) {
     console.error("Lỗi cập nhật dự án:", error);
-    if (error.message.includes("không có quyền")) {
-      return res.status(403).json({ error: error.message });
-    }
-    return res.status(500).json({ error: "Lỗi server" });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -325,22 +316,13 @@ const getProjectMembers = async (req, res) => {
 // };
 const inviteMemberToProject = async (req, res) => {
   try {
-    // 1. Lấy ID dự án (thường là từ URL params hoặc Body)
-    const { project_id } = req.params; // Ví dụ: /projects/:project_id/invite
-
-    // 2. Lấy Email người được mời (từ Body)
-    const { email } = req.body;
-
-    // 3. Lấy ID người đang thực hiện hành động (Admin hoặc Owner)
-    // Đảm bảo middleware auth đã gán user vào req.user
+    const { project_id } = req.params;
+    const { memberEmail } = req.body;
     const requestingUserId = req.user.user_id;
-
-    // --- GỌI SERVICE ---
-    // Service tự lo việc check ông requestingUserId này là Admin hay Owner
     const result = await projectService.inviteMemberToProject(
       project_id,
       requestingUserId,
-      email
+      memberEmail
     );
 
     return res.status(200).json({
@@ -348,8 +330,7 @@ const inviteMemberToProject = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    console.error("Controller Error:", error);
-    // Trả về lỗi (400, 403, 404...) tùy vào error.message hoặc setup chung
+    console.error("Lỗi mời thành viên:", error);
     return res.status(400).json({ message: error.message });
   }
 };

@@ -28,7 +28,7 @@ services:
       DB_DIALECT: ${DB_DIALECT}
       JWT_SECRET: ${JWT_SECRET}
       # QUAN TRỌNG: Thay localhost bằng IP Public của EC2 hoặc Domain thật
-      CORS_ORIGIN: http://47.128.74.10
+      CORS_ORIGIN: ${CORS_ORIGIN}
       PORT: 3000
     depends_on:
       - db

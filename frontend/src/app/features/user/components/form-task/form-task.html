@@ -5,14 +5,16 @@
       {{ isEditMode ? 'Chỉnh sửa công việc' : 'Thêm công việc mới' }}
     </h2>
   </div>
-
   <form [formGroup]="taskForm" (ngSubmit)="submitTaskForm()" class="p-6 space-y-7">
 
     <!-- TIÊU ĐỀ + TÊN TASK -->
     <div class="space-y-3">
       <input type="text" formControlName="task_name" placeholder="Tên công việc..." class="w-full text-2xl font-bold bg-transparent border-none outline-none placeholder:text-gray-400
                   text-gray-900 dark:text-white" />
-
+      <div *ngIf="f.task_name.invalid && (f.task_name.touched || isSubmitting)" class="mt-1 text-sm text-red-600">
+        <div *ngIf="f.task_name.errors?.['required']">Tên công việc là bắt buộc.</div>
+        <div *ngIf="f.task_name.errors?.['maxlength']">Tên không được vượt quá 255 ký tự.</div>
+      </div>
       <textarea rows="2" formControlName="description" placeholder="Thêm mô tả (tùy chọn)..." class="w-full text-sm resize-none bg-transparent border-none outline-none placeholder:text-gray-400
                      text-gray-600 dark:text-gray-400"></textarea>
     </div>
@@ -25,6 +27,7 @@
       <select formControlName="project_id" class="w-full px-4 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700
                    bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/30">
         @for (p of projects; track p.project_id) {
+        <option [value]="null" disabled selected *ngIf="!taskForm.get('project_id')?.value"></option>
         <option [value]="p.project_id">{{ p.project_name }}</option>
         }
       </select>
@@ -61,6 +64,9 @@
           <option [value]="s">{{ s | projectStatus }}</option>
           }
         </select>
+        <div *ngIf="f.status.invalid && (f.status.touched || isSubmitting)" class="mt-1 text-sm text-red-600">
+          <div *ngIf="f.status.errors?.['required']">Vui lòng chọn trạng thái.</div>
+        </div>
       </div>
 
       <div class="space-y-2">
@@ -73,6 +79,9 @@
           <option [value]="p">{{ p | projectPriority }}</option>
           }
         </select>
+        <div *ngIf="f.priority.invalid && (f.priority.touched || isSubmitting)" class="mt-1 text-sm text-red-600">
+          <div *ngIf="f.priority.errors?.['required']">Vui lòng chọn mức ưu tiên.</div>
+        </div>
       </div>
     </div>
 

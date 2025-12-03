@@ -6,6 +6,7 @@ import { Project } from '../../models/projects';
 import { ProjectService } from '../../core/services/project/project-service';
 import { ProjectStatusPipe } from '../../pipes/project-status-pipe';
 
+
 @Component({
   selector: 'app-side-bar',
   imports: [RouterModule, CommonModule, ProjectStatusPipe],
@@ -14,11 +15,14 @@ import { ProjectStatusPipe } from '../../pipes/project-status-pipe';
 })
 export class SideBarComponent implements OnInit {
 
+  @Output() searchClicked = new EventEmitter<void>();
+  @Output() collapsedChange = new EventEmitter<boolean>();
   constructor(private cdr: ChangeDetectorRef, private projectService: ProjectService) { }
 
   ngOnInit(): void {
     const saved = localStorage.getItem('sidebarCollapsed');
     this.isCollapsed = saved === 'true';
+    this.collapsedChange.emit(this.isCollapsed);
     this.loadRecentProjects();
   }
 
@@ -29,10 +33,11 @@ export class SideBarComponent implements OnInit {
   toggleSidebar() {
     this.isCollapsed = !this.isCollapsed;
     localStorage.setItem('sidebarCollapsed', this.isCollapsed.toString());
+    this.collapsedChange.emit(this.isCollapsed);
   }
+
   @Input() isOpen = false;
 
-  // Báo lại cho cha khi muốn đóng (ví dụ click vào overlay)
   @Output() closeSidebar = new EventEmitter<void>();
 
   close() {
@@ -70,4 +75,5 @@ export class SideBarComponent implements OnInit {
         return 'bg-gray-200 text-gray-800';
     }
   }
+
 }

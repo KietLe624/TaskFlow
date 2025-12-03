@@ -46,7 +46,7 @@
         <div class="relative">
           <select formControlName="team_id"
             class="w-full px-4 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 appearance-none cursor-pointer transition-all">
-            <option [ngValue]="null">-- Chọn Team --</option>
+            <option [ngValue]="null"></option>
             @for (team of teams; track team.team_id) {
             <option [value]="team.team_id">{{ team.team_name }}</option>
             }

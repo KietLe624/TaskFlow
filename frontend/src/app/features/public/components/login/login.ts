@@ -31,20 +31,14 @@ export class LoginComponent {
         localStorage.setItem('token', res.token);
         this.authService.setToken(res.token);
 
-
-        console.log('Đăng nhập thành công', res.user);
-        console.log('Token đã lưu vào localStorage', res.token);
-
         if (this.authService.isAdmin()) {
-          this.router.navigate(['/admin/dashboard']); // hoặc ['/admin/dashboard']
-          console.log('Bạn là Admin → chuyển đến trang Admin');
+          this.router.navigate(['/admin/dashboard']);
         } else {
           this.router.navigate(['app/dashboard']);
-          console.log('Bạn là User → chuyển đến dashboard user');
         }
       },
       error: (err) => {
-        this.errorMessage = err.error.message || 'Đăng nhập thất bại. Vui lòng thử lại.';
+        this.errorMessage = 'Đăng nhập thất bại. Vui lòng thử lại.';
       },
     });
 

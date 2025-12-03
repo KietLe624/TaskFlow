@@ -90,11 +90,9 @@ const createTask = async (taskData, user_id) => {
       start_date,
       due_date,
       assignee_ids = [],
-      created_by: overrideCreatorId, // 👇 Lấy thêm cái này từ data gửi lên
+      created_by: overrideCreatorId,
     } = taskData;
 
-    // --- LOGIC CHỌN NGƯỜI TẠO ---
-    // Nếu có overrideCreatorId (do Admin gửi) thì dùng, không thì dùng người đang login (user_id)
     const finalCreatorId = overrideCreatorId || user_id;
 
     // Tạo task
@@ -442,7 +440,6 @@ const getCommentsByTaskId = async (taskId) => {
 const searchTasks = async (userId, filters) => {
   const { keyword, projectId, status, priority, dueDateFrom } = filters;
 
-  // 1. Điều kiện cơ bản: Task của user này (hoặc được assign)
   const whereClause = {
     [Op.or]: [{ created_by: userId }, { "$assignees.user_id$": userId }],
   };
@@ -471,7 +468,7 @@ const searchTasks = async (userId, filters) => {
   return await Task.findAll({
     where: whereClause,
     include: [
-      { model: Project, as: "project", attributes: ["name"] },
+      { model: Project, as: "project", attributes: ["project_name"] },
       {
         model: User,
         as: "assignees",

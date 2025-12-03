@@ -1,8 +1,7 @@
 <div [ngClass]="{
     'w-full p-6 space-y-8': !isCollapsed,
     'w-24 p-4 space-y-6': isCollapsed
-  }"
-  class="h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
+  }" class="h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
          flex flex-col transition-all duration-300 ease-in-out scrollbar-hide">
 
   <header [ngClass]="{'justify-between': isCollapsed}" class="flex items-center justify-between space-x-3">
@@ -30,8 +29,7 @@
 
   <nav class="flex flex-col space-y-2 mt-4">
     <a routerLink="/app/dashboard" routerLinkActive="text-primary-600 border-r-2 border-primary-500 dark:bg-gray-800"
-      [routerLinkActiveOptions]="{ exact: true }"
-      (click)="close()"
+      [routerLinkActiveOptions]="{ exact: true }" (click)="close()"
       class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out cursor-pointer">
       <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-house w-5 text-center flex-shrink-0"></i>
       <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Tổng quan</span>
@@ -45,27 +43,17 @@
     </a>
 
     <a routerLink="/app/tasks"
-      routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800"
-      (click)="close()"
+      routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800" (click)="close()"
       class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out cursor-pointer">
       <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-list w-5 text-center flex-shrink-0"></i>
       <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Công việc</span>
     </a>
 
     <a routerLink="/app/calendar"
-      routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800"
-      (click)="close()"
+      routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800" (click)="close()"
       class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out cursor-pointer">
       <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-calendar w-5 text-center flex-shrink-0"></i>
       <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Lịch</span>
-    </a>
-
-    <a routerLink="/app/search"
-      routerLinkActive="border-r-2 border-primary-500 text-primary-600 bg-primary-50 dark:bg-gray-800"
-      (click)="close()"
-      class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-primary-500 dark:hover:bg-gray-800 dark:hover:text-primary-400 rounded-l-lg transition-colors duration-200 ease-in-out cursor-pointer">
-      <i [ngClass]="{'mx-auto text-lg': isCollapsed}" class="fa-solid fa-search w-5 text-center flex-shrink-0"></i>
-      <span [ngClass]="{'hidden': isCollapsed}" class="whitespace-nowrap">Tìm kiếm</span>
     </a>
   </nav>
 

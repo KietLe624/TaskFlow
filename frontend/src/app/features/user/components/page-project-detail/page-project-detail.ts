@@ -14,6 +14,8 @@ import { UserAvatarComponent } from '../user-avatar/user-avatar';
 import { ChatboxComponent } from '../chatbox/chatbox';
 import { InviteMemberComponent } from '../invite-member/invite-member';
 import { ProjectAnalyticsModal } from '../project-analytics-modal/project-analytics-modal';
+import Swal from 'sweetalert2';
+
 
 @Component({
   selector: 'app-page-project-detail',
@@ -234,7 +236,7 @@ export class PageProjectDetailComponent implements OnInit {
     return Math.round(progress);
   }
 
-  // ===============================
+  // members
 
   members: ProjectMember[] = [];
   isLoadingMembers = false;
@@ -292,20 +294,40 @@ export class PageProjectDetailComponent implements OnInit {
         }
       });
   }
+
+  // xoá member
   removeMember(member: any) {
-    this.projectMembersService.removeMember(this.projectDetail.project_id, member.user_id)
-      .subscribe({
-        next: () => {
-          this.toastr.success(`Đã xóa thành viên khỏi dự án`);
-          this.loadProjectMembers(this.projectDetail.project_id); // refresh list
-        },
-        error: (err) => {
-          this.toastr.error(err.error.message || 'Xóa thành viên thất bại');
-        }
-      });
+    Swal.fire({
+      title: 'Xoá thành viên?',
+      html: `Bạn có chắc muốn mời <b>${member.username || member.email}</b> ra khỏi dự án này không?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33', // Màu đỏ báo hiệu nguy hiểm
+      cancelButtonColor: '#3085d6', // Màu xanh
+      confirmButtonText: 'Xác nhận',
+      cancelButtonText: 'Huỷ'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.projectMembersService.removeMember(this.projectDetail.project_id, member.user_id)
+          .subscribe({
+            next: () => {
+              this.toastr.success(`Đã xóa ${member.username} khỏi dự án`);
+              this.loadProjectMembers(this.projectDetail.project_id);
+              Swal.fire({
+                title: 'Đã xoá!',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+              });
+            },
+            error: (err) => {
+              this.toastr.error(err.error.message || 'Xóa thành viên thất bại');
+            }
+          });
+      }
+    });
   }
   // dropdown
-  // Thêm biến này vào class component
   dropdownPosition: 'up' | 'down' = 'down';
 
   openRoleMenu(event: MouseEvent, member: any) {
@@ -325,7 +347,6 @@ export class PageProjectDetailComponent implements OnInit {
     } else {
       this.dropdownPosition = 'down';
     }
-
     this.cdr.detectChanges();
   }
 

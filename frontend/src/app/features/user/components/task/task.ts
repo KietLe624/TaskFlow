@@ -12,6 +12,7 @@ import { ToastrService } from 'ngx-toastr';
 import { ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TaskDetailComponent } from '../task-detail/task-detail';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-task',
@@ -328,12 +329,45 @@ export class TaskComponent implements OnInit {
   }
 
   deleteTask(task: Tasks) {
-    if (confirm('Xóa task này?')) {
-      this.openDropdownId = null;
-    }
-  }
-  // Hàm lọc tasks
+    // Thay thế confirm() bằng Swal.fire()
+    Swal.fire({
+      title: 'Bạn chắc chắn chứ?',
+      text: `Bạn sắp xoá công việc "${task.task_name}". Hành động này không thể hoàn tác!`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33', // Màu đỏ cho nút xoá
+      cancelButtonColor: '#3085d6', // Màu xanh cho nút huỷ
+      confirmButtonText: 'Xác nhận',
+      cancelButtonText: 'Huỷ bỏ'
+    }).then((result) => {
+      if (result.isConfirmed) {
 
+        // Gọi API xoá
+        this.taskService.deleteTask(task.task_id).subscribe({
+          next: () => {
+            // 1. Cập nhật UI
+            this.tasks = this.tasks.filter(t => t.task_id !== task.task_id);
+            this.openDropdownId = null;
+
+            // 2. Hiện thông báo thành công nhỏ gọn
+            Swal.fire({
+              title: 'Đã xoá!',
+              text: `Công việc "${task.task_name}" đã được xoá thành công.`,
+              icon: 'success',
+              timer: 2000, // Tự tắt sau 2 giây
+              showConfirmButton: false
+            });
+          },
+          error: (err) => {
+            console.error(err);
+            Swal.fire('Lỗi!', `Không thể xoá công việc "${task.task_name}".`, 'error');
+          }
+        });
+      }
+    });
+  }
+
+  // Hàm lọc tasks
   tasksByStatus(status: string): Tasks[] {
     let tasks = this.tasks.filter(t => t.status === status);
 
@@ -361,15 +395,17 @@ export class TaskComponent implements OnInit {
 
     return tasks;
   }
+
   // ÁP DỤNG LỌC
   applyFilter() {
     // Tự động cập nhật do tasksByStatus() được gọi lại
   }
 
-  // XÓA LỌC
+  // xoá bộ lọc
   clearFilter() {
     this.filter = { search: '', priority: '', assignee: '' };
   }
+  // Đếm tổng số task sau khi lọc
   filteredTaskCount(): number {
     return this.tasksByStatus('to_do').length +
       this.tasksByStatus('in_progress').length +

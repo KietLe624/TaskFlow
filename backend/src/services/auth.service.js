@@ -1,6 +1,7 @@
 const db = require("../models/index.model"); // Import file index trung tâm
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 // Func Register
 const registerUser = async ({ username, email, password }) => {
@@ -139,9 +140,7 @@ const forgotPassword = async (email) => {
 
   const user = await db.User.findOne({ where: { email } });
   if (!user) {
-    console.warn(
-      `[Forgot Password] Yêu cầu reset cho email không tồn tại: ${email}`
-    );
+    console.warn(`Không tìm thấy người dùng với email`);
     return null;
   }
   // Tạo token reset với thời hạn ngắn hơn so với key chính

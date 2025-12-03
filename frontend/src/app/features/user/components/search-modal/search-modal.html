@@ -1,65 +1,124 @@
-<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 animate-fade-in">
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl p-6 relative">
+<div class="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in p-4">
 
-    <div class="flex justify-between items-center mb-6">
-      <h2 class="text-xl font-bold text-gray-800 dark:text-white">🔍 Tìm kiếm nâng cao</h2>
-      <button (click)="close()" class="text-gray-500 hover:text-red-500">
-        <i class="fas fa-times text-xl"></i> </button>
+  <div
+    class="bg-white dark:bg-[#1e1e2d] rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-100 dark:border-gray-700 transform transition-all scale-100">
+
+    <div
+      class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
+          <i class="fa-solid fa-magnifying-glass text-lg"></i>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-gray-800 dark:text-white">Tìm kiếm nâng cao</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Lọc công việc theo nhiều tiêu chí</p>
+        </div>
+      </div>
+
+      <button (click)="close()"
+        class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all duration-200">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
     </div>
 
-    <div class="space-y-4">
+    <div class="p-6 space-y-5">
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Từ khoá</label>
-        <input type="text" [(ngModel)]="filters.keyword"
-          class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
-          placeholder="Nhập tên công việc...">
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Dự án</label>
-          <select [(ngModel)]="filters.projectId" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
-            <option [ngValue]="null">-- Tất cả dự án --</option>
-            <option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Trạng thái</label>
-          <select [(ngModel)]="filters.status" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
-            <option value="">-- Tất cả --</option>
-            <option value="to_do">To Do</option>
-            <option value="in_progress">In Progress</option>
-            <option value="completed">Completed</option>
-          </select>
+      <div class="space-y-1.5">
+        <label class="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Từ khoá</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+            <i class="fa-solid fa-signature"></i>
+          </div>
+          <input type="text" [(ngModel)]="filters.keyword"
+            class="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white placeholder-gray-400"
+            placeholder="Nhập tên công việc, ghi chú...">
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Độ ưu tiên</label>
-          <select [(ngModel)]="filters.priority" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
-            <option value="">-- Tất cả --</option>
-            <option value="high">Cao</option>
-            <option value="medium">Trung bình</option>
-            <option value="low">Thấp</option>
-          </select>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Dự án</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <select [(ngModel)]="filters.projectId"
+              class="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white appearance-none cursor-pointer">
+              <option [ngValue]="null">Tất cả dự án</option>
+              <ng-container *ngIf="projects && projects.length > 0">
+                <option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</option>
+              </ng-container>
+            </select>
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-500">
+              <i class="fa-solid fa-chevron-down text-xs"></i>
+            </div>
+          </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hạn chót từ ngày</label>
-          <input type="date" [(ngModel)]="filters.dueDateFrom"
-            class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Trạng thái</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+            <select [(ngModel)]="filters.status"
+              class="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white appearance-none cursor-pointer">
+              <option value="">Tất cả</option>
+              <option value="to_do">Cần làm </option>
+              <option value="in_progress">Đang tiến hành</option>
+              <option value="in_review">Đang xem xét</option>
+              <option value="completed">Hoàn thành</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-500">
+              <i class="fa-solid fa-chevron-down text-xs"></i>
+            </div>
+          </div>
         </div>
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Độ ưu tiên</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              <i class="fa-solid fa-flag"></i>
+            </div>
+            <select [(ngModel)]="filters.priority"
+              class="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white appearance-none cursor-pointer">
+              <option value="">-- Tất cả --</option>
+              <option value="high">🔥 Cao</option>
+              <option value="medium">⚡ Trung bình</option>
+              <option value="low">☕ Thấp</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-500">
+              <i class="fa-solid fa-chevron-down text-xs"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Hạn chót từ ngày</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              <i class="fa-regular fa-calendar-days"></i>
+            </div>
+            <input type="date" [(ngModel)]="filters.dueDateFrom"
+              class="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white cursor-pointer">
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <div class="flex justify-end gap-3 mt-8">
+    <div
+      class="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
       <button (click)="resetFilters()"
-        class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+        class="px-5 py-2.5 text-sm font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center gap-2">
+        <i class="fa-solid fa-rotate-right"></i>
         Đặt lại
       </button>
       <button (click)="onSearch()"
-        class="px-6 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-lg transition">
+        class="px-6 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all flex items-center gap-2 transform active:scale-95">
+        <i class="fa-solid fa-magnifying-glass"></i>
         Tìm kiếm
       </button>
     </div>
